@@ -1200,7 +1200,53 @@ ipcMain.handle('open-about-window', async () => {
 });
 
 ipcMain.handle('open-settings', async () => {
-  return await settingsComponent.window?.webContents.send('open-settings-window', DialogWindows_Config);
+  const win = settingsComponent.window;
+  if (!win || !win.webContents) return false;
+
+  await win.webContents.executeJavaScript(`
+    (() => {
+      const oldTitlebar = document.getElementById('CenterTitlebar');
+      if (oldTitlebar) oldTitlebar.remove();
+
+      document.querySelectorAll('[data-temp], .titlebar-error, .titlebar-extra').forEach(el => el.remove());
+
+      document.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => {
+        if (el.textContent?.includes('Titlebar') || el.textContent?.includes('titlebar') || el.href?.includes('Titlebar')) {
+          el.remove();
+        }
+      });
+
+      const style = document.createElement('style');
+      style.textContent = \`
+        #CenterTitlebar, #CenterTitlebar .Title, #CenterTitlebar .Text, #CenterTitlebar .Title h2 {
+          border: none !important;
+          box-shadow: none !important;
+          background: none !important;
+          background-image: none !important;
+        }
+        #CenterTitlebar hr, #CenterTitlebar .line, #CenterTitlebar .border, #CenterTitlebar .divider {
+          display: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+      \`;
+      document.head.appendChild(style);
+
+      const titlebarHTML = \`
+        <div id="CenterTitlebar" class="electron-only">
+          <div class="Text">
+            <div class="Title">
+              <h2>Essential app settings</h2>
+            </div>
+          </div>
+        </div>
+      \`;
+      document.body.insertAdjacentHTML('afterbegin', titlebarHTML);
+    })();
+  `);
+
+  await win.webContents.send('open-settings-window', DialogWindows_Config);
+  return true;
 });
 
 app.on('browser-window-created', (event, win) => {
@@ -1247,8 +1293,8 @@ const updateAllWindowsTheme = (theme) => {
     if (!win.isDestroyed()) {
       try {
         win.setTitleBarOverlay({
-          color: theme === 'dark' ? '#0f0f0f' : '#f0eee6',
-          symbolColor: theme === 'dark' ? '#f0eee6' : '#000000',
+          color: theme === 'dark' ? '#0f0f0f' : '#f6f5f3',
+          symbolColor: theme === 'dark' ? '#f3f2f0' : '#000000',
           height: 39
         });
       } catch (err) {

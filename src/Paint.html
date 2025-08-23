@@ -73,7 +73,7 @@
                 transform: translateX(-50%);
                 min-width: 310px;"></div>
         </div>
-
+        
         <div class="control" id="brushSizeControl">
             <input type="range" id="brushSize" min="1" max="50" value="5">
             <span class="size-display" id="sizeDisplay">5px</span>
@@ -82,7 +82,7 @@
         <div class="control">
             <select id="brushType">
                 <option value="smooth">Smooth</option>
-                <option value="texture">Texture</option>
+                <option value="texture">Pen Style</option>
             </select>
         </div>
 
@@ -104,13 +104,23 @@
 
     <div class="AnimBackgroundBlur" id="AnimBackgroundBlur"></div>
 
-    <script src="./Featured/Paint.js" defer></script>
+    <script src="./Featured/paint.js" defer></script>
     <script src="renderer.js" defer></script>
     <script src="./frontendJS/PUBLICscripts.js" defer></script>
     <script type="module">
-        import { initTheme, listenThemeSync } from './Essential_Pages/Settings_Config/theme.js';
+        import { initTheme, listenThemeSync, setTheme } from './Essential_Pages/Settings_Config/theme.js';
         initTheme();
         listenThemeSync();
+
+        if (window.electronAPI?.onThemeChange) {
+            window.electronAPI.onThemeChange((event, theme) => {
+                setTheme(theme);
+            });
+        } else {
+            window.addEventListener('theme-change', e => {
+                setTheme(e.detail);
+            });
+        }
     </script>
 </body>
 

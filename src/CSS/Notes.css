@@ -21,149 +21,134 @@
     transform: translate(0px, 1.25px);
 }
 
-#NotesContent {
-    width: 100%;
-    height: calc(100vh - 40px);
-    resize: vertical;
-    font-size: 18px;
-    padding: 50px 1rem;
-    border: none;
-    outline: none;
-    background-color: transparent;
-    transform: translateY(40px);
-    /* Default fonts fallback */
-    font-family: var(--font-primary), "Anuphan", "Leelawadee UI", sans-serif;
-    line-height: 1.7;
-}
-
-/* Sorry for hard code */
-#NotesContent,
-#NotesContent * {
-    font-family: var(--font-primary), "Anuphan", "Leelawadee UI", sans-serif !important;
-}
-
-.fontsSelector {
-    position: absolute;
-    z-index: 11;
-    box-shadow: var(--ctx-menu-shadow);
-    background-color: var(--ctx-menu-bg);
-    border-radius: 6px;
-    width: fit-content;
-    height: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 50px;
+.status {
+    font-size: 14px;
     display: flex;
     align-items: center;
-    justify-content: start;
+    gap: 6px;
+    position: fixed;
+    top: 60px;
+    right: 16px;
+    z-index: 2;
 }
 
-.fontsSelContent {
-    padding: 0.5rem 0.85rem;
-    display: flex;
-    justify-content: start;
-    align-items: baseline;
+#statusText {
+    font-family: 'Satoshi', 'Anuphan', sans-serif;
+    font-weight: 500;
 }
 
-.FontsTools a span {
-    padding: 0.5rem 1.25rem;
-    border: solid 1px var(--theme-border);
-    background-color: var(--theme-card);
-    border-radius: 20px;
-    color: var(--ctx-menu-text);
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    transition: background 0.2s;
 }
 
-.IconsTools {
-    margin-left: 0.35rem;
+.dot.saving {
+    background: #f59e0b;
+    animation: pulse 1.5s infinite;
 }
 
-.IconsTools a {
-    padding: 0.5rem 1.25rem;
-    border-radius: 2.5px;
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+textarea {
+    width: 100%;
+    min-height: calc(100vh - 40px);
+    padding: 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    resize: none;
+    outline: none;
+    border: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: transparent;
+
     position: relative;
-    margin-right: 0.5rem;
-}
-
-.IconsTools a:hover {
-    background-color: var(--ctx-menu-hover);
-}
-
-.IconsTools a:hover,
-.IconsTools a svg:hover {
-    fill: var(--ctx-menu-text-hover);
-}
-
-.IconsTools a:focus {
-    background-color: var(--accent);
-}
-
-.IconsTools a:focus svg {
-    fill: #000;
-}
-
-.IconsTools a svg {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.OutputTabbar {
-    position: absolute;
-    width: 100%;
-    height: 35px;
     top: 40px;
-    background-color: var(--nav-current);
-    border-bottom: var(--TitlebarColorBorder);
-    z-index: 11;
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    display: flex;
-    align-items: center;
+    font-family: 'General Sans', 'Anuphan', sans-serif;
+    font-weight: 450;
 }
 
-.CurrentTabs {
-    width: 200px;
-    height: 35px;
-    border-right: var(--TitlebarColorBorder);
+textarea::placeholder {
+    color: var(--theme-fg);
+    opacity: 65%;
 }
 
-.TabsName {
+.zoom-controls {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0rem 1rem;
-    background-color: var(--TitlebarColor);
-    height: 34px;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
-.Othertabs {
-    display: flex;
-    align-items: center;
-    justify-content: start;
+.textarea-container:hover .zoom-controls {
+    opacity: 1;
 }
 
-.TabsName input {
-    background-color: transparent;
-    outline: none;
+.zoom-btn {
+    width: 26px;
+    height: 26px;
     border: none;
-    font-size: 14.5px;
-    height: 35px;
-    width: 150px;
+    background: transparent;
+    border-radius: 100vmax;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
 }
 
-.TabsName input:hover {
-    cursor: default;
+.zoom-btn svg {
+    width: 26px;
+    height: 26px;
 }
 
-.AddButtons {
-    transform: translate(8.5px,2.25px);
+.zoom-btn:hover {
+    background-color: var(--theme-accent);
 }
 
-.AddButtons svg {
-    height: auto;
-    width: 20px;
+.zoom-btn:hover svg {
+    color: var(--theme-accent);
+    filter: brightness(20%);
+}
+
+#reset-zoom {
+    padding: 1rem 0.8rem;
+    line-height: 0;
+
+    font-size: 14px;
+    border-radius: 100vmax;
+    background-color: var(--PrimaryButtonsColors);
+
+    width: fit-content;
+    display: inline-block;
+    text-align: center;
+    border: none;
+}
+
+#reset-zoom:hover {
+    background-color: var(--theme-accent);
+}
+
+#reset-zoom:hover span {
+    color: var(--theme-accent);
+    filter: brightness(20%);
 }
 
 @media screen and (max-width: 720px) {
@@ -181,6 +166,10 @@
     }
 
     #GotoHomePage {
+        display: none;
+    }
+
+    .zoom-btn {
         display: none;
     }
 }

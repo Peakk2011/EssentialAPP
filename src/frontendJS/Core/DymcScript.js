@@ -3,6 +3,7 @@
  * Updated: 23/07/2025
  * Build into EssentialAPP: 8/20/2025
  * Mintkit framework for EssentialAPP
+ * Codename: basic-requirement-app
  */
 
 export const pipe = (...fns) => (x) => fns.reduce((v, f) => f(v), x);

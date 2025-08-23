@@ -204,8 +204,22 @@
 
         const current = initTheme()
         initTheme()
-        document.getElementById('lightBtn').onclick = () => setTheme('light')
-        document.getElementById('darkBtn').onclick = () => setTheme('dark')
+        document.getElementById('lightBtn').onclick = () => {
+            setTheme('light');
+            if (window.electronAPI?.sendThemeChange) {
+                window.electronAPI.sendThemeChange('light');
+            } else {
+                window.dispatchEvent(new CustomEvent('theme-change', { detail: 'light' }));
+            }
+        }
+        document.getElementById('darkBtn').onclick = () => {
+            setTheme('dark');
+            if (window.electronAPI?.sendThemeChange) {
+                window.electronAPI.sendThemeChange('dark');
+            } else {
+                window.dispatchEvent(new CustomEvent('theme-change', { detail: 'dark' }));
+            }
+        }
     </script>
 </body>
 

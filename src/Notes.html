@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="./CSS/Sidebar.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="./CSS/DefaultComp.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="./CSS/CSS_MoreOptionsStyle/OptionsStyle.css" crossorigin="anonymous" />
+
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@1,2&f[]=satoshi@1,2&display=swap" rel="stylesheet">
     <!-- Material icons -->
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -158,57 +160,33 @@
 
     <div class="AnimBackgroundBlur" id="AnimBackgroundBlur"></div>
 
-    <div class="OutputTabbar">
-        <div class="CurrentTabs">
-            <div class="TabsName">
-                <input type="text" value="New Tab" placeholder="Enter your tab name">
-            </div>
-        </div>
-        <div id="Othertabs" class="Othertabs"></div>
+    <!-- Content -->
 
-        <div class="AddButtons" id="NewTabButtons">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--theme-fg)">
-                <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-            </svg>
-        </div>
+    <div class="status">
+        <div class="dot" id="saveIndicator"></div>
+        <span id="statusText">Saved</span>
     </div>
 
-    <!-- <div class="content"> -->
-    <div id="NotesContentWrapper" style="width:100%; height: calc(100vh - 40px);">
-        <div id="NotesContent" contenteditable="true" spellcheck="true"
-            style="width:100%;height:100%;resize:vertical;font-size:1.1em;border-radius:10px;box-sizing:border-box;overflow:auto;background:transparent;outline:none;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;">
+    <div class="textarea-container">
+        <textarea id="autoSaveTextarea" placeholder="Start write your texts here" spellcheck="false"></textarea>
+
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="zoomOut()">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M200-440v-80h560v80H200Z"/></svg>
+            </button>
+            <button class="zoom-btn" onclick="zoomIn()">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+            </button>
+            <button onclick="resetZoom()" title="Reset" id="reset-zoom"><span>Reset</span></button>
         </div>
     </div>
-    <div class="fontsSelector">
-        <div class="fontsSelContent">
-            <div class="FontsTools" id="HandleAdjustFonts">
-                <a href="javascript:void(0)"><span>Font family</span></a>
-            </div>
-            <div class="IconsTools">
-                <a href="javascript:void(0)" id="HandleAdjustFontsWeight">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                        fill="var(--theme-links)">
-                        <path
-                            d="M272-200v-560h221q65 0 120 40t55 111q0 51-23 78.5T602-491q25 11 55.5 41t30.5 90q0 89-65 124.5T501-200H272Zm121-112h104q48 0 58.5-24.5T566-372q0-11-10.5-35.5T494-432H393v120Zm0-228h93q33 0 48-17t15-38q0-24-17-39t-44-15h-95v109Z" />
-                    </svg>
-                </a>
-                <a href="javascript:void(0)" id="HandleAdjustItalicStyle">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                        fill="var(--theme-links)">
-                        <path d="M200-200v-100h160l120-360H320v-100h400v100H580L460-300h140v100H200Z" />
-                    </svg>
-                </a>
-            </div>
-        </div>
-    </div>
-    <!-- </div> -->
 
     <!-- BottomNavbar -->
     <div id="app"></div>
 
     <script src="renderer.js" defer></script>
     <script src="./frontendJS/PUBLICscripts.js" defer></script>
-    <script src="./frontendJS/EssentialAPP_OptionsFeatured.js" defer></script>
+    <script src="./frontendJS/EssentialAPP_OptionsFeatured.js" defer></script>  
     <script src="./frontendJS/EssentialAPP_MenuOptions.js" defer></script>
     <script src="./frontendJS/BottomNavbar.js" type="module" defer></script>
     <script src="./Featured/notes.js" defer></script>
