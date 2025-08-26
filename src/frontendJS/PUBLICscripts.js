@@ -170,6 +170,7 @@ const homePageHandler = e => {
 const createWindows = {
   Aboutus: {
     AboutEssential: document.getElementById("NewWindow_AboutMint"),
+    Mintputs: document.getElementById("NewWindow_Mintputs"),
   },
   Settings: {
     SettingsEssential: document.getElementById("NewWindow_Settings"),
@@ -184,6 +185,11 @@ createWindows.Aboutus.AboutEssential.addEventListener('click', async (eventToggl
 createWindows.Settings.SettingsEssential.addEventListener('click', async (eventToggleNewwindows_Settings) => {
   eventToggleNewwindows_Settings.preventDefault();
   await window.electronAPI.openSettingsWindow('settings.html');
+});
+
+createWindows.Aboutus.Mintputs.addEventListener('click', async (eventToggleNewwindows_Mintputs) => {
+  eventToggleNewwindows_Mintputs.preventDefault();
+  await window.electronAPI.openMintputsWindow('openMintputs.html');
 });
 
 // Add event listeners

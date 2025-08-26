@@ -41,13 +41,24 @@
                             d="M204-129q-30.94 0-52.97-22.03Q129-173.06 129-204v-552q0-30.94 22.03-52.97Q173.06-831 204-831h273v75H204v552h552v-273h75v273q0 30.94-22.03 52.97Q786.94-129 756-129H204Zm185.5-208L337-389.5 703.5-756H552v-75h279v279h-75v-151.5L389.5-337Z" />
                     </svg>
                 </a></li>
+            <div class="zoom-info" id="zoomInfo">100%</div>
             <div id="MainLINKS" class="electron-only">
-                <li><a href="Todolist.html" id="draggable" draggable="false" class="requestShiftkeyHolder">Todo list</a>
+                <!-- <li><a href="Todolist.html" id="draggable" draggable="false" class="requestShiftkeyHolder">Todo list</a>
                 </li>
                 <li><a href="Time.html" id="draggable" draggable="false" class="requestShiftkeyHolder">Clock</a></li>
                 <li><a href="calc.html" draggable="false" class="requestShiftkeyHolder">Calculator</a></li>
                 <li><a href="Notes.html" draggable="false" class="requestShiftkeyHolder">Notes</a></li>
-                <li><a href="Paint.html" draggable="false" class="requestShiftkeyHolder">Paint</a></li>
+                <li><a href="Paint.html" draggable="false" class="requestShiftkeyHolder">Paint</a></li> -->
+                <div class="tabs-wrapper"
+                    style="-webkit-app-region: no-drag; position: relative; top: 0; min-width: max-content;"
+                    id="tabs-wrapper">
+                    <div class="tabs" id="tabs" style="-webkit-app-region: no-drag"></div>
+                </div>
+                <button class="new-tab-btn" onclick="setupCanvasTab()" title="Create your new workspace"
+                    style="-webkit-app-region: no-drag; position: relative; min-width: max-content;">+</button>
+                <div class="header-controls" style="-webkit-app-region: no-drag">
+                    <button class="create-area-btn" onclick="showNewAreaModal()">Create Canvas Area</button>
+                </div>
             </div>
         </ul>
     </nav>
@@ -66,13 +77,45 @@
                         fill="#e3e3e3" id="CurrentLinksSvg">
                         <path
                             d="M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z" />
-                    </svg><span id="CurrentLinksText">Dashboard</span></a></li>
+                    </svg><span id="CurrentLinksText">All Apps</span></a></li>
             <div id="EssentialappLinks">
-                <li><a href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" height="24px"
-                            viewBox="0 -960 960 960" width="24px" fill="var(--theme-links)">
+                <li><a href="javascript:void(0)" onclick="setupCanvasTab()">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                            fill="currentColor">
+                            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+                        </svg>Create New Workspace</a>
+                </li>
+                <li><a href="javascript:void(0)"
+                        id="NewWindow_Mintputs">
+                        <svg width="20" height="20" viewBox="0 0 384 383" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            style="translate: 2.25px -1px;">
+                            <rect x="153" y="343" width="79" height="40" fill="currentColor" />
+                            <rect x="153" width="79" height="40" fill="currentColor" />
+                            <rect x="230" y="305" width="41" height="40" fill="currentColor" />
+                            <rect x="307" y="229" width="39" height="40" fill="currentColor" />
+                            <rect x="269" y="267" width="40" height="40" fill="currentColor" />
+                            <rect x="344" y="154" width="40" height="76" fill="currentColor" />
+                            <rect y="153" width="40" height="77" fill="currentColor" />
+                            <rect x="306" y="116" width="40" height="39" fill="currentColor" />
+                            <rect width="40" height="39" transform="matrix(-1 0 0 1 78 116)" fill="currentColor" />
+                            <rect width="40" height="39" transform="matrix(-1 0 0 1 78 229)" fill="currentColor" />
+                            <rect width="40" height="39" transform="matrix(-1 0 0 1 116 268)" fill="currentColor" />
+                            <rect width="40" height="39" transform="matrix(-1 0 0 1 153 306)" fill="currentColor" />
+                            <rect x="268" y="77" width="41" height="40" fill="currentColor" />
+                            <rect width="41" height="40" transform="matrix(-1 0 0 1 116 77)" fill="currentColor" />
+                            <rect x="230" y="40" width="41" height="39" fill="currentColor" />
+                            <rect width="41" height="39" transform="matrix(-1 0 0 1 154 40)" fill="currentColor" />
+                            <path d="M172.5 268.5H211V229.5H230.5V191.5H209.5V213H177.5V191.5H153V229.5H172.5V268.5Z"
+                                fill="currentColor" stroke="currentColor" />
+                            <path d="M152.5 153.5H114.5V191.5H152.5V153.5Z" fill="currentColor" />
+                            <path d="M230.5 191.5H269.5V153.5H230.5V191.5Z" fill="currentColor" />
+                            <path d="M230.5 153.5V116H152.5V153.5H230.5Z" fill="currentColor" />
                             <path
-                                d="M165-170q-30.94 0-52.97-22.03Q90-214.06 90-245v-470q0-30.94 22.03-52.97Q134.06-790 165-790h240l75 75h315q30.94 0 52.97 22.03Q870-670.94 870-640v395q0 30.94-22.03 52.97Q825.94-170 795-170H165Zm0-75h630v-395H449l-75-75H165v470Zm0 0v-470 470Z" />
-                        </svg>All page</a></li>
+                                d="M230.5 153.5H269.5V191.5H230.5V153.5ZM230.5 153.5V116H152.5V153.5M230.5 153.5H152.5M152.5 153.5H114.5V191.5H152.5V153.5Z"
+                                stroke="currentColor" />
+                        </svg>
+                        Try Mintputs</a>
+                </li>
             </div>
         </div>
         <!-- Making menulink for web -->
@@ -273,48 +316,55 @@
                 </div>
                 <!-- End getStarted -->
             </div>
-            <!-- Create card app here -->
-            <div class="app-cards" id="APPcards">
-                <div id="TextCards">
-                    <h1 class="typing-text"></h1>
-                </div>
-                <!-- To apply link use data-href="" -->
-                <div class="AppcardsContent">
-                    <div class="card" id="TodolistCard">
-                        <div class="card-icon todolist">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="var(--accent)">
-                                <path
-                                    d="M356-207.5v-75h475v75H356Zm0-235.5v-75h475v75H356Zm0-234.5v-75h475v75H356ZM204.89-169q-31.39 0-53.64-22.36Q129-213.71 129-245.11q0-31.39 22.36-53.64Q173.71-321 205.11-321q31.39 0 53.64 22.36Q281-276.29 281-244.89q0 31.39-22.36 53.64Q236.29-169 204.89-169Zm0-235.5q-31.39 0-53.64-22.36Q129-449.21 129-480.61q0-31.39 22.36-53.64 22.35-22.25 53.75-22.25 31.39 0 53.64 22.36Q281-511.79 281-480.39q0 31.39-22.36 53.64-22.35 22.25-53.75 22.25Zm0-234.5q-31.39 0-53.64-22.36Q129-683.71 129-715.11q0-31.39 22.36-53.64Q173.71-791 205.11-791q31.39 0 53.64 22.36Q281-746.29 281-714.89q0 31.39-22.36 53.64Q236.29-639 204.89-639Z" />
-                            </svg>
-                        </div>
-                        <h3>Todo List</h3>
-                        <p>Organize your tasks efficiently with our intuitive todo list manager</p>
+
+            <div class="canvas-container" id="canvasContainer">
+                <div class="canvas-areas" id="canvasAreas"></div>
+            </div>
+
+
+            <div class="modal" id="newAreaModal">
+                <div class="modal-content">
+                    <h3>สร้าง Canvas Area ใหม่</h3>
+                    <div class="form-group">
+                        <label>ชื่อ Area</label>
+                        <input type="text" id="areaNameInput" placeholder="Area Name" maxlength="50">
                     </div>
-                    <div class="card" id="ClockCard">
-                        <div class="card-icon timer">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="var(--accent)">
-                                <path
-                                    d="M360-840v-80h240v80H360Zm80 440h80v-240h-80v240Zm40 320q-74 0-139.5-28.5T226-186q-49-49-77.5-114.5T120-440q0-74 28.5-139.5T226-694q49-49 114.5-77.5T480-800q62 0 119 20t107 58l56-56 56 56-56 56q38 50 58 107t20 119q0 74-28.5 139.5T734-186q-49 49-114.5 77.5T480-80Zm0-80q116 0 198-82t82-198q0-116-82-198t-198-82q-116 0-198 82t-82 198q0 116 82 198t198 82Zm0-280Z" />
-                            </svg>
+                    <div class="size-inputs">
+                        <div class="form-group">
+                            <label>ความกว้าง (px)</label>
+                            <input type="number" id="areaWidthInput" value="600" min="340" max="1600">
                         </div>
-                        <h3>Clock</h3>
-                        <p>Track your time with precision using our customizable timer</p>
+                        <div class="form-group">
+                            <label>ความสูง (px)</label>
+                            <input type="number" id="areaHeightInput" value="400" min="600" max="900">
+                        </div>
                     </div>
-                    <div class="card" id="ScrollPosition">
-                        <div class="card-icon calculator">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="var(--accent)">
-                                <path
-                                    d="M400-240v-80h62l105-120-105-120h-66l-64 344q-8 45-37 70.5T221-120q-45 0-73-24t-28-64q0-32 17-51.5t43-19.5q25 0 42.5 17t17.5 41q0 5-.5 9t-1.5 9q5-1 8.5-5.5T252-221l62-339H200v-80h129l21-114q7-38 37.5-62t72.5-24q44 0 72 26t28 65q0 30-17 49.5T500-680q-25 0-42.5-17T440-739q0-5 .5-9t1.5-9q-6 2-9 6t-5 12l-17 99h189v80h-32l52 59 52-59h-32v-80h200v80h-62L673-440l105 120h62v80H640v-80h32l-52-60-52 60h32v80H400Z" />
-                            </svg>
-                        </div>
-                        <h3>Calculator</h3>
-                        <p>Perform calculations quickly with our simple yet powerful calculator</p>
+                    <div class="form-group">
+                        <label>เลือก Website</label>
+                        <select id="websiteSelect">
+                            <option value="Paint.html">Paint</option>
+                            <option value="https://codepen.io">CodePen</option>
+                            <option value="https://jsfiddle.net">JSFiddle</option>
+                            <option value="https://www.wikipedia.org">Wikipedia</option>
+                            <option value="https://www.youtube.com">YouTube</option>
+                            <option value="https://github.com">GitHub</option>
+                            <option value="https://stackoverflow.com">Stack Overflow</option>
+                            <option value="https://developer.mozilla.org">MDN Web Docs</option>
+                            <option value="">Custom URL</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="customUrlGroup" style="display: none;">
+                        <label>Custom URL</label>
+                        <input type="url" id="customUrlInput" placeholder="https://example.com">
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="btn-cancel" onclick="hideNewAreaModal()">ยกเลิก</button>
+                        <button class="btn-create" onclick="createNewArea()">สร้าง</button>
                     </div>
                 </div>
             </div>
+
+
         </div>
 
         <!-- Animation drawer -->

@@ -1,0 +1,58 @@
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body,
+    html {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow: hidden;
+        background-color: #0f0f0f;
+    }
+
+    @media (prefers-color-scheme: light) {
+
+        body,
+        html {
+            background-color: #faf9f5;
+        }
+
+    }
+
+    @media screen and (min-width: 600px) {
+
+        #dragablewindow {
+            border-bottom: solid 1px #202020;
+        }
+
+        @media (prefers-color-scheme: light) {
+            #dragablewindow {
+                border-bottom: solid 1px #deddd9;
+            }
+        }
+
+    }
+</style>
+
+<div id="dragablewindow" style="
+    width: 100%;
+    height: 35px;
+    position: absolute;
+    top: 0; 
+    -webkit-app-region: drag;
+"></div>
+
+<iframe src="https://mint-teams.web.app/Mintputs/index.html" frameborder="0" style="
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+"></iframe>

@@ -405,21 +405,30 @@ const getThemeIcon = () => {
 
 const handleError = async (win, error, context = '') => {
   console.error(`Error in ${context}:`, error);
-  if (win && !win.isDestroyed()) {
+
+  if (win && !win.isDestroyed() && win.webContents && !win.webContents.isDestroyed()) {
     try {
       await win.webContents.send('error-notification', {
         message: error.message || 'An error occurred',
         context: context
       });
+      // Check files before loading
       if (context !== 'error-page-load') {
-        await win.loadFile(path.join(__dirname, Essential_links.Error.ErrorPage));
+        const errorPath = path.join(__dirname, Essential_links.Error.ErrorPage);
+        if (fs.existsSync(errorPath)) {
+          await win.loadFile(errorPath);
+        } else {
+          console.error('Error page file not found:', errorPath);
+        }
       }
     } catch (e) {
       console.error('Error handler failed:', e);
     }
   }
+
   return Promise.reject(error);
 };
+
 
 const createWindowWithPromise = (config) => {
   return new Promise((resolve, reject) => {
@@ -470,12 +479,19 @@ app.on('second-instance', (event, commandLine, workingDirectory) => {
 
 const loadFileWithCheck = async (window, filePath, context) => {
   try {
-    const fullPath = path.join(__dirname, filePath);
-    if (fs.existsSync(fullPath)) {
-      await window.loadFile(fullPath);
+    if (typeof filePath === 'string' && (filePath.startsWith('http://') || filePath.startsWith('https://'))) {
+      // URL
+      await window.loadURL(filePath);
       return true;
+    } else {
+      // local
+      const fullPath = path.join(__dirname, filePath);
+      if (fs.existsSync(fullPath)) {
+        await window.loadFile(fullPath);
+        return true;
+      }
+      throw new Error(`File not found: ${filePath}`);
     }
-    throw new Error(`File not found: ${filePath}`);
   } catch (err) {
     await handleError(window, err, context);
     return false;
@@ -989,6 +1005,113 @@ ipcMain.on('show-error', async (event, message) => {
   }
 });
 
+ipcMain.on('theme-response', (event, theme) => {
+  const newWindows = BrowserWindow.getAllWindows().filter(win =>
+    !win.isDestroyed() &&
+    win.webContents.id !== event.sender.id
+  );
+
+  newWindows.forEach(win => {
+    try {
+      win.setTitleBarOverlay({
+        color: theme === 'dark' ? '#0f0f0f' : '#f6f5f3',
+        symbolColor: theme === 'dark' ? '#f3f2f0' : '#000000',
+        height: 39
+      });
+    } catch (err) {
+      console.error('Failed to update new window theme:', err);
+    }
+  });
+});
+
+const openedWindows = new Set();
+
+ipcMain.handle('open-mintputs-window', async (event, url) => {
+  try {
+    if (typeof url !== 'string') throw new Error('Invalid URL or file path');
+
+    const isRemote = url.startsWith('http://') || url.startsWith('https://');
+    let fullPath;
+
+    if (!isRemote) {
+      fullPath = path.join(__dirname, url);
+      try {
+        await fs.promises.access(fullPath, fs.constants.F_OK);
+      } catch {
+        throw new Error(`File not found: ${fullPath}`);
+      }
+    }
+
+    // Pre-warm
+    if (isRemote) {
+      require('dns').lookup(new URL(url).hostname, () => { });
+    }
+
+    const mintputsWidth = 350;
+    const mintputsHeight = 600;
+
+    const win = new BrowserWindow({
+      width: mintputsWidth,
+      height: mintputsHeight,
+      titleBarStyle: 'hidden',
+      titleBarOverlay: {
+        height: 34,
+        color: '#0f0f0f', 
+        symbolColor: '#f3f2f0',
+      },
+      show: true,
+      backgroundColor: '#0f0f0f',
+      title: 'Mintputs',
+      minWidth: mintputsWidth,
+      minHeight: mintputsHeight,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: path.join(__dirname, 'preload.js'),
+        enableRemoteModule: false,
+        webSecurity: isRemote,
+        backgroundThrottling: false,
+        partition: 'persist:mintputs',
+      }
+    });
+
+    win.hide();
+
+    openedWindows.add(win);
+    win.on('closed', () => openedWindows.delete(win));
+
+    try {
+      if (isRemote) {
+        await win.loadURL(url, {
+          userAgent: 'Mintputs-App',
+          httpReferrer: '',
+        });
+      } else {
+        await win.loadFile(fullPath);
+      }
+
+      win.show();
+
+    } catch (err) {
+      console.error('Failed to load Mintputs content:', err);
+      if (!win.isDestroyed()) {
+        win.close();
+      }
+      throw err;
+    }
+
+    return {
+      success: true,
+      windowId: win.id,
+      isReady: true
+    };
+
+  } catch (err) {
+    console.error('Failed to create Mintputs window:', err);
+    throw err;
+  }
+});
+
 ipcMain.handle('create-new-window', async (event, path) => {
   try {
     const newWindow = await createWindowWithPromise({
@@ -1261,7 +1384,7 @@ app.on('browser-window-created', (event, win) => {
     }
   };
 
-  globalShortcut.register('Control+Shift+I', devToolsShortcut); 
+  globalShortcut.register('Control+Shift+I', devToolsShortcut);
 
   win.once('closed', () => {
     globalShortcut.unregister('Control+Shift+I');
@@ -1274,29 +1397,36 @@ app.on('browser-window-created', (event, win) => {
             window.titlebarAPI.setTheme(savedTheme);
         }
     `);
-});
+  });
 
-ipcMain.on('toggle-devtools', (event) => {
-  const win = BrowserWindow.fromWebContents(event.sender);
-  if (win) {
-    if (win.webContents.isDevToolsOpened()) {
-      win.webContents.closeDevTools();
-    } else {
-      win.webContents.openDevTools({ mode: 'detach' });
+  ipcMain.on('toggle-devtools', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+      if (win.webContents.isDevToolsOpened()) {
+        win.webContents.closeDevTools();
+      } else {
+        win.webContents.openDevTools({ mode: 'detach' });
+      }
     }
-  }
-});
+  });
+
 });
 
 const updateAllWindowsTheme = (theme) => {
   BrowserWindow.getAllWindows().forEach(win => {
     if (!win.isDestroyed()) {
       try {
+        const titlebarColor = theme === 'dark' ? '#0f0f0f' : '#f6f5f3';
+        const symbolColor = theme === 'dark' ? '#f3f2f0' : '#000000';
+
         win.setTitleBarOverlay({
-          color: theme === 'dark' ? '#0f0f0f' : '#f6f5f3',
-          symbolColor: theme === 'dark' ? '#f3f2f0' : '#000000',
+          color: titlebarColor,
+          symbolColor: symbolColor,
           height: 39
         });
+
+        win.setBackgroundColor(titlebarColor);
+
       } catch (err) {
         console.error('Failed to update window theme:', err);
       }

@@ -32,7 +32,7 @@
     --theme-bg: #0F0F0F;
     --theme-fg: #ffffff;
     --theme-primary: #080808;
-    --theme-accent: hsl(0, 13%, 68%);
+    --theme-accent: hsl(0, 15%, 75%);
     --theme-border: hsl(0, 0%, 18%);
     --theme-card: #141414;
     --theme-titlebar: #0f0f0f;
@@ -104,7 +104,7 @@
     --theme-bg: #0F0F0F;
     --theme-fg: #ffffff;
     --theme-primary: #080808;
-    --theme-accent: hsl(0, 13%, 68%);
+    --theme-accent: hsl(0, 15%, 75%);
     --theme-border: #3f3f3f;
     --theme-card: #141414;
     --theme-titlebar: #0f0f0f;
@@ -194,6 +194,14 @@ body {
     background-color: var(--theme-bg);
     color: var(--theme-fg);
     line-height: var(--line-height);
+}
+
+input:focus {
+    outline: none;
+    border: solid 1px var(--theme-accent);
+    padding: 0.1rem 0.25rem;
+    font-size: 12px;
+    border-radius: 4px;
 }
 
 @media (max-width: 768px) {

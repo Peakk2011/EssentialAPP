@@ -1,19 +1,25 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld(
-    'electronAPI', {
+contextBridge.exposeInMainWorld('electronAPI', {
+    // Context Menu & Navigation
     showContextMenu: (pos) => ipcRenderer.invoke('show-context-menu', pos),
     navigate: (url) => ipcRenderer.send('navigate', url),
     keepOnTop: () => ipcRenderer.send('Keepontop'),
+
+    // Event Listeners
     onNavigate: (callback) => {
         ipcRenderer.on('navigate', (_, url) => callback(url));
         return () => {
             ipcRenderer.removeListener('navigate', callback);
         };
     },
+
+    // Language & External Links
     changeLanguage: (locale) => ipcRenderer.send('change-language', locale),
     safeNavigate: (url) => ipcRenderer.invoke('safe-navigate', url),
     openExternal: (url) => ipcRenderer.invoke('open-external-link', url),
+
+    // System Information
     systemInfo: {
         platform: process.platform,
         runtime: 'electron'
@@ -36,18 +42,22 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.removeListener('system-info', callback);
         };
     },
+
+    // Window Management
     createNewWindow: (url) => ipcRenderer.invoke('create-new-window', url),
     openAboutWindow: () => ipcRenderer.invoke('open-about-window'),
     openSettingsWindow: () => ipcRenderer.invoke('open-settings-window'),
-    toggleDevTools: () => ipcRenderer.send('toggle-devtools'),
-}
-);
+    openMintputsWindow: (url) => ipcRenderer.invoke('open-mintputs-window', url),
+    toggleDevTools: () => ipcRenderer.send('toggle-devtools')
+});
 
+// Runtime Information Bridge
 contextBridge.exposeInMainWorld('runtimeInfo', {
     runtime: process.versions.electron ? 'electron' : 'web',
     os: process.platform // 'win32', 'darwin', 'linux'
 });
 
+// Electron Bridge
 contextBridge.exposeInMainWorld('electron', {
     ipcRenderer: {
         on: (channel, func) => {
@@ -67,6 +77,7 @@ contextBridge.exposeInMainWorld('electron', {
     }
 });
 
+// Titlebar API Bridge
 contextBridge.exposeInMainWorld('titlebarAPI', {
     setTheme: (theme) => {
         ipcRenderer.send('titlebar-theme-change', theme);
@@ -76,13 +87,14 @@ contextBridge.exposeInMainWorld('titlebarAPI', {
     getCurrentTheme: () => localStorage.getItem('app_theme') || 'dark'
 });
 
-// Secure the window object
+// Security: Clean up global objects
 delete window.module;
 delete window.require;
 delete window.exports;
 delete window.Buffer;
 delete window.process;
 
+// DOM Content Loaded Handler
 window.addEventListener('DOMContentLoaded', () => {
     // From localStorage
     const savedAccent = localStorage.getItem('theme-accent');
@@ -103,6 +115,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// IPC Event Listeners
 ipcRenderer.on('open-settings-trigger', () => {
     ipcRenderer.invoke('open-settings-window');
 });

@@ -44,7 +44,7 @@ langDropdown.addEventListener('click', (e) => {
         dateConfig.locale = selectedLang;
         updateDate();
         closeDropdown();
-        
+
         // Sync language with context menu
         if (window.electronAPI) {
             window.electronAPI.changeLanguage(selectedLang);
@@ -118,4 +118,56 @@ document.querySelectorAll('.AllmenuLinks li').forEach(card => {
     });
 });
 
-// Other custom code here ...
+// Todolist code
+
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('todo-input');
+    const addBtn = document.getElementById('add-btn');
+    const list = document.getElementById('todo-list');
+
+    let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+    function saveTodos() {
+        localStorage.setItem('todos', JSON.stringify(todos));
+    }
+
+    function render() {
+        list.innerHTML = '';
+        todos.forEach((todo, index) => {
+            const li = document.createElement('li');
+            li.textContent = todo;
+
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'ลบ';
+            delBtn.style.marginLeft = '10px';
+            delBtn.addEventListener('click', () => {
+                todos.splice(index, 1);
+                saveTodos();
+                render();
+            });
+
+            li.appendChild(delBtn);
+            list.appendChild(li);
+        });
+    }
+
+    addBtn.addEventListener('click', () => {
+        const text = input.value.trim();
+        if (text) {
+            todos.push(text);
+            saveTodos();
+            render();
+            input.value = '';
+            input.focus();
+        }
+    });
+
+    // กด Enter ใน input ก็เพิ่มรายการได้
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            addBtn.click();
+        }
+    });
+
+    render();
+});

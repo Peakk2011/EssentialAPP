@@ -199,7 +199,7 @@ document.getElementById('ResetColor').addEventListener('click', () => {
 
     // Special default colors for each theme
     const specialDefaults = {
-        dark: 'hsl(0, 13%, 68%)',
+        dark: 'hsl(0, 15%, 75%)',
         light: 'hsl(0, 23%, 74%)'
     };
 

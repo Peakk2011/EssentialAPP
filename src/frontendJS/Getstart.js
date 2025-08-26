@@ -1,21 +1,17 @@
 const UI = {
     elements: {
         getStartedBTN: document.getElementById('getStartedBTN'),
+        closeGetStartedBTN: document.getElementById('closeGetStartedBTN'),
         content: document.getElementById("content"),
         MenuBar: document.getElementById("MainLINKS"),
         content2: document.getElementById("contentGuide2"),
         ScrambledBTN: document.getElementById('ScrambledBTN'),
-        APPcards: document.getElementById("APPcards"),
         getStartedContent: document.getElementById("getStartedContent"), // Wrapper Getstarted
         clearStorageBTN: document.getElementById('clearStorageBTN'),
     },
     opacity: {
         out: 0,
         in: 1
-    },
-    APPcards: {
-        unShow: "none",
-        toTop: "0.25rem"
     }
 };
 
@@ -26,33 +22,7 @@ const appOptions = document.getElementById('AppOptions');
 const currentLinksSvg = document.getElementById('CurrentLinksSvg');
 const currentLinksText = document.getElementById('CurrentLinksText');
 
-const APPcardsSTYLE = () => {
-    // Direct for element but it fine will no error
-    // But if the element does not have this error, it will show
-    try {
-        if (!UI.elements.content || !UI.elements.APPcards) {
-            console.error(
-                'Required elements not found:',
-                'Try to reinstall to fix it',
-                {
-                    content: UI.elements.content,
-                    APPcards: UI.elements.APPcards
-                }
-            );
-            alert('Required elements not found:','Try to reinstall to fix it');
-            return;
-        }
-        UI.elements.content.style.display = UI.APPcards.unShow;
-        UI.elements.APPcards.style.marginTop = UI.APPcards.toTop;
-        // Menubar
-        UI.elements.MenuBar.style.display = "flex";
-        UI.elements.MenuBar.style.transform = "translateX(0px)";
-        UI.elements.MenuBar.style.opacity = UI.opacity.in;
-        console.log('APPcardsSTYLE applied');
-    } catch (error) {
-        console.error('Error in APPcardsSTYLE:', error);
-    }
-}
+
 
 // Utility function at the start of the file after UI object
 function rafTimeout(callback, delay) {
@@ -75,7 +45,10 @@ if (localStorage.getItem('hasSeenContent')) {
     console.log('Content seen before');
     UI.elements.getStartedContent.style.display = "none";
     document.documentElement.style.removeProperty('overflow-y');
-    APPcardsSTYLE();
+    UI.elements.MenuBar.style.display = "flex";
+    UI.elements.MenuBar.style.transform = "translateX(0px)";
+    UI.elements.MenuBar.style.opacity = UI.opacity.in;
+    
 
     // Restore UI elements to their default state
     if (keepOnTop) {
@@ -95,7 +68,8 @@ if (localStorage.getItem('hasSeenContent')) {
     }
 
 } else {
-    document.documentElement.style.setProperty('overflow-y', 'hidden');
+        document.documentElement.style.removeProperty('overflow-y');
+    UI.elements.MenuBar.style.display = "flex";
     usingGETSTARTED();
 
     // Disable min screen toggle
@@ -124,34 +98,34 @@ if (UI.elements.clearStorageBTN) {
     });
 }
 
+function handleGetStarted() {
+    UI.elements.content.style.transform = "translateY(-50px)";
+    UI.elements.content.style.opacity = UI.opacity.out;
+    rafTimeout(() => {
+        localStorage.setItem('hasSeenContent', 'true');
+    }, 200);
+
+    if (keepOnTop) {
+        keepOnTop.style.display = '';
+    }
+
+    if (essentialAppLinks) {
+        essentialAppLinks.style.display = '';
+    }
+    if (appOptions) {
+        appOptions.style.display = '';
+    }
+
+    // Using Effect
+    MenuBar_Initial();
+    ScrambleText_Initial();
+}
+
 function usingGETSTARTED() {
-    UI.elements.getStartedBTN.addEventListener('click', function () {
-        UI.elements.content.style.transform = "translateY(-50px)";
-        UI.elements.content.style.opacity = UI.opacity.out;
-        rafTimeout(() => {
-            localStorage.setItem('hasSeenContent', 'true');
-        }, 200);
-
-        if (keepOnTop) {
-            keepOnTop.style.display = '';
-        }
-        // if (currentLinksText) {
-        //     currentLinksText.textContent = '';
-        // }
-        // if (currentLinksSvg) {
-        //     currentLinksSvg.style.display = 'block';
-        // }
-        if (essentialAppLinks) {
-            essentialAppLinks.style.display = '';
-        }
-        if (appOptions) {
-            appOptions.style.display = '';
-        }
-
-        // Using Effect
-        MenuBar_Initial();
-        ScrambleText_Initial();
-    });
+    UI.elements.getStartedBTN.addEventListener('click', handleGetStarted);
+    if (UI.elements.closeGetStartedBTN) {
+        UI.elements.closeGetStartedBTN.addEventListener('click', handleGetStarted);
+    }
 
     function ScrambleText_Initial() {
         scrambleText(targetElement, targetText, 25);
@@ -180,49 +154,6 @@ function usingGETSTARTED() {
             }, 100);
         }, 50);
     }
-
-    function UsingAppcard() {
-        function ScrambledBTN_Toggle() {
-            let regularTimeout = 300;
-            rafTimeout(() => {
-                UI.elements.content2.style.transition = "ease 0.3s";
-                UI.elements.content2.style.opacity = UI.opacity.out;
-                UI.elements.content2.style.transform = "translate(-50%, -80%)";
-                rafTimeout(() => {
-                    UI.elements.content2.style.display = "none";
-                }, regularTimeout);
-                UI.elements.ScrambledBTN.style.opacity = UI.opacity.out;
-                rafTimeout(() => {
-                    UI.elements.ScrambledBTN.style.display = "none";
-                    APPcard_Toggle();
-                }, regularTimeout);
-            }, 1800);
-        }
-
-        function APPcard_Toggle() {
-            // Remove direct style manipulation
-            document.documentElement.style.removeProperty('overflow-y');
-
-            const appCards = document.querySelector('.app-cards');
-            if (appCards) {
-                appCards.style.display = 'grid';
-                appCards.style.opacity = UI.opacity.in;
-
-                // Smooth scroll with delay for animation
-                setTimeout(() => {
-                    appCards.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start"
-                    });
-                }, 100);
-            }
-            APPcardsSTYLE();
-        }
-
-        ScrambledBTN_Toggle();
-    }
-
-    UI.elements.ScrambledBTN.addEventListener("click", UsingAppcard);
 }
 
 window.scrollTo({
@@ -260,28 +191,4 @@ document.querySelector('.js-send-button').addEventListener('click', function () 
     this.classList.toggle('send-button--pressed');
 });
 
-// Add ripple effect to cards
-document.querySelectorAll('.card').forEach(card => {
-    let ripple = null;
-    let isPressed = false;
 
-    card.addEventListener('mousedown', function (e) {
-        isPressed = true;
-        ripple = document.createElement('div');
-        ripple.className = 'ripple ripple-quick';
-        ripple.style.left = `${e.clientX - this.getBoundingClientRect().left}px`;
-        ripple.style.top = `${e.clientY - this.getBoundingClientRect().top}px`;
-        this.appendChild(ripple);
-    });
-
-    card.addEventListener('mouseup', function () {
-        if (ripple) {
-            isPressed = false;
-            const href = this.getAttribute('data-href');
-            ripple.addEventListener('animationend', () => {
-                ripple.remove();
-                if (href) window.location.href = href;
-            });
-        }
-    });
-});
