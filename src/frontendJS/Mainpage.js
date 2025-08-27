@@ -1,6 +1,3 @@
-const BackgroundBlur = document.getElementById('AnimBackgroundBlur');
-const MenuOptions = document.getElementById('AppOptions');
-const MenuClosing = document.getElementById('MoreOptionsIcon');
 const TabsWrapper = document.getElementById('tabs-wrapper');
 
 // Initialize elements
@@ -10,24 +7,7 @@ const tabsContainer = document.getElementById('tabs');
 const zoomInfo = document.getElementById('zoomInfo');
 
 const CardElement = {
-    Option_interface_Element: {
-        InterfaceMoreOption: document.getElementById('MoreOptions'),
-    },
     Navbar: document.getElementById('MainNavbar'),
-};
-
-const AnimationCardElement = {
-    Animation: {
-        MenuOptions_Anim: document.getElementById("AnimationForMenuOptions"),
-    }
-};
-
-// Define object used for animation structure
-const AnimDrawerMenuOptions = AnimationCardElement.Animation.MenuOptions_Anim;
-
-const ObjectMenuOptions = {
-    width: '320px',
-    height: '400px'
 };
 
 // Global State
@@ -49,104 +29,6 @@ const state = {
     justCreatedCanvas: false,
     resizeStartPos: { x: 0, y: 0, width: 0, height: 0 },
     isTabsOpen: false
-};
-
-// Menu Animation Functions
-const AnimMenuOptions = () => {
-    AnimDrawerMenuOptions.style.willChange = "opacity, transform, left, top, width, height";
-
-    const InitialMenuPos = () => {
-        AnimDrawerMenuOptions.style.cssText += `
-            top: 100vh;
-            left: 0;
-            z-index: 11;
-            width: 265px;
-            height: 45px;
-            transform: translate(0%, 0%);
-        `;
-        setTimeout(() => {
-            AnimDrawerMenuOptions.style.opacity = "1";
-        }, 50);
-        setTimeout(() => {
-            AnimDrawerMenuOptions.style.cssText += `
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                z-index: 11;
-            `;
-            setTimeout(() => {
-                AnimDrawerMenuOptions.style.cssText += `
-                    width: ${ObjectMenuOptions.width};
-                    height: ${ObjectMenuOptions.height};
-                    filter: brightness(1);
-                `;
-                CardElement.Navbar.style.display = "none";
-            }, 50);
-        }, 100);
-    };
-
-    const InitialMenuInterface = () => {
-        // ASM symbol explain: REGISTER.Memory.Slot.Address = value;
-        CardElement.Option_interface_Element.InterfaceMoreOption.style.display = "block";
-        setTimeout(() => {
-            CardElement.Option_interface_Element.InterfaceMoreOption.style.opacity = "1";
-            document.getElementById("AnimationMenuContent").style.display = "block";
-        }, 30);
-    };
-
-    setTimeout(() => {
-        InitialMenuPos();
-        setTimeout(() => {
-            InitialMenuInterface();
-        }, 400);
-        setTimeout(() => {
-            AnimDrawerMenuOptions.style.willChange = "auto";
-        }, 600);
-    }, 100);
-};
-
-/*
-    ASM code explain:
-    ; This is a pseudo-assembly code representation of the JavaScript animation logic
-    MOV AX, 100
-    CALL _DrawMenu
-    CALL _Wait50ms
-    CALL _SetPos
-    CALL _Wait100ms
-    CALL _SetSize
-*/
-
-const resetMenuOptions = () => {
-    // Reset Animation Drawer MenuOptions
-    Object.assign(AnimDrawerMenuOptions.style, {
-        cssText: '',
-        opacity: '',
-        willChange: '',
-        filter: '',
-        display: ''
-    });
-
-    // Reset MoreOptions interface
-    Object.assign(CardElement.Option_interface_Element.InterfaceMoreOption.style, {
-        display: '',
-        opacity: '',
-        willChange: ''
-    });
-
-    // Reset AnimationMenuContent
-    const animMenuContent = document.getElementById("AnimationMenuContent");
-    if (animMenuContent) {
-        animMenuContent.style.display = '';
-    }
-    CardElement.Navbar.style.display = '';
-
-    // Reset BackgroundBlur
-    if (BackgroundBlur) {
-        Object.assign(BackgroundBlur.style, {
-            display: '',
-            opacity: ''
-        });
-    }
 };
 
 // Mouse & Wheel Event Handlers
@@ -574,9 +456,6 @@ const loadFromMemory = () => {
 
 // Menu Animation Event Listeners
 MenuOptions?.addEventListener("click", AnimMenuOptions);
-MenuClosing?.addEventListener("click", resetMenuOptions);
-BackgroundBlur?.addEventListener("click", resetMenuOptions);
-document.getElementById("MoreOptions")?.addEventListener("click", resetMenuOptions);
 
 // Canvas Interaction Event Listeners
 container.addEventListener('wheel', handleWheel, { passive: false });

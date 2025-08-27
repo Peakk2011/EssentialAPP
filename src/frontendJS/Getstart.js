@@ -18,7 +18,6 @@ const UI = {
 const keepOnTop = document.getElementById('KeepONtop');
 const currentLinks = document.getElementById('CurrentLinks');
 const essentialAppLinks = document.getElementById('EssentialappLinks');
-const appOptions = document.getElementById('AppOptions');
 const currentLinksSvg = document.getElementById('CurrentLinksSvg');
 const currentLinksText = document.getElementById('CurrentLinksText');
 
@@ -63,9 +62,6 @@ if (localStorage.getItem('hasSeenContent')) {
     if (essentialAppLinks) {
         essentialAppLinks.style.display = '';
     }
-    if (appOptions) {
-        appOptions.style.display = '';
-    }
 
 } else {
         document.documentElement.style.removeProperty('overflow-y');
@@ -84,9 +80,6 @@ if (localStorage.getItem('hasSeenContent')) {
     // }
     if (essentialAppLinks) {
         essentialAppLinks.style.display = 'none';
-    }
-    if (appOptions) {
-        appOptions.style.display = 'none';
     }
 }
 
@@ -111,9 +104,6 @@ function handleGetStarted() {
 
     if (essentialAppLinks) {
         essentialAppLinks.style.display = '';
-    }
-    if (appOptions) {
-        appOptions.style.display = '';
     }
 
     // Using Effect

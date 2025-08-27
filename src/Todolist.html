@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="./CSS/Todolist.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="./CSS/Navbar.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="./CSS/Sidebar.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="./CSS/CSS_MoreOptionsStyle/OptionsStyle.css" crossorigin="anonymous" />
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script>
@@ -96,15 +95,6 @@
             </svg>
             Settings</a>
         </li>
-        <li class="BottomLinks" id="AppOptions">
-          <a href="javascript:void(0)">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-              fill="var(--theme-links)">
-              <path
-                d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z" />
-            </svg>
-            App Options</a>
-        </li>
         <li class="BottomLinks" id="NewWindow_AboutMint">
           <a href="#">
             <svg xmlns="http://www.w3.org/2000/svg" height="auto" viewBox="0 -960 960 960" width="24px"
@@ -117,41 +107,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Menu Animation drawer -->
-  <div class="AnimationMenuOptions" id="AnimationForMenuOptions">
-    <div class="AnimationMenuContent" id="AnimationMenuContent">
-      <h4>Pick your options</h4>
-      <li>
-        <a href="javascript:void(0)">Toggle devTools</a>
-        <span id="KeysToggleToggleDevtools"></span>
-      </li>
-      <li>
-        <a href="javascript:void(0)">Open new window</a>
-        <span id="KeysToggleToggleNewWindow"></span>
-      </li>
-      <li>
-        <a href="javascript:void(0)">Refresh</a>
-        <span id="KeysToggleToggleRefresh"></span>
-      </li>
-    </div>
-  </div>
-
-  <div class="MoreOptions" id="MoreOptions">
-    <div class="MoreOptionsNavbar">
-      <div class="MoreOptionsNavbarContent">
-        <div class="MoreOption_NavCon_Nav">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-            fill="var(--theme-links)" id="MoreOptionsIcon">
-            <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
-          </svg>
-          <h4>App options</h4>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="AnimBackgroundBlur" id="AnimBackgroundBlur"></div>
 
   <!-- Write content inside this -->
   <div class="content">
@@ -179,7 +134,6 @@
   <script src="./frontendJS/TodoList.js" defer></script>
   <script src="./frontendJS/PUBLICscripts.js" defer></script>
   <script src="./frontendJS/EssentialAPP_OptionsFeatured.js" defer></script>
-  <script src="./frontendJS/EssentialAPP_MenuOptions.js" defer></script>
   <script src="./frontendJS/BottomNavbar.js" type="module" defer></script>
   <script type="module">
     import { initTheme, listenThemeSync } from './Essential_Pages/Settings_Config/theme.js';

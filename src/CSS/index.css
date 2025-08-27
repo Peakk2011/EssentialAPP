@@ -201,92 +201,30 @@ html {
     z-index: 5;
 }
 
-.AnimationMenuOptions {
-    background-color: var(--ctx-menu-bg);
-    width: 265px;
-    height: 45px;
-    position: absolute;
-    bottom: 50px;
-    transition: var(--transitionEaseNormal);
-    z-index: 9;
-    opacity: 0;
-    filter: brightness(2.5);
-    border-radius: 6px;
-    box-shadow: var(--ctx-menu-shadow);
-}
+/* Get started with EssentialAPP */
 
-.AnimationMenuContent {
-    display: none;
-}
-
-.AnimationMenuContent h4 {
-    font-size: 24px;
-    font-family: var(--font-text);
-    padding: 0.65rem 1.5rem;
-    padding-top: 1rem;
-    letter-spacing: -0.5px;
-}
-
-.AnimationMenuContent li {
-    padding: 0.7rem 1.5rem;
+#getStartedContent {
+    z-index: 11;
+    position: fixed;   
+    width: 600px;
+    height: 360px; 
+    background-color: #181818;
+    border: var(--border);
+    border-radius: 12px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-}
-
-.AnimationMenuContent li a,
-.AnimationMenuContent li span {
-    color: var(--theme-fg);
-    font-size: 14px;
-    font-weight: 400;
-    display: flex;
-    align-items: center;
-}
-
-.AnimationMenuContent li span {
-    filter: brightness(1.2);
-    background-color: var(--HoverColor);
-    padding: 0.2rem 0.7rem;
-    border-radius: 2px;
-}
-
-.AnimationMenuContent li:hover {
-    background-color: var(--HoverColor);
-    cursor: pointer;
-}
-
-.AnimationMenuContent li:active {
-    background-color: var(--SoftHoverColor);
-    cursor: pointer;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .Textintro {
     height: calc(100vh - 40px);
     align-content: center;
-}
-
-.TextIntroIMAGE {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.Textintro svg {
-    display: block;
-    width: 60px;
-    height: auto;
-}
-
-.TextIntroImageLogoLightmode_ThemeChenge {
-    display: var(--LightmodeToggleButtons);
-}
-
-.TextIntroImageLogoDarkmode_DefaultLogo {
-    display: var(--DarkmodeToggleButtons);
 }
 
 .Textintro h1 {
@@ -558,38 +496,6 @@ html {
         top: 0;
     }
 }
-
-
-
-/* Define Aniation when clicked */
-
-.AnimationForTodolistCard {
-    background-color: var(--CardMainColor);
-    width: 287px;
-    height: 200px;
-    border: var(--border);
-    position: absolute;
-    left: 30px;
-    top: 140px;
-    border-radius: 16px;
-    transition: var(--transitionEaseNormal);
-    opacity: 0;
-}
-
-.AnimBackgroundBlur {
-    width: 100%;
-    height: 100vh;
-    background-color: var(--BackgroundBlurColor);
-    backdrop-filter: blur(20px);
-    z-index: 9;
-    position: fixed;
-    top: 0;
-    transition: var(--MenuEaseTransition);
-    /* Set value */
-    display: none;
-    opacity: 0;
-}
-
 
 .tabs-container {
     display: flex;

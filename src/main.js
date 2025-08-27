@@ -586,10 +586,10 @@ app.whenReady().then(async () => {
       const { width: screenWidth, height: screenHeight } = display.workAreaSize;
       const aspectRatio = 16 / 9;
 
+      // const baseWidth = 860;
+      // const baseHeight = 800;
       const baseWidth = 730;
       const baseHeight = 840;
-      // const baseWidth = 1024;
-      // const baseHeight = 810;
       const scaleFactor = Math.min(screenWidth / 1280, screenHeight / 720);
       let width = Math.min(baseWidth, Math.floor(screenWidth * 0.7));
       let height = Math.min(baseHeight, Math.floor(screenHeight * 0.7));

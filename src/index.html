@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="./CSS/DefaultComp.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="./CSS/Navbar.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="./CSS/index.css" crossorigin="anonymous" />
-    <link rel="stylesheet" href="./CSS/CSS_MoreOptionsStyle/OptionsStyle.css" crossorigin="anonymous" />
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -85,8 +84,7 @@
                             <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
                         </svg>Create New Workspace</a>
                 </li>
-                <li><a href="javascript:void(0)"
-                        id="NewWindow_Mintputs">
+                <li><a href="javascript:void(0)" id="NewWindow_Mintputs">
                         <svg width="20" height="20" viewBox="0 0 384 383" fill="none" xmlns="http://www.w3.org/2000/svg"
                             style="translate: 2.25px -1px;">
                             <rect x="153" y="343" width="79" height="40" fill="currentColor" />
@@ -143,15 +141,6 @@
                         </svg>
                         Settings</a>
                 </li>
-                <li class="BottomLinks" id="AppOptions">
-                    <a href="javascript:void(0)">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                            fill="var(--theme-links)">
-                            <path
-                                d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z" />
-                        </svg>
-                        App Options</a>
-                </li>
                 <li class="BottomLinks" id="NewWindow_AboutMint">
                     <a href="#" class="about-trigger">
                         <svg xmlns="http://www.w3.org/2000/svg" height="auto" viewBox="0 -960 960 960" width="24px"
@@ -165,37 +154,28 @@
         </div>
     </div>
 
-    <!-- Menu Animation drawer -->
-    <div class="AnimationMenuOptions" id="AnimationForMenuOptions">
-        <div class="AnimationMenuContent" id="AnimationMenuContent">
-            <h4>Pick your options</h4>
-            <li>
-                <a href="javascript:void(0)">Toggle devTools</a>
-                <span id="KeysToggleToggleDevtools"></span>
-            </li>
-            <li>
-                <a href="javascript:void(0)">Open new window</a>
-                <span id="KeysToggleToggleNewWindow"></span>
-            </li>
-            <li>
-                <a href="javascript:void(0)">Refresh</a>
-                <span id="KeysToggleToggleRefresh"></span>
-            </li>
-        </div>
-    </div>
+    <div id="getStartedContent" class="electron-only">
+        <div class="Textintro" id="content">
 
-    <div class="MoreOptions" id="MoreOptions">
-        <div class="MoreOptionsNavbar">
-            <div class="MoreOptionsNavbarContent">
-                <div class="MoreOption_NavCon_Nav">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                        fill="var(--theme-links)" id="MoreOptionsIcon">
-                        <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
-                    </svg>
-                    <h4>App options</h4>
+            <h1>Get started with <br>EssentialAPP</h1>
+            <div class="TextintroBTN">
+                <button id="getStartedBTN">Continue</button>
+            </div>
+        </div>
+
+        <div class="contentGuide2" id="contentGuide2">
+            <div class="GuideText">
+                <div id="scrambled-text" style="margin-bottom: 45px;"></div>
+            </div>
+            <div class="wrapperButtonConti" id="ScrambledBTN">
+                <div class="ButtonGonext">
+                    <div class="button-container">
+                        <button class="send-button js-send-button"></button>
+                    </div>
                 </div>
             </div>
         </div>
+        <!-- End getStarted -->
     </div>
 
     <!-- For want to debug getstarted -->
@@ -207,115 +187,6 @@
     <div class="content">
 
         <div class="electron-only">
-            <div id="getStartedContent">
-                <div class="Textintro" id="content">
-                    <div class="TextIntroIMAGE">
-
-                        <div class="TextIntroImageLogoDarkmode_DefaultLogo">
-                            <svg width="293" height="375" viewBox="0 0 293 375" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g clip-path="url(#clip0_461_102)">
-                                    <mask id="mask0_461_102" style="mask-type:luminance" maskUnits="userSpaceOnUse"
-                                        x="0" y="0" width="293" height="375">
-                                        <path d="M293 0H0V375H293V0Z" fill="white" />
-                                    </mask>
-                                    <g mask="url(#mask0_461_102)">
-                                        <path
-                                            d="M106.985 53.6871C106.985 24.0365 83.0358 0 53.4927 0C23.9495 0 0 24.0365 0 53.6871C0 83.3376 23.9495 107.374 53.4927 107.374C83.0358 107.374 106.985 83.3376 106.985 53.6871Z"
-                                            fill="white" />
-                                        <path
-                                            d="M216.659 0H131.178C125.24 0 120.426 4.83146 120.426 10.7914V96.5827C120.426 102.543 125.24 107.374 131.178 107.374H216.659C222.597 107.374 227.411 102.543 227.411 96.5827V10.7914C227.411 4.83146 222.597 0 216.659 0Z"
-                                            fill="white" />
-                                        <path d="M293.001 0H242.465V107.374H293.001V0Z" fill="white" />
-                                        <path d="M106.985 128.957H0V236.331H106.985V128.957Z" fill="white" />
-                                        <path
-                                            d="M80.1046 207.734H26.8807C12.0349 207.734 0 219.813 0 234.712V253.597C0 268.497 12.0349 280.576 26.8807 280.576H80.1046C94.9504 280.576 106.985 268.497 106.985 253.597V234.712C106.985 219.813 94.9504 207.734 80.1046 207.734Z"
-                                            fill="white" />
-                                        <path
-                                            d="M0 329.137C0 314.237 12.0349 302.158 26.8807 302.158H45.6972C60.5429 302.158 72.578 314.237 72.578 329.137V375H26.8807C12.0349 375 0 362.921 0 348.022V329.137Z"
-                                            fill="white" />
-                                        <path
-                                            d="M72.5781 302.698H155.371C162.497 302.698 168.274 308.495 168.274 315.647V362.05C168.274 369.202 162.497 375 155.371 375H72.5781V302.698Z"
-                                            fill="white" />
-                                        <path
-                                            d="M293.001 302.143H204.631C187.685 302.143 173.947 318.293 173.947 338.214C173.947 358.136 187.685 374.286 204.631 374.286L293.001 375V338.214V302.143Z"
-                                            fill="white" />
-                                        <path
-                                            d="M293 163.571H135.648C128.058 163.571 121.905 169.777 121.905 177.433V219.71C121.905 227.366 128.058 233.571 135.648 233.571H293V163.571Z"
-                                            fill="white" />
-                                    </g>
-                                </g>
-                                <defs>
-                                    <clipPath id="clip0_461_102">
-                                        <rect width="293" height="375" fill="white" />
-                                    </clipPath>
-                                </defs>
-                            </svg>
-                        </div>
-
-                        <div class="TextIntroImageLogoLightmode_ThemeChenge">
-                            <svg width="293" height="375" viewBox="0 0 293 375" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g clip-path="url(#clip0_461_102)">
-                                    <mask id="mask0_461_102" style="mask-type:luminance" maskUnits="userSpaceOnUse"
-                                        x="0" y="0" width="293" height="375">
-                                        <path d="M293 0H0V375H293V0Z" fill="black" />
-                                    </mask>
-                                    <g mask="url(#mask0_461_102)">
-                                        <path
-                                            d="M106.985 53.6871C106.985 24.0365 83.0358 0 53.4927 0C23.9495 0 0 24.0365 0 53.6871C0 83.3376 23.9495 107.374 53.4927 107.374C83.0358 107.374 106.985 83.3376 106.985 53.6871Z"
-                                            fill="black" />
-                                        <path
-                                            d="M216.659 0H131.178C125.24 0 120.426 4.83146 120.426 10.7914V96.5827C120.426 102.543 125.24 107.374 131.178 107.374H216.659C222.597 107.374 227.411 102.543 227.411 96.5827V10.7914C227.411 4.83146 222.597 0 216.659 0Z"
-                                            fill="black" />
-                                        <path d="M293.001 0H242.465V107.374H293.001V0Z" fill="black" />
-                                        <path d="M106.985 128.957H0V236.331H106.985V128.957Z" fill="black" />
-                                        <path
-                                            d="M80.1046 207.734H26.8807C12.0349 207.734 0 219.813 0 234.712V253.597C0 268.497 12.0349 280.576 26.8807 280.576H80.1046C94.9504 280.576 106.985 268.497 106.985 253.597V234.712C106.985 219.813 94.9504 207.734 80.1046 207.734Z"
-                                            fill="black" />
-                                        <path
-                                            d="M0 329.137C0 314.237 12.0349 302.158 26.8807 302.158H45.6972C60.5429 302.158 72.578 314.237 72.578 329.137V375H26.8807C12.0349 375 0 362.921 0 348.022V329.137Z"
-                                            fill="black" />
-                                        <path
-                                            d="M72.5781 302.698H155.371C162.497 302.698 168.274 308.495 168.274 315.647V362.05C168.274 369.202 162.497 375 155.371 375H72.5781V302.698Z"
-                                            fill="black" />
-                                        <path
-                                            d="M293.001 302.143H204.631C187.685 302.143 173.947 318.293 173.947 338.214C173.947 358.136 187.685 374.286 204.631 374.286L293.001 375V338.214V302.143Z"
-                                            fill="black" />
-                                        <path
-                                            d="M293 163.571H135.648C128.058 163.571 121.905 169.777 121.905 177.433V219.71C121.905 227.366 128.058 233.571 135.648 233.571H293V163.571Z"
-                                            fill="black" />
-                                    </g>
-                                </g>
-                                <defs>
-                                    <clipPath id="clip0_461_102">
-                                        <rect width="293" height="375" fill="white" />
-                                    </clipPath>
-                                </defs>
-                            </svg>
-                        </div>
-
-                    </div>
-                    <h1>Get started with <br>EssentialAPP</h1>
-                    <div class="TextintroBTN">
-                        <button id="getStartedBTN">Continue</button>
-                    </div>
-                </div>
-
-                <div class="contentGuide2" id="contentGuide2">
-                    <div class="GuideText">
-                        <div id="scrambled-text" style="margin-bottom: 45px;"></div>
-                    </div>
-                    <div class="wrapperButtonConti" id="ScrambledBTN">
-                        <div class="ButtonGonext">
-                            <div class="button-container">
-                                <button class="send-button js-send-button"></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- End getStarted -->
-            </div>
 
             <div class="canvas-container" id="canvasContainer">
                 <div class="canvas-areas" id="canvasAreas"></div>
@@ -367,17 +238,6 @@
 
         </div>
 
-        <!-- Animation drawer -->
-        <div class="Anim">
-            <div class="AnimationForTodolistCard" id="AnimationForTodolistCard">
-                <div class="AnimTodolistCardContent">
-                    <h4>Options for Todolist</h4>
-                </div>
-            </div>
-        </div>
-
-        <div class="AnimBackgroundBlur" id="AnimBackgroundBlur"></div>
-
         <!-- BottomNavbar -->
         <div id="app"></div>
 
@@ -387,29 +247,11 @@
     <script src="./frontendJS/Mainpage.js" defer></script>
     <script src="./frontendJS/Getstart.js" defer></script>
     <script src="./frontendJS/EssentialAPP_OptionsFeatured.js" defer></script>
-    <script src="./frontendJS/EssentialAPP_MenuOptions.js" defer></script>
     <script src="./frontendJS/BottomNavbar.js" type="module" defer></script>
     <script type="module">
         import { initTheme, listenThemeSync } from './Essential_Pages/Settings_Config/theme.js';
         initTheme();
         listenThemeSync();
-    </script>
-    <script>
-        // Typing animation
-        document.addEventListener('DOMContentLoaded', function () {
-            const text = "Recommendations Apps";
-            const typingText = document.querySelector('#TextCards .typing-text');
-            let index = 0;
-
-            function typeText() {
-                if (index < text.length) {
-                    typingText.textContent += text.charAt(index);
-                    index++;
-                    setTimeout(typeText, 50);
-                }
-            }
-            typeText();
-        });
     </script>
 </body>
 
