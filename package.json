@@ -40,9 +40,9 @@
     "@electron-forge/plugin-fuses": "^7.8.0",
     "@electron-forge/publisher-github": "^7.8.0",
     "@electron/fuses": "^1.8.0",
-    "electron": "^36.1.0",
-    "bun-types": "latest",
-    "bun": "latest"
+    "bun": "latest",
+    "bun-types": "^1.2.21",
+    "electron": "^36.1.0"
   },
   "productName": "EssentialAPP",
   "trustedDependencies": ["bun"],

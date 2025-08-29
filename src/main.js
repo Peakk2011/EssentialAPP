@@ -5,6 +5,87 @@ const v8 = require('v8');
 const os = require('os');
 const { performance } = require('perf_hooks');
 const { execSync } = require('child_process');
+const crypto = require('crypto');
+
+// File Synchronous Cache Manager
+
+class CacheManager {
+  constructor(cacheDir, maxAge = 86400000 /* 24 hours */) {
+    this.cacheDir = cacheDir;
+    this.maxAge = maxAge;
+
+    if (!fs.existsSync(this.cacheDir)) {
+      fs.mkdirSync(this.cacheDir, { recursive: true });
+    }
+  }
+
+  _getCacheKey(url) {
+    return crypto.createHash('md5').update(url).digest('hex');
+  }
+
+  _getCachePath(url) {
+    return path.join(this.cacheDir, `${this._getCacheKey(url)}.html`);
+  }
+
+  async _isCacheValid(url) {
+    const cachePath = this._getCachePath(url);
+    try {
+      const stats = await fs.promises.stat(cachePath);
+      return (Date.now() - stats.mtime.getTime()) < this.maxAge;
+    } catch {
+      return false;
+    }
+  }
+
+  async set(url, content) {
+    const cachePath = this._getCachePath(url);
+    try {
+      await fs.promises.writeFile(cachePath, content, 'utf8');
+    } catch (err) {
+      console.error(`[CacheManager] Failed to write cache for ${url}:`, err);
+    }
+  }
+
+  async load(win, url) {
+    const isRemote = url.startsWith('http://') || url.startsWith('https://');
+    if (!isRemote) {
+      return loadFileWithCheck(win, url, 'local-file-load');
+    }
+
+    const cachePath = this._getCachePath(url);
+    if (await this._isCacheValid(url)) {
+      try {
+        await win.loadFile(cachePath);
+        return;
+      } catch (err) {
+        console.warn(`[Cache] Failed to load from disk cache, fetching from network.`, err);
+      }
+    }
+
+    try {
+      await win.loadURL(url);
+      win.webContents.once('dom-ready', async () => {
+        try {
+          const html = await win.webContents.executeJavaScript('document.documentElement.outerHTML');
+          await this.set(url, html);
+        } catch (err) {
+          console.warn(`[Cache] Could not save ${url} to cache after load:`, err.message);
+        }
+      });
+    } catch (networkErr) {
+      console.error(`[Cache] Network failed for ${url}:`, networkErr.message);
+      try {
+        await fs.promises.access(cachePath);
+        await win.loadFile(cachePath);
+      } catch (staleCacheErr) {
+        await handleError(win, networkErr, `network-and-cache-failure`);
+      }
+    }
+  }
+}
+
+const cacheManager = new CacheManager(path.join(app.getPath('userData'), 'PageCache'));
+
 const ContextMenu = require('./components/ContextMenu');
 const SettingsWindowsComponent = require('./components/WindowsSettings.js');
 
@@ -26,19 +107,19 @@ const STARTUP_CONFIG = {
 const PERFORMANCE_CONFIG = {
   startup: {
     scheduler: 'performance',
-    cpuUsageLimit: 75,
-    preloadTimeout: 1000,
-    gcInterval: 60000
+    cpuUsageLimit: 85,
+    preloadTimeout: 800,
+    gcInterval: 120000
   },
   memory: {
-    minFreeMemMB: 128,
-    maxHeapSize: Math.min(os.totalmem() * 0.6, 4096 * 1024 * 1024),
-    initialHeapSize: 256 * 1024 * 1024
+    minFreeMemMB: 256,
+    maxHeapSize: Math.min(os.totalmem() * 0.75, 6144 * 1024 * 1024),
+    initialHeapSize: 512 * 1024 * 1024
   },
   gpu: {
-    minVRAM: 128,
+    minVRAM: 256,
     preferHardware: true,
-    vsync: false
+    vsync: true
   }
 };
 
@@ -83,7 +164,10 @@ app.commandLine.appendSwitch('enable-features',
 );
 app.commandLine.appendSwitch('enable-zero-copy');
 app.commandLine.appendSwitch('enable-drdc');
-app.commandLine.appendSwitch('force-gpu-mem-available-mb', '1024');
+app.commandLine.appendSwitch('force-gpu-mem-available-mb', '2048');
+app.commandLine.appendSwitch('max_tiles_for_interest_area', '512');
+app.commandLine.appendSwitch('default-tile-width', '512');
+app.commandLine.appendSwitch('default-tile-height', '512');
 app.commandLine.appendSwitch('enable-features', 'UseOzonePlatform');
 app.commandLine.appendSwitch('enable-hardware-overlays', 'single-fullscreen,single-video,single-on-top-video');
 app.commandLine.appendSwitch('enable-gpu-memory-buffer-compositor');
@@ -95,13 +179,22 @@ app.commandLine.appendSwitch('disable-frame-rate-limit');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 
 app.commandLine.appendSwitch('js-flags',
-  '--max-old-space-size=2048 ' +
-  '--optimize-for-size ' +
-  '--max-inlined-source-size=512 ' +
-  '--gc-interval=100000 ' +
-  '--stack-size=500 ' +
-  '--use-strict'
+  '--max-old-space-size=4096 ' +
+  '--initial-old-space-size=1024 ' +
+  '--optimize-for-size=false ' +
+  '--gc-interval=300000 ' +
+  '--stack-size=2048 ' +
+  '--turbo-fast-api-calls'
 );
+
+// Animation-specific flags
+app.commandLine.appendSwitch('enable-features',
+  'CompositorThreadedScrollbarScrolling,' +
+  'PaintHolding,' +
+  'ThreadedScrolling,' +
+  'ScrollUnification'
+);
+
 v8.setFlagsFromString('--max_old_space_size=2048');
 v8.setFlagsFromString('--optimize_for_size');
 v8.setFlagsFromString('--max_inlined_source_size=512');
@@ -131,62 +224,149 @@ const memoryManager = {
 };
 
 const enhancedMemoryManager = {
-  ...memoryManager,
   getMemoryInfo: () => {
     const free = os.freemem();
     const total = os.totalmem();
+    const usage = process.memoryUsage();
     return {
       free,
       total,
-      usage: ((total - free) / total) * 100
+      usage: ((total - free) / total) * 100,
+      heapUsed: usage.heapUsed,
+      heapTotal: usage.heapTotal,
+      external: usage.external
     };
   },
 
-  optimizeHeap: () => {
-    if (global.gc) {
-      performance.mark('gc-start');
-      global.gc();
-      performance.mark('gc-end');
-      performance.measure('Garbage Collection', 'gc-start', 'gc-end');
-    }
+  smartGC: () => {
+    const memInfo = enhancedMemoryManager.getMemoryInfo();
+    const heapUsagePercent = (memInfo.heapUsed / memInfo.heapTotal) * 100;
 
-    v8.setFlagsFromString('--max_old_space_size=' + Math.floor(PERFORMANCE_CONFIG.memory.maxHeapSize / (1024 * 1024)));
-    v8.setFlagsFromString('--initial_old_space_size=' + Math.floor(PERFORMANCE_CONFIG.memory.initialHeapSize / (1024 * 1024)));
+    if (heapUsagePercent > 80 || memInfo.usage > 85) {
+      if (global.gc) {
+        global.gc(true); // incremental
+        console.log(`[Memory] Incremental GC triggered - Heap: ${heapUsagePercent.toFixed(1)}%`);
+      }
+    }
   },
 
-  monitorMemory: () => {
-    const memInfo = enhancedMemoryManager.getMemoryInfo();
-    if (memInfo.free < PERFORMANCE_CONFIG.memory.minFreeMemMB * 1024 * 1024) {
-      enhancedMemoryManager.optimizeHeap();
+  animationPool: {
+    pool: [],
+    maxSize: 100,
+
+    get() {
+      return this.pool.pop() || {};
+    },
+
+    release(obj) {
+      if (this.pool.length < this.maxSize) {
+        Object.keys(obj).forEach(key => delete obj[key]);
+        this.pool.push(obj);
+      }
     }
+  },
+
+  // - memory footprint DOM
+  optimizeDOM: (win) => {
+    if (!win || win.isDestroyed()) return;
+
+    win.webContents.executeJavaScript(`
+      (function() {
+        // ลบ unused CSS rules
+        Array.from(document.styleSheets).forEach(sheet => {
+          try {
+            if (sheet.cssRules) {
+              const usedRules = [];
+              Array.from(sheet.cssRules).forEach(rule => {
+                if (document.querySelector(rule.selectorText)) {
+                  usedRules.push(rule);
+                }
+              });
+            }
+          } catch(e) {} // CORS issues
+        });
+        
+        // Cleanup unused DOM nodes
+        document.querySelectorAll('[data-cleanup="true"]').forEach(el => {
+          if (!el.offsetParent && el.style.display !== 'none') {
+            el.remove();
+          }
+        });
+        
+        // Optimize image loading
+        document.querySelectorAll('img[data-src]').forEach(img => {
+          if (img.getBoundingClientRect().top < window.innerHeight + 100) {
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+          }
+        });
+      })();
+    `);
   }
 };
 
-setInterval(enhancedMemoryManager.monitorMemory, PERFORMANCE_CONFIG.startup.gcInterval);
-enhancedMemoryManager.optimizeHeap();
+setInterval(enhancedMemoryManager.smartGC, PERFORMANCE_CONFIG.startup.gcInterval);
+memoryManager.optimizeMemory();
 
 const fpsManager = {
-  HIGH_FPS: 60,
-  LOW_FPS: 15,
+  HIGH_FPS: 120,
+  MEDIUM_FPS: 60,
+  LOW_FPS: 30,
 
   setFPS: (win, fps) => {
     if (!win || win.isDestroyed()) return;
 
-    win.webContents.setFrameRate(fps);
+    win.webContents.executeJavaScript(`
+      window.targetFPS = ${fps};
+      if (window.animationController) {
+        window.animationController.updateFPS(${fps});
+      }
+    `);
 
     if (fps === fpsManager.LOW_FPS) {
       win.webContents.setBackgroundThrottling(true);
-      app.commandLine.appendSwitch('force-renderer-accessibility', false);
     } else {
       win.webContents.setBackgroundThrottling(false);
-      app.commandLine.appendSwitch('force-renderer-accessibility', true);
     }
   },
 
-  applyToAllWindows: (fps) => {
-    BrowserWindow.getAllWindows().forEach(win => {
-      fpsManager.setFPS(win, fps);
-    });
+  // Adaptive FPS
+  adaptiveFPS: (win) => {
+    if (!win || win.isDestroyed()) return;
+
+    win.webContents.executeJavaScript(`
+      (function() {
+        let frameCount = 0;
+        let lastTime = performance.now();
+        
+        function checkPerformance() {
+          const now = performance.now();
+          const delta = now - lastTime;
+          frameCount++;
+          
+          if (delta >= 1000) {
+            const fps = Math.round((frameCount * 1000) / delta);
+            
+            // Auto adjust based on actual performance
+            if (fps < 30 && window.targetFPS > 60) {
+              window.targetFPS = 60;
+            } else if (fps > 55 && window.targetFPS < 120) {
+              window.targetFPS = 120;
+            }
+            
+            frameCount = 0;
+            lastTime = now;
+          }
+          
+          requestAnimationFrame(checkPerformance);
+        }
+        
+        if (!window.performanceMonitor) {
+          window.performanceMonitor = true;
+          checkPerformance();
+        }
+      })();
+    `);
   }
 };
 
@@ -312,8 +492,7 @@ const BASE_WINDOW_CONFIG = {
       defaultFontSize: 16,
       partition: 'persist:main',
       webviewTag: false,
-      clearCache: true,
-      cache: false
+      cache: true
     }
   }
 };
@@ -343,6 +522,31 @@ const PreferencesWindows = {
     hardwareAcceleration: true
   }
 }
+
+const FIRST_TIME_CONFIG = {
+  getStartedWindow: null,
+  windowConfig: {
+    width: 480,
+    height: 640,
+    frame: false,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      height: 39,
+      color: "0F0F0F",
+      symbolColor: "FFF",
+    },
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
+    center: true,
+    show: false,
+    backgroundColor: '#0f0f0f',
+    webPreferences: {
+      ...PreferencesWindows.DefinePreload,
+      partition: 'persist:getstarted'
+    }
+  }
+};
 
 const Essential_links = {
   home: 'index.html',
@@ -392,7 +596,7 @@ app.on('browser-window-blur', () => {
   setTimeout(() => {
     focusedWindow = getFocusedWindow();
     if (!focusedWindow) {
-      enhancedMemoryManager.monitorMemory();
+      enhancedMemoryManager.smartGC();
     }
   }, 5000);
 });
@@ -534,10 +738,11 @@ process.on('unhandledRejection', async (reason, promise) => {
 });
 
 const userDataPath = app.getPath('userData');
+// Another cache function for main appiclation
 const setupCachePermissions = () => {
   try {
     if (process.platform === 'win32') {
-      const cachePath = path.join(userDataPath, 'Cache');
+      const cachePath = path.join(userDataPath, 'PublicCache EssentialAPP');
       const gpuCachePath = path.join(userDataPath, 'GPUCache');
 
       [cachePath, gpuCachePath].forEach(dir => {
@@ -552,6 +757,377 @@ const setupCachePermissions = () => {
   }
 };
 
+const isFirstTimeLaunch = () => {
+  try {
+    const userDataPath = app.getPath('userData');
+    const flagPath = path.join(userDataPath, 'first_launch_complete');
+    const result = !fs.existsSync(flagPath);
+    // console.log('[First Launch Check]', { flagPath, exists: fs.existsSync(flagPath), isFirstTime: result });
+    return result;
+  } catch (err) {
+    console.warn('Could not check first launch status:', err);
+    return true;
+  }
+};
+
+// Mark first launch as complete
+const markFirstLaunchComplete = () => {
+  try {
+    const userDataPath = app.getPath('userData');
+    const flagPath = path.join(userDataPath, 'first_launch_complete');
+    fs.writeFileSync(flagPath, new Date().toISOString());
+  } catch (err) {
+    console.warn('Could not mark first launch complete:', err);
+  }
+};
+
+// Create the GetStarted window
+
+const createGetStartedWindow = async () => {
+  try {
+    FIRST_TIME_CONFIG.getStartedWindow = await createWindowWithPromise({
+      ...FIRST_TIME_CONFIG.windowConfig,
+      icon: getThemeIcon(),
+      show: true
+    });
+
+    const getStartedWindow = FIRST_TIME_CONFIG.getStartedWindow;
+
+    // Setup window cleanup
+    setupWindowCleanup(getStartedWindow);
+    setupWindowFPSHandlers(getStartedWindow);
+    fpsManager.setFPS(getStartedWindow, fpsManager.HIGH_FPS);
+
+    // Ensure the GetStarted HTML file exists
+    const getStartedPath = path.join(__dirname, 'Essential_Pages/GetStarted.html');
+    if (!fs.existsSync(getStartedPath)) {
+      console.error('[GetStarted] File not found:', getStartedPath);
+      const defaultHTML = `
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Started With EssentialAPP</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .welcome-container {
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 { color: #ffffff; margin-bottom: 20px; }
+        p { color: #cccccc; line-height: 1.6; margin-bottom: 30px; }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+        }
+        button:hover { background: #005a9e; }
+        .skip-btn { background: #666; }
+        .skip-btn:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <h1>Welcome to EssentialAPP</h1>
+        <button onclick="completeSetup()">Get Started</button>
+        <button class="skip-btn" onclick="skipSetup()">Skip</button>
+    </div>
+    
+    <script>
+        async function completeSetup() {
+            try {
+                await window.electronAPI.invoke('get-started-complete');
+            } catch (err) {
+                console.error('Setup completion failed:', err);
+                window.close();
+            }
+        }
+        
+        async function skipSetup() {
+            try {
+                await window.electronAPI.invoke('skip-get-started');
+            } catch (err) {
+                console.error('Skip setup failed:', err);
+                window.close();
+            }
+        }
+        
+        // Auto-focus window
+        window.addEventListener('DOMContentLoaded', () => {
+            window.focus();
+        });
+    </script>
+</body>
+</html>`;
+
+      const dir = path.dirname(getStartedPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      fs.writeFileSync(getStartedPath, defaultHTML, 'utf8');
+      console.log('[GetStarted] Created default HTML file');
+    }
+
+    await loadFileWithCheck(
+      getStartedWindow,
+      'Essential_Pages/GetStarted.html',
+      'get-started-window'
+    );
+
+    getStartedWindow.webContents.once('dom-ready', () => {
+      console.log('[GetStarted] DOM ready, showing window');
+      getStartedWindow.show();
+      getStartedWindow.focus();
+      getStartedWindow.moveTop();
+
+      getStartedWindow.webContents.executeJavaScript(`
+        console.log('[GetStarted] Setting up localStorage...');
+        try {
+          localStorage.setItem('first_launch_date', new Date().toISOString());
+          
+          // Apply theme if available
+          const savedTheme = localStorage.getItem('app_theme') || 'dark';
+          if (window.titlebarAPI) {
+            window.titlebarAPI.setTheme(savedTheme);
+          }
+          
+          // Emit ready event
+          document.dispatchEvent(new CustomEvent('getstarted-ready'));
+          console.log('[GetStarted] Setup completed successfully');
+        } catch (err) {
+          console.error('GetStarted localStorage setup failed:', err);
+        }
+      `);
+    });
+
+    // Handle window closed event
+    getStartedWindow.on('closed', () => {
+      // console.log('[GetStarted] Window closed');
+      FIRST_TIME_CONFIG.getStartedWindow = null;
+    });
+
+    // Handle errors
+    getStartedWindow.webContents.on('did-fail-load', async (event, errorCode) => {
+      console.error('[GetStarted] Failed to load:', errorCode);
+      await handleError(getStartedWindow, new Error(`GetStarted page failed to load: ${errorCode}`), 'get-started-load');
+    });
+
+    // console.log('[GetStarted] Window created successfully');
+    return getStartedWindow;
+
+  } catch (err) {
+    console.error('[GetStarted] Creation failed:', err);
+    await handleError(null, err, 'get-started-window-creation');
+    throw err;
+  }
+};
+
+// Create debug utils function = DEBUG
+
+const resetFirstLaunch = () => {
+  try {
+    const userDataPath = app.getPath('userData');
+    const flagPath = path.join(userDataPath, 'first_launch_complete');
+    if (fs.existsSync(flagPath)) {
+      fs.unlinkSync(flagPath);
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error('[Debug] Reset first launch failed:', err);
+    return false;
+  }
+};
+
+const debugUtils = {
+  resetFirstLaunch: () => {
+    const success = resetFirstLaunch();
+    if (success) {
+      app.relaunch();
+      app.quit();
+    }
+    return { success };
+  },
+  clearAppCache: async () => {
+    try {
+      const ses = session.defaultSession;
+      await ses.clearCache();
+      await ses.clearStorageData();
+      app.relaunch();
+      app.quit();
+      return { success: true };
+    } catch (err) {
+      console.error('[Debug] Failed to clear app cache:', err);
+      return { success: false, error: err.message };
+    }
+  },
+  relaunchApp: () => {
+    console.log('[Debug] Relaunching app...');
+    app.relaunch();
+    app.quit();
+    return { success: true };
+  },
+  getMemoryInfo: () => {
+    const memoryInfo = enhancedMemoryManager.getMemoryInfo();
+    console.log('[Debug] Memory Info:', memoryInfo);
+    return memoryInfo;
+  },
+  forceGC: () => {
+    if (global.gc) {
+      global.gc(true);
+      return { success: true };
+    }
+    console.warn('[Debug] Garbage Collection is not exposed. Run with --expose-gc flag.');
+    return { success: false, error: 'GC not exposed.' };
+  }
+};
+
+ipcMain.handle('debug:reset-first-launch', () => debugUtils.resetFirstLaunch());
+ipcMain.handle('debug:clear-app-cache', async () => debugUtils.clearAppCache());
+ipcMain.handle('debug:relaunch-app', () => debugUtils.relaunchApp());
+ipcMain.handle('debug:get-memory-info', () => debugUtils.getMemoryInfo());
+ipcMain.handle('debug:force-gc', () => debugUtils.forceGC());
+
+const startupSequence = async () => {
+  performance.mark('startup-sequence-start');
+
+  try {
+    // console.log('[Startup] Checking first time launch...');
+    const isFirstTime = isFirstTimeLaunch();
+    // console.log('[Startup] Is first time:', isFirstTime);
+
+    if (isFirstTime) {
+      // console.log('[First Launch] Creating GetStarted window...');
+
+      // Create GetStarted window
+      await createGetStartedWindow();
+      // console.log('[First Launch] GetStarted window created');
+
+      // Lazy load main window in background
+      // console.log('[First Launch] Creating main window (hidden)...');
+      mainWindow = await createWindowWithPromise({
+        ...WINDOW_CONFIG.common,
+        ...WINDOW_CONFIG.default,
+        icon: getThemeIcon(),
+        minWidth: WINDOW_CONFIG.min.width,
+        minHeight: WINDOW_CONFIG.min.height,
+        show: false,
+        webPreferences: {
+          ...PreferencesWindows.DefinePreload
+        }
+      });
+
+      // Setup main window but don't show it yet
+      setupWindowFPSHandlers(mainWindow);
+      setupWindowCleanup(mainWindow);
+
+    } else {
+      // console.log('[Regular Launch] Creating main window...');
+      await createMainWindow();
+    }
+
+  } catch (err) {
+    // console.error('[Startup Sequence] Error:', err);
+    // if error show main window instend
+    if (!mainWindow) {
+      // console.log('[Startup] Fallback to main window');
+      await createMainWindow();
+    } else {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  }
+
+  performance.mark('startup-sequence-end');
+  performance.measure('Startup Sequence', 'startup-sequence-start', 'startup-sequence-end');
+};
+
+// IPC for GetStarted window
+
+ipcMain.handle('get-started-complete', async (event) => {
+  try {
+    // Mark first launch as complete
+    markFirstLaunchComplete();
+
+    if (FIRST_TIME_CONFIG.getStartedWindow && !FIRST_TIME_CONFIG.getStartedWindow.isDestroyed()) {
+      FIRST_TIME_CONFIG.getStartedWindow.close();
+      FIRST_TIME_CONFIG.getStartedWindow = null;
+      console.log('[GetStarted] Window closed');
+    }
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      // Set the flag on DOM ready
+      mainWindow.webContents.once('dom-ready', () => {
+        mainWindow.webContents.executeJavaScript(`
+          try {
+            localStorage.setItem('setup_completed', 'true');
+            console.log('[Main] Setup flag set in localStorage on dom-ready.');
+          } catch (err) {
+            console.error('Main window localStorage setup failed:', err);
+          }
+        `).catch(err => console.error('JS injection for setup flag failed:', err));
+      });
+
+      // Now load the content. The 'dom-ready' listener above will fire when it's loaded.
+      await loadFileWithCheck(mainWindow, Essential_links.home, 'main-window-final-load');
+
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
+      console.error('[GetStarted] Main window not available, creating new one');
+      await createMainWindow();
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('[Get Started Complete] Error:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('is-first-time-launch', () => {
+  return isFirstTimeLaunch();
+});
+
+ipcMain.handle('skip-get-started', async (event) => {
+  return await ipcMain.handle('get-started-complete')(event);
+});
+
+const onWindowAllClosed = () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+};
+
+ipcMain.handle('restart-setup', async () => {
+  app.removeListener('window-all-closed', onWindowAllClosed);
+  BrowserWindow.getAllWindows().forEach(win => win.close());
+  mainWindow = null;
+  FIRST_TIME_CONFIG.getStartedWindow = null;
+  resetFirstLaunch();
+  await startupSequence();
+  app.on('window-all-closed', onWindowAllClosed);
+  return { success: true };
+});
+
 app.whenReady().then(async () => {
   performance.mark('app-start');
 
@@ -564,7 +1140,6 @@ app.whenReady().then(async () => {
 
     const ses = session.defaultSession;
     await Promise.all([
-      ses.clearCache(),
       ses.clearCodeCaches({ urls: [] })
     ]);
 
@@ -618,10 +1193,10 @@ app.whenReady().then(async () => {
     centerX = Math.floor((screenWidth - WINDOW_CONFIG.default.width) / 2);
     centerY = Math.floor((screenHeight - WINDOW_CONFIG.default.height) / 2);
 
-    await createWindow();
+    await startupSequence();
     app.on('activate', async () => {
       if (BrowserWindow.getAllWindows().length === 0) {
-        await createWindow();
+        await startupSequence();
       }
     });
 
@@ -671,7 +1246,7 @@ app.whenReady().then(async () => {
     app.on('browser-window-blur', () => {
       setTimeout(() => {
         if (!getFocusedWindow()) {
-          enhancedMemoryManager.monitorMemory();
+          enhancedMemoryManager.smartGC();
         }
       }, 5000);
     });
@@ -721,11 +1296,7 @@ app.whenReady().then(async () => {
   process.title = "Essential App";
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
+app.on('window-all-closed', onWindowAllClosed);
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
@@ -744,7 +1315,7 @@ const setupWindowCleanup = (win) => {
   });
 };
 
-const createWindow = async () => {
+const createMainWindow = async () => {
   try {
     let originalBounds = null;
     mainWindow = await createWindowWithPromise({
@@ -773,6 +1344,38 @@ const createWindow = async () => {
               console.error('Error loading theme:', err);
           }
       `);
+
+      // Lazy load images
+      mainWindow.webContents.executeJavaScript(`
+        (function() {
+          if ('IntersectionObserver' in window) {
+            const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  const image = entry.target;
+                  if (image.dataset.src) {
+                    image.src = image.dataset.src;
+                    image.removeAttribute('data-src');
+                  }
+                  observer.unobserve(image);
+                }
+              });
+            }, { rootMargin: '0px 0px 200px 0px' });
+
+            document.querySelectorAll('img[data-src]').forEach(img => {
+              lazyLoadObserver.observe(img);
+            });
+          } else {
+            // Fallback for older environments
+            document.querySelectorAll('img[data-src]').forEach(img => {
+              img.src = img.dataset.src;
+              img.removeAttribute('data-src');
+            });
+          }
+        })();
+      `);
+
+      // To execute the lazy load image <img data-src="path/to/your/image.png">
     });
 
     mainWindow.on('enter-full-screen', () => {
@@ -1026,26 +1629,10 @@ ipcMain.on('theme-response', (event, theme) => {
 
 const openedWindows = new Set();
 
+
 ipcMain.handle('open-mintputs-window', async (event, url) => {
   try {
     if (typeof url !== 'string') throw new Error('Invalid URL or file path');
-
-    const isRemote = url.startsWith('http://') || url.startsWith('https://');
-    let fullPath;
-
-    if (!isRemote) {
-      fullPath = path.join(__dirname, url);
-      try {
-        await fs.promises.access(fullPath, fs.constants.F_OK);
-      } catch {
-        throw new Error(`File not found: ${fullPath}`);
-      }
-    }
-
-    // Pre-warm
-    if (isRemote) {
-      require('dns').lookup(new URL(url).hostname, () => { });
-    }
 
     const mintputsWidth = 350;
     const mintputsHeight = 600;
@@ -1056,10 +1643,10 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
       titleBarStyle: 'hidden',
       titleBarOverlay: {
         height: 34,
-        color: '#0f0f0f', 
+        color: '#0f0f0f',
         symbolColor: '#f3f2f0',
       },
-      show: true,
+      show: false,
       backgroundColor: '#0f0f0f',
       title: 'Mintputs',
       minWidth: mintputsWidth,
@@ -1069,41 +1656,22 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
         contextIsolation: true,
         preload: path.join(__dirname, 'preload.js'),
         enableRemoteModule: false,
-        webSecurity: isRemote,
         backgroundThrottling: false,
         partition: 'persist:mintputs',
       }
     });
 
-    win.hide();
-
     openedWindows.add(win);
     win.on('closed', () => openedWindows.delete(win));
 
-    try {
-      if (isRemote) {
-        await win.loadURL(url, {
-          userAgent: 'Mintputs-App',
-          httpReferrer: '',
-        });
-      } else {
-        await win.loadFile(fullPath);
-      }
+    win.show();
 
-      win.show();
-
-    } catch (err) {
-      console.error('Failed to load Mintputs content:', err);
-      if (!win.isDestroyed()) {
-        win.close();
-      }
-      throw err;
-    }
+    // Use the new cache manager to load content asynchronously
+    setImmediate(() => cacheManager.load(win, url));
 
     return {
       success: true,
       windowId: win.id,
-      isReady: true
     };
 
   } catch (err) {
@@ -1130,7 +1698,8 @@ ipcMain.handle('create-new-window', async (event, path) => {
     setupWindowFPSHandlers(newWindow);
     fpsManager.setFPS(newWindow, fpsManager.HIGH_FPS);
 
-    await loadFileWithCheck(newWindow, path, 'ctrl-click-new-window');
+    await cacheManager.load(newWindow, path);
+
     return true;
   } catch (err) {
     await handleError(null, err, 'ctrl-click-window-creation');
@@ -1266,7 +1835,7 @@ ipcMain.handle('open-about-window', async () => {
       const TitlebarcssPath = path.join(__dirname, 'CSS', 'CSS_Essential_Pages', 'Titlebar.css');
       const TitlebarcssContent = fs.readFileSync(TitlebarcssPath, 'utf8');
 
-      await loadFileWithCheck(aboutWindow, Essential_links.about, 'about-window');
+      await cacheManager.load(aboutWindow, Essential_links.about);
 
       await aboutWindow.webContents.executeJavaScript(`
         (function() {
@@ -1320,56 +1889,6 @@ ipcMain.handle('open-about-window', async () => {
     await handleError(null, err, 'about-window-creation');
     return false;
   }
-});
-
-ipcMain.handle('open-settings', async () => {
-  const win = settingsComponent.window;
-  if (!win || !win.webContents) return false;
-
-  await win.webContents.executeJavaScript(`
-    (() => {
-      const oldTitlebar = document.getElementById('CenterTitlebar');
-      if (oldTitlebar) oldTitlebar.remove();
-
-      document.querySelectorAll('[data-temp], .titlebar-error, .titlebar-extra').forEach(el => el.remove());
-
-      document.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => {
-        if (el.textContent?.includes('Titlebar') || el.textContent?.includes('titlebar') || el.href?.includes('Titlebar')) {
-          el.remove();
-        }
-      });
-
-      const style = document.createElement('style');
-      style.textContent = \`
-        #CenterTitlebar, #CenterTitlebar .Title, #CenterTitlebar .Text, #CenterTitlebar .Title h2 {
-          border: none !important;
-          box-shadow: none !important;
-          background: none !important;
-          background-image: none !important;
-        }
-        #CenterTitlebar hr, #CenterTitlebar .line, #CenterTitlebar .border, #CenterTitlebar .divider {
-          display: none !important;
-          border: none !important;
-          box-shadow: none !important;
-        }
-      \`;
-      document.head.appendChild(style);
-
-      const titlebarHTML = \`
-        <div id="CenterTitlebar" class="electron-only">
-          <div class="Text">
-            <div class="Title">
-              <h2>Essential app settings</h2>
-            </div>
-          </div>
-        </div>
-      \`;
-      document.body.insertAdjacentHTML('afterbegin', titlebarHTML);
-    })();
-  `);
-
-  await win.webContents.send('open-settings-window', DialogWindows_Config);
-  return true;
 });
 
 app.on('browser-window-created', (event, win) => {
@@ -1436,4 +1955,13 @@ const updateAllWindowsTheme = (theme) => {
 
 ipcMain.on('titlebar-theme-change', (event, theme) => {
   updateAllWindowsTheme(theme);
+});
+
+// Error heading
+
+process.on('uncaughtException', (err) => {
+  console.error('[Uncaught Exception]', err);
+  if (err.message.includes('getstarted') || err.message.includes('GetStarted')) {
+    createMainWindow().catch(console.error);
+  }
 });

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essential App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            background: none;
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 0.75rem 2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 0.5rem 0;
+            transition: background 0.2s, color 0.2s;
+            border-radius: 100vmax;
+        }
+
+        button:hover {
+            background: #fff;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Welcome to EssentialAPP</h1>
+    <button id="getStartedBtn">Get Started</button>
+    <button id="skipBtn">Skip</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const getStartedBtn = document.getElementById('getStartedBtn');
+            const skipBtn = document.getElementById('skipBtn');
+
+            const handleAction = async (action) => {
+                getStartedBtn.style.display = 'none';
+                skipBtn.style.display = 'none';
+
+                if (window.electronAPI) {
+                    try {
+                        const result = await window.electronAPI.invoke(action);
+                        if (!result.success) {
+                            alert(`An error occurred: ${result.error || 'Unknown error'}`);
+                        }
+                    } catch (err) {
+                        console.error(`Error during ${action}:`, err);
+                        alert(`A critical error occurred.\nDetails: ${err.message}`);
+                        window.close();
+                    } finally {
+                        // fallback if window didn't close
+                        getStartedBtn.style.display = 'block';
+                        skipBtn.style.display = 'block';
+                    }
+                } else {
+                    alert('This feature is not available in the current environment.');
+                    getStartedBtn.style.display = 'block';
+                    skipBtn.style.display = 'block';
+                }
+            };
+
+            getStartedBtn.addEventListener('click', () => handleAction('get-started-complete'));
+            skipBtn.addEventListener('click', () => handleAction('skip-get-started'));
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAction('get-started-complete');
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleAction('skip-get-started');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

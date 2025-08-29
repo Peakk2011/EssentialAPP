@@ -48,8 +48,39 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openAboutWindow: () => ipcRenderer.invoke('open-about-window'),
     openSettingsWindow: () => ipcRenderer.invoke('open-settings-window'),
     openMintputsWindow: (url) => ipcRenderer.invoke('open-mintputs-window', url),
-    toggleDevTools: () => ipcRenderer.send('toggle-devtools')
+    toggleDevTools: () => ipcRenderer.send('toggle-devtools'),
+    send: (channel, data) => ipcRenderer.send(channel, data),
+    on: (channel, callback) => {
+        const subscription = (event, ...args) => callback(...args);
+        ipcRenderer.on(channel, subscription);
+        return () => {
+            ipcRenderer.removeListener(channel, subscription);
+        };
+    },
+    invoke: (channel, ...args) => ipcRenderer.invoke(channel, ...args),
+    restartSetup: () => ipcRenderer.invoke('restart-setup'),
+    utils: {
+        resetFirstLaunch: () => ipcRenderer.invoke('debug:reset-first-launch'),
+        clearAppCache: () => ipcRenderer.invoke('debug:clear-app-cache'),
+        relaunchApp: () => ipcRenderer.invoke('debug:relaunch-app'),
+        getMemoryInfo: () => ipcRenderer.invoke('debug:get-memory-info'),
+        forceGC: () => ipcRenderer.invoke('debug:force-gc')
+    }
 });
+
+contextBridge.exposeInMainWorld('dev', {
+    reset: () => ipcRenderer.invoke('debug:reset-first-launch'),
+    cache: () => ipcRenderer.invoke('debug:clear-app-cache'),
+    relaunch: () => ipcRenderer.invoke('debug:relaunch-app'),
+    mem: () => ipcRenderer.invoke('debug:get-memory-info'),
+    gc: () => ipcRenderer.invoke('debug:force-gc')
+});
+
+// await dev.reset();
+// await dev.cache(); 
+// await dev.relaunch();
+// await dev.mem().then(info => console.log(info));
+// await dev.gc();
 
 // Runtime Information Bridge
 contextBridge.exposeInMainWorld('runtimeInfo', {

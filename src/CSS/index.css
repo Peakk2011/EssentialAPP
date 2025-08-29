@@ -199,15 +199,30 @@ html {
     transition: all 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
     margin-top: 40px;
     z-index: 5;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 /* Get started with EssentialAPP */
 
 #getStartedContent {
-    z-index: 11;
-    position: fixed;   
+    z-index: 1000;
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    background-color: hsla(0, 0%, 6%, 0.850);
+    left: 0;
+    top: 0;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease-in-out;
+}
+
+.getstarted {
+    z-index: 1001;
+    position: fixed;
     width: 600px;
-    height: 360px; 
+    height: 360px;
     background-color: #181818;
     border: var(--border);
     border-radius: 12px;
@@ -220,11 +235,6 @@ html {
     justify-content: center;
     overflow: hidden;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-}
-
-.Textintro {
-    height: calc(100vh - 40px);
-    align-content: center;
 }
 
 .Textintro h1 {
@@ -277,224 +287,6 @@ html {
 .TextintroBTN button:active {
     background-size: 100% 100%;
     background-position-y: bottom;
-}
-
-#MainLINKS {
-    transition: cubic-bezier(0.215, 0.610, 0.355, 1) 0.3s;
-    opacity: 0;
-    display: none;
-    transform: translateX(-500px);
-}
-
-/* When clicked getstarted 1 this will show */
-
-.contentGuide2 {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    display: none;
-    transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.GuideText {
-    width: 395px;
-    overflow: hidden;
-    white-space: nowrap;
-    position: relative;
-}
-
-#scrambled-text {
-    display: inline-block;
-    font-size: 20px;
-    line-height: 1.5;
-    font-family: 'General Sans', "Segoe UI", sans-serif;
-}
-
-#ScrambledBTN {
-    opacity: 0;
-    display: none;
-    transition: all 0.3s ease;
-}
-
-.wrapperButtonConti {
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, 100%);
-    bottom: -20px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-.ButtonGonext {
-    max-width: 180px;
-}
-
-.button-container {
-    position: relative;
-}
-
-.send-button {
-    width: 100%;
-    height: 38px;
-    border-radius: 0.75rem;
-    margin: 0 auto;
-    font-size: 14px;
-    /* --TimeButtons: #222; */
-    background-color: var(--PrimaryButtonsColors);
-    border: none;
-    font-weight: 700;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: absolute;
-    bottom: 0;
-    overflow: hidden;
-}
-
-.send-button:hover {
-    filter: brightness(0.8);
-}
-
-.send-button::before {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: auto;
-    height: 38px;
-    content: "Continue to this app";
-    display: block;
-    line-height: 38px;
-    color: var(--color-fg);
-    transition: all 0.3s ease;
-    width: 100%;
-    z-index: 1;
-    font-weight: 400;
-}
-
-.send-button:focus {
-    outline: none;
-}
-
-.send-button--pressed {
-    -webkit-animation: sent 1.5s ease;
-    animation: sent 1.5s ease;
-}
-
-.send-button--pressed::before {
-    content: "Successfully to initial";
-    -webkit-animation: text 1.6s linear;
-    animation: text 1.6s linear;
-    color: #000;
-}
-
-.send-button--pressed::after {
-    content: "";
-    background-color: var(--theme-accent);
-    height: 100%;
-    width: 100%;
-    opacity: 1;
-    display: block;
-    border-radius: 0.75rem;
-    -webkit-animation: bar 1s cubic-bezier(0.47, 0, 0.745, 0.715);
-    animation: bar 1s cubic-bezier(0.47, 0, 0.745, 0.715);
-    position: absolute;
-    left: 0;
-    top: 0;
-}
-
-@-webkit-keyframes bar {
-    0% {
-        width: 0;
-        opacity: 0;
-    }
-
-    40% {
-        opacity: 1;
-    }
-
-    100% {
-        width: 100%;
-    }
-}
-
-@keyframes bar {
-    0% {
-        width: 0;
-        opacity: 0;
-    }
-
-    40% {
-        opacity: 1;
-    }
-
-    100% {
-        width: 100%;
-    }
-}
-
-@-webkit-keyframes sent {
-    0% {
-        height: 45px;
-    }
-
-    30%,
-    90% {
-        height: 22.5px;
-    }
-
-    100% {
-        height: 45px;
-    }
-}
-
-@keyframes sent {
-    0% {
-        height: 45px;
-    }
-
-    30%,
-    90% {
-        height: 22.5px;
-    }
-
-    100% {
-        height: 45px;
-    }
-}
-
-@-webkit-keyframes text {
-
-    0%,
-    90% {
-        top: 45px;
-    }
-
-    95% {
-        top: -10px;
-    }
-
-    100% {
-        top: 0;
-    }
-}
-
-@keyframes text {
-
-    0%,
-    90% {
-        top: 45px;
-    }
-
-    95% {
-        top: -10px;
-    }
-
-    100% {
-        top: 0;
-    }
 }
 
 .tabs-container {
@@ -789,5 +581,17 @@ html {
 
     .contentTEXT {
         display: none;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
