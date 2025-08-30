@@ -63,8 +63,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         resetFirstLaunch: () => ipcRenderer.invoke('debug:reset-first-launch'),
         clearAppCache: () => ipcRenderer.invoke('debug:clear-app-cache'),
         relaunchApp: () => ipcRenderer.invoke('debug:relaunch-app'),
-        getMemoryInfo: () => ipcRenderer.invoke('debug:get-memory-info'),
-        forceGC: () => ipcRenderer.invoke('debug:force-gc')
+        getMemoryInfo: () => ipcRenderer.invoke('debug:get-memory-info')
     }
 });
 
@@ -72,8 +71,7 @@ contextBridge.exposeInMainWorld('dev', {
     reset: () => ipcRenderer.invoke('debug:reset-first-launch'),
     cache: () => ipcRenderer.invoke('debug:clear-app-cache'),
     relaunch: () => ipcRenderer.invoke('debug:relaunch-app'),
-    mem: () => ipcRenderer.invoke('debug:get-memory-info'),
-    gc: () => ipcRenderer.invoke('debug:force-gc')
+    mem: () => ipcRenderer.invoke('debug:get-memory-info')
 });
 
 // await dev.reset();
@@ -95,10 +93,7 @@ contextBridge.exposeInMainWorld('electron', {
             ipcRenderer.on(channel, (event, ...args) => func(...args));
         }
     },
-    saveThemeToSettings: (theme) => ipcRenderer.send('save-theme', theme),
     theme: {
-        save: (theme) => ipcRenderer.invoke('save-theme', theme),
-        load: () => ipcRenderer.invoke('get-theme'),
         onChange: (callback) => {
             ipcRenderer.on('theme-changed', (_, theme) => callback(theme));
             return () => {
@@ -112,7 +107,6 @@ contextBridge.exposeInMainWorld('electron', {
 contextBridge.exposeInMainWorld('titlebarAPI', {
     setTheme: (theme) => {
         ipcRenderer.send('titlebar-theme-change', theme);
-        // บันทึก theme ลงใน localStorage ด้วย
         localStorage.setItem('app_theme', theme);
     },
     getCurrentTheme: () => localStorage.getItem('app_theme') || 'dark'

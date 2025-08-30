@@ -92,28 +92,18 @@ document.querySelectorAll('.NavContent').forEach(SettingsLinks => {
 // colors
 const themeColorSets = {
     dark: [
-        // Blue (cool)
-        '#D6E8FF', '#A9CEFF', '#7BB5FF', '#4E9CFF', '#2B83F2',
-        // Green (success)
-        '#CFF2CB', '#AEE2AA', '#8CD38A', '#6AC56B', '#4AB84E',
-        // Yellow (warning)
-        '#FFF3C2', '#FFE28B', '#FFD155', '#FFC02A', '#FFAF00',
-        // Brown (earthy)
-        '#E8DED1', '#D3C1A5', '#BEA580', '#A98961', '#947048',
-        // Red (error)
-        '#FFD6D6', '#FFA8A8', '#FF7A7A', '#FF4D4D', '#FF2E2E',
+        '#F6EACC', '#D1BBA7', '#CDBBA7', '#D7B996', '#d2a47d',
+        '#c1e3b9', '#aeccab', '#bbdac1', '#b7d7b3', '#cadcbc',
+        '#A6C5DA', '#9BB8CD', '#90ABC0', '#859EB3', '#7A91A7',
+        '#FFC0C0', '#FFA0A0', '#F68484', '#EB6F6F', '#E05A5A',
+        '#feeaeb', '#FFD6D6', '#f0c8c8', '#d4b6b6', '#fcceca',
     ],
     light: [
-        // Blue
-        '#BCD3E6', '#92B6DB', '#6B9CD1', '#4B86C4', '#2F70B7',
-        // Green
-        '#B7D8B3', '#93C69A', '#70B480', '#56A169', '#418D56',
-        // Yellow
-        '#E9D9AD', '#DFC17B', '#D7B259', '#CDA538', '#C19516',
-        // Brown
-        '#CBBFAB', '#B5A587', '#9F8B6B', '#8A7354', '#765D42',
-        // Red
-        '#E7BABA', '#CC9393', '#B36E6E', '#994B4B', '#802D2D',
+        '#A68E5F', '#8C6E4A', '#886E4A', '#8F6C3A', '#8A5A2F',
+        '#5F9C6F', '#4C7F5F', '#5A8F6F', '#578C5F', '#6A8F6A',
+        '#5A7A8C', '#4F6D7F', '#446072', '#3A5365', '#2F4658',
+        '#B24F4F', '#A03F3F', '#8F2F2F', '#7F1F1F', '#6F0F0F',
+        '#B29A9A', '#A08080', '#8F7070', '#7F6060', '#9F7878'
     ]
 };
 
@@ -184,12 +174,6 @@ if (savedAccent) {
 // define delay anim for NavContent
 document.querySelectorAll('.NavContent').forEach((nav, index) => {
     nav.style.setProperty('--delay', index);
-});
-
-// Back button for theme content
-BackBtnContentTheme.addEventListener("click", async () => {
-    BackBtnContentTheme.classList.remove('visible');
-    document.getElementById("ContentUpper_Theme").style.transform = "translateY(600px)";
 });
 
 document.getElementById('ResetColor').addEventListener('click', () => {

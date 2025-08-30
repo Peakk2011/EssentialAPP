@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, Menu, screen, nativeTheme, session } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, Menu, screen, nativeTheme, session, dialog } = require('electron');
 const path = require('node:path');
 const fs = require('fs');
 const v8 = require('v8');
@@ -12,7 +12,7 @@ const customAppCachePath = path.join(userDataPathForCache, 'EssentialAppCache');
 
 // The custom cache directory exists before the app needs it.
 if (!fs.existsSync(customAppCachePath)) {
-    fs.mkdirSync(customAppCachePath, { recursive: true });
+  fs.mkdirSync(customAppCachePath, { recursive: true });
 }
 
 // Disk cache to our custom, pre-created directory.
@@ -21,10 +21,6 @@ app.setPath('cache', customAppCachePath);
 // Single Instance Lock
 // This ensures that only one instance of your application can run at a time.
 // It prevents conflicts with cache files and other resources.
-
-if (!app.requestSingleInstanceLock()) {
-  app.quit();
-}
 
 // File Synchronous Cache Manager
 class CacheManager {
@@ -107,7 +103,7 @@ const cacheManager = new CacheManager(path.join(app.getPath('userData'), 'PageCa
 // End of cache manager
 
 const ContextMenu = require('./components/ContextMenu');
-const SettingsWindowsComponent = require('./components/WindowsSettings.js');
+let titlebarCssContent = '';
 
 const Essential = {
   name: "Essential App",
@@ -147,98 +143,28 @@ const optimizeCPUAffinity = () => {
   if (process.platform === 'win32') {
     const { exec } = require('child_process');
     const pid = process.pid;
-
     exec(`wmic process where ProcessID=${pid} CALL setpriority "high priority"`);
-
-    const cpuCount = os.cpus().length;
-    const performanceCores = Math.max(2, Math.floor(cpuCount / 4));
-    const affinityMask = ((1 << performanceCores) - 1) << (cpuCount - performanceCores);
-
-    try {
-      process.processManager?.setAffinity(affinityMask);
-    } catch (e) {
-      console.warn('CPU affinity setting not supported');
-    }
   }
 };
 
-// We group all feature flags into a single list for clarity and to avoid conflicts
-// Redundant, deprecated, or potentially harmful flags have been removed
-
-const enabledFeatures = [
-  // Performance & Rendering
-  'Metal', // (macOS) Use Metal graphics API
-  'NetworkServiceInProcess',
-  'ParallelDownloading',
-  'CanvasOptimizedRenderer',
-  'GpuRasterization',
-  'EnableDrDc',       // Display Compositor
-  'UseOzonePlatform', // (Linux) Wayland support
-  'EnableRawDraw',
-  'EnableAccelerated2dCanvas',
-  'EnableZeroCopy',
-  'EnableGpuMemoryBufferCompositor',
-  'EnableNativeGpuMemoryBuffers',
-  'EnableOopRasterization',
-
-  // Animation & Scrolling
-  'CompositorThreadedScrollbarScrolling',
-  'ThreadedScrolling',
-  'ScrollUnification',
-
-  // Loading & Caching
-  'PaintHolding',
-  'LazyFrameLoading',
-  'BackForwardCache',
-  'PreloadMediaEngagement',
-
-  // System Integration
-  'CalculateNativeWinOcclusion', // Windows
-].join(',');
-
-app.commandLine.appendSwitch('enable-features', enabledFeatures);
-
-// GPU & Video Acceleration
+// Simplified Command Line Switches for stability and performance.
+app.commandLine.appendSwitch('enable-features', 'NetworkServiceInProcess,ParallelDownloading,CanvasOopRasterization');
+app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors,MediaRouter');
 app.commandLine.appendSwitch('use-gl', 'desktop');
 app.commandLine.appendSwitch('enable-accelerated-mjpeg-decode');
 app.commandLine.appendSwitch('enable-accelerated-video');
 app.commandLine.appendSwitch('enable-hardware-overlays', 'single-fullscreen,single-video,single-on-top-video');
 
-// Forces GPU acceleration on systems that might be blacklisted.
-// Use with caution, as it can cause instability on some hardware.
-app.commandLine.appendSwitch('ignore-gpu-blocklist');
-app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors,MediaRouter');
-
 // V8 Engine Flags
-// These are set directly via the V8 API for better control and to avoid
-// conflicts with the 'js-flags' command line switch, which has been removed.
-v8.setFlagsFromString('--max_old_space_size=2048');
-v8.setFlagsFromString('--optimize_for_size');
-v8.setFlagsFromString('--max_inlined_source_size=512');
-v8.setFlagsFromString('--gc_interval=100000');
-v8.setFlagsFromString('--stack_size=500');
-v8.setFlagsFromString('--use_strict');
-
-const memoryManager = {
-  checkMemory: () => {
-    const usedMemory = process.memoryUsage();
-    const maxMemory = v8.getHeapStatistics().heap_size_limit;
-    const memoryUsagePercent = (usedMemory.heapUsed / maxMemory) * 100;
-
-    if (memoryUsagePercent > 75) {
-      global.gc && global.gc();
-      v8.setFlagsFromString('--max_old_space_size=2048');
-      app.commandLine.appendSwitch('js-flags', '--expose-gc --max-old-space-size=2048');
-    }
-  },
-
-  optimizeMemory: () => {
-    v8.setFlagsFromString('--optimize_for_size');
-    v8.setFlagsFromString('--max_old_space_size=2048');
-    v8.setFlagsFromString('--initial_old_space_size=256');
-    v8.setFlagsFromString('--max_semi_space_size=128');
-  }
-};
+// These are set directly via the V8 API for better control.
+const v8Flags = [
+  '--max_old_space_size=2048',
+  '--optimize_for_size',
+  '--stack_size=500',
+  '--initial_old_space_size=256',
+  '--max_semi_space_size=128'
+];
+v8.setFlagsFromString(v8Flags.join(' '));
 
 const enhancedMemoryManager = {
   getMemoryInfo: () => {
@@ -253,18 +179,6 @@ const enhancedMemoryManager = {
       heapTotal: usage.heapTotal,
       external: usage.external
     };
-  },
-
-  smartGC: () => {
-    const memInfo = enhancedMemoryManager.getMemoryInfo();
-    const heapUsagePercent = (memInfo.heapUsed / memInfo.heapTotal) * 100;
-
-    if (heapUsagePercent > 80 || memInfo.usage > 85) {
-      if (global.gc) {
-        global.gc(true); // incremental
-        console.log(`[Memory] Incremental GC triggered - Heap: ${heapUsagePercent.toFixed(1)}%`);
-      }
-    }
   },
 
   animationPool: {
@@ -283,7 +197,7 @@ const enhancedMemoryManager = {
     }
   },
 
-  // - memory footprint DOM
+  // memory footprint DOM
   optimizeDOM: (win) => {
     if (!win || win.isDestroyed()) return;
 
@@ -321,9 +235,6 @@ const enhancedMemoryManager = {
     `);
   }
 };
-
-setInterval(enhancedMemoryManager.smartGC, PERFORMANCE_CONFIG.startup.gcInterval);
-memoryManager.optimizeMemory();
 
 const fpsManager = {
   HIGH_FPS: 120,
@@ -414,10 +325,8 @@ const optimizeStartup = () => {
   if (process.platform === 'win32') {
     const { exec } = require('child_process');
     exec(`wmic process where ProcessID=${process.pid} CALL setpriority "high priority"`);
-
     process.env.ELECTRON_ENABLE_STACK_DUMPING = 'false';
     process.env.ELECTRON_ENABLE_LOGGING = 'false';
-    app.commandLine.appendSwitch('enable-features', 'HighPriorityWorkers');
   }
 };
 
@@ -427,7 +336,7 @@ const preWarmApp = async () => {
   const criticalAssets = [
     Essential_links.home,
     'preload.js',
-    'CSS/style.css'
+    'CSS/DefaultComp.css'
   ];
 
   const loadWithConcurrency = async (assets, concurrency) => {
@@ -477,68 +386,27 @@ const PLATFORM_CONFIG = {
   }
 };
 
-const BASE_WINDOW_CONFIG = {
-  common: {
-    frame: false,
-    title: Essential.name,
-    titleBarOverlay: {
-      height: 39,
-      color: "0F0F0F",
-      symbolColor: "FFF",
-    },
-    fullscreenable: true,
-    fullscreen: false,
-    maximizable: true,
-    webPreferences: {
-      backgroundThrottling: false,
-      enablePreferredSizeMode: true,
-      spellcheck: false,
-      enableBlinkFeatures: 'CompositorThreading,LazyFrameLoading,CanvasOptimizedRenderer,FastPath,GpuRasterization',
-      v8CacheOptions: 'bypassHeatCheck',
-      offscreen: false,
-      enableWebSQL: false,
-      nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: true,
-      webgl: true,
-      accelerator: 'gpu',
-      paintWhenInitiallyHidden: false,
-      experimentalFeatures: true,
-      zoomFactor: 1.0,
-      scrollBounce: true,
-      defaultFontSize: 16,
-      partition: 'persist:main',
-      webviewTag: false,
-      cache: true
-    }
-  }
+const BASE_WEB_PREFERENCES = {
+  preload: path.join(__dirname, 'preload.js'),
+  nodeIntegration: false,
+  contextIsolation: true,
+  sandbox: true,
+  webSecurity: true,
+  spellcheck: false,
+  backgroundThrottling: false,
+  scrollBounce: true, // macOS specific, no-op on others
+  webviewTag: false,
+  enableRemoteModule: false,
+  partition: 'persist:main'
 };
 
-const PreferencesWindows = {
-  DefinePreload: {
-    preload: path.join(__dirname, 'preload.js'),
-    nodeIntegration: false,
-    contextIsolation: true,
-    sandbox: true,
-    webSecurity: true,
-    enableRemoteModule: false,
-  },
-  defineNewWindowsPreload: {
-    preload: path.join(__dirname, 'preload.js'),
-    nodeIntegration: false,
-    contextIsolation: true,
-    sandbox: true,
-    autoHideMenuBar: true,
-    backgroundThrottling: false,
-    enablePreferredSizeMode: true,
-    spellcheck: false,
-    enableBlinkFeatures: 'CompositorThreading',
-    v8CacheOptions: 'code',
-    webgl: true,
-    experimentalFeatures: true,
-    hardwareAcceleration: true
-  }
-}
+const BASE_WINDOW_CONFIG = {
+  frame: false,
+  title: Essential.name,
+  titleBarOverlay: { height: 39, color: "0F0F0F", symbolColor: "FFF" },
+  fullscreenable: true,
+  maximizable: true,
+};
 
 const FIRST_TIME_CONFIG = {
   getStartedWindow: null,
@@ -559,7 +427,7 @@ const FIRST_TIME_CONFIG = {
     show: false,
     backgroundColor: '#0f0f0f',
     webPreferences: {
-      ...PreferencesWindows.DefinePreload,
+      ...BASE_WEB_PREFERENCES,
       partition: 'persist:getstarted'
     }
   }
@@ -598,8 +466,6 @@ let focusedWindow = null;
 let aboutWindow = null;
 let SettingsWindows = null;
 
-const settingsComponent = new SettingsWindowsComponent();
-
 const getFocusedWindow = () => {
   focusedWindow = BrowserWindow.getFocusedWindow();
   return focusedWindow;
@@ -607,15 +473,6 @@ const getFocusedWindow = () => {
 
 app.on('browser-window-focus', (_, window) => {
   focusedWindow = window;
-});
-
-app.on('browser-window-blur', () => {
-  setTimeout(() => {
-    focusedWindow = getFocusedWindow();
-    if (!focusedWindow) {
-      enhancedMemoryManager.smartGC();
-    }
-  }, 5000);
 });
 
 const getThemeIcon = () => {
@@ -804,6 +661,48 @@ const markFirstLaunchComplete = () => {
   }
 };
 
+const getStartedDefaultHTML = `
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Started With EssentialAPP</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            -webkit-app-region: drag;
+        }
+        .welcome-container { text-align: center; max-width: 400px; -webkit-app-region: no-drag; }
+        h1 { color: #ffffff; margin-bottom: 20px; }
+        p { color: #cccccc; line-height: 1.6; margin-bottom: 30px; }
+        button { background: #007acc; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 0 10px; }
+        button:hover { background: #005a9e; }
+        .skip-btn { background: #666; }
+        .skip-btn:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <h1>Welcome to EssentialAPP</h1>
+        <button onclick="window.electronAPI.invoke('get-started-complete')">Get Started</button>
+        <button class="skip-btn" onclick="window.electronAPI.invoke('skip-get-started')">Skip</button>
+    </div>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => window.focus());
+    </script>
+</body>
+</html>`;
+
 // Create the GetStarted window
 
 const createGetStartedWindow = async () => {
@@ -824,88 +723,13 @@ const createGetStartedWindow = async () => {
     // Ensure the GetStarted HTML file exists
     const getStartedPath = path.join(__dirname, 'Essential_Pages/GetStarted.html');
     if (!fs.existsSync(getStartedPath)) {
-      console.error('[GetStarted] File not found:', getStartedPath);
-      const defaultHTML = `
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Started With EssentialAPP</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f0f0f;
-            color: white;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .welcome-container {
-            text-align: center;
-            max-width: 400px;
-        }
-        h1 { color: #ffffff; margin-bottom: 20px; }
-        p { color: #cccccc; line-height: 1.6; margin-bottom: 30px; }
-        button {
-            background: #007acc;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 0 10px;
-        }
-        button:hover { background: #005a9e; }
-        .skip-btn { background: #666; }
-        .skip-btn:hover { background: #555; }
-    </style>
-</head>
-<body>
-    <div class="welcome-container">
-        <h1>Welcome to EssentialAPP</h1>
-        <button onclick="completeSetup()">Get Started</button>
-        <button class="skip-btn" onclick="skipSetup()">Skip</button>
-    </div>
-    
-    <script>
-        async function completeSetup() {
-            try {
-                await window.electronAPI.invoke('get-started-complete');
-            } catch (err) {
-                console.error('Setup completion failed:', err);
-                window.close();
-            }
-        }
-        
-        async function skipSetup() {
-            try {
-                await window.electronAPI.invoke('skip-get-started');
-            } catch (err) {
-                console.error('Skip setup failed:', err);
-                window.close();
-            }
-        }
-        
-        // Auto-focus window
-        window.addEventListener('DOMContentLoaded', () => {
-            window.focus();
-        });
-    </script>
-</body>
-</html>`;
-
+      console.log('[GetStarted] File not found, creating default:', getStartedPath);
       const dir = path.dirname(getStartedPath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
 
-      fs.writeFileSync(getStartedPath, defaultHTML, 'utf8');
+      fs.writeFileSync(getStartedPath, getStartedDefaultHTML, 'utf8');
       console.log('[GetStarted] Created default HTML file');
     }
 
@@ -1013,70 +837,28 @@ const debugUtils = {
     console.log('[Debug] Memory Info:', memoryInfo);
     return memoryInfo;
   },
-  forceGC: () => {
-    if (global.gc) {
-      global.gc(true);
-      return { success: true };
-    }
-    console.warn('[Debug] Garbage Collection is not exposed. Run with --expose-gc flag.');
-    return { success: false, error: 'GC not exposed.' };
-  }
 };
 
 ipcMain.handle('debug:reset-first-launch', () => debugUtils.resetFirstLaunch());
 ipcMain.handle('debug:clear-app-cache', async () => debugUtils.clearAppCache());
 ipcMain.handle('debug:relaunch-app', () => debugUtils.relaunchApp());
 ipcMain.handle('debug:get-memory-info', () => debugUtils.getMemoryInfo());
-ipcMain.handle('debug:force-gc', () => debugUtils.forceGC());
 
 const startupSequence = async () => {
   performance.mark('startup-sequence-start');
 
   try {
-    // console.log('[Startup] Checking first time launch...');
     const isFirstTime = isFirstTimeLaunch();
-    // console.log('[Startup] Is first time:', isFirstTime);
 
     if (isFirstTime) {
-      // console.log('[First Launch] Creating GetStarted window...');
-
-      // Create GetStarted window
       await createGetStartedWindow();
-      // console.log('[First Launch] GetStarted window created');
-
-      // Lazy load main window in background
-      // console.log('[First Launch] Creating main window (hidden)...');
-      mainWindow = await createWindowWithPromise({
-        ...WINDOW_CONFIG.common,
-        ...WINDOW_CONFIG.default,
-        icon: getThemeIcon(),
-        minWidth: WINDOW_CONFIG.min.width,
-        minHeight: WINDOW_CONFIG.min.height,
-        show: false,
-        webPreferences: {
-          ...PreferencesWindows.DefinePreload
-        }
-      });
-
-      // Setup main window but don't show it yet
-      setupWindowFPSHandlers(mainWindow);
-      setupWindowCleanup(mainWindow);
-
     } else {
-      // console.log('[Regular Launch] Creating main window...');
       await createMainWindow();
     }
 
   } catch (err) {
-    // console.error('[Startup Sequence] Error:', err);
-    // if error show main window instend
-    if (!mainWindow) {
-      // console.log('[Startup] Fallback to main window');
-      await createMainWindow();
-    } else {
-      mainWindow.show();
-      mainWindow.focus();
-    }
+    console.error('FATAL: Startup sequence failed.', err);
+    createSafeModeWindow(err);
   }
 
   performance.mark('startup-sequence-end');
@@ -1087,41 +869,21 @@ const startupSequence = async () => {
 
 ipcMain.handle('get-started-complete', async (event) => {
   try {
-    // Mark first launch as complete
     markFirstLaunchComplete();
 
     if (FIRST_TIME_CONFIG.getStartedWindow && !FIRST_TIME_CONFIG.getStartedWindow.isDestroyed()) {
       FIRST_TIME_CONFIG.getStartedWindow.close();
       FIRST_TIME_CONFIG.getStartedWindow = null;
-      console.log('[GetStarted] Window closed');
     }
 
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      // Set the flag on DOM ready
-      mainWindow.webContents.once('dom-ready', () => {
-        mainWindow.webContents.executeJavaScript(`
-          try {
-            localStorage.setItem('setup_completed', 'true');
-            console.log('[Main] Setup flag set in localStorage on dom-ready.');
-          } catch (err) {
-            console.error('Main window localStorage setup failed:', err);
-          }
-        `).catch(err => console.error('JS injection for setup flag failed:', err));
-      });
-
-      // Now load the content. The 'dom-ready' listener above will fire when it's loaded.
-      await loadFileWithCheck(mainWindow, Essential_links.home, 'main-window-final-load');
-
-      mainWindow.show();
-      mainWindow.focus();
-    } else {
-      console.error('[GetStarted] Main window not available, creating new one');
-      await createMainWindow();
-    }
+    // Now that the "Get Started" flow is done, create the main window.
+    await createMainWindow();
 
     return { success: true };
   } catch (err) {
     console.error('[Get Started Complete] Error:', err);
+    // If something fails here, we should still try to open the main window as a fallback.
+    if (!mainWindow || mainWindow.isDestroyed()) await createMainWindow();
     return { success: false, error: err.message };
   }
 });
@@ -1141,18 +903,41 @@ const onWindowAllClosed = () => {
 };
 
 ipcMain.handle('restart-setup', async () => {
-  app.removeListener('window-all-closed', onWindowAllClosed);
-  BrowserWindow.getAllWindows().forEach(win => win.close());
-  mainWindow = null;
-  FIRST_TIME_CONFIG.getStartedWindow = null;
-  resetFirstLaunch();
-  await startupSequence();
-  app.on('window-all-closed', onWindowAllClosed);
+  // The debug utility correctly handles resetting the flag and relaunching the app.
+  debugUtils.resetFirstLaunch();
   return { success: true };
 });
 
+const createSafeModeWindow = (error) => {
+  try {
+    const safeWindow = new BrowserWindow({
+      width: 600,
+      height: 400,
+      title: 'EssentialAPP - Safe Mode',
+      webPreferences: {
+        contextIsolation: true,
+        sandbox: true,
+        preload: path.join(__dirname, 'preload.js')
+      }
+    });
+    safeWindow.loadURL(`data:text/html;charset=UTF-8,<h1>Safe Mode</h1><p>The application failed to start normally due to an error:</p><pre>${error.message}</pre><p>You can try to reset all settings and relaunch.</p><button id="resetBtn">Reset and Relaunch</button><script>document.getElementById('resetBtn').onclick = () => window.electronAPI.invoke('debug:reset-first-launch');</script>`);
+  } catch (safeErr) {
+    console.error('FATAL: Could not create a safe mode window. Quitting.', safeErr);
+    app.quit();
+  }
+};
+
 app.whenReady().then(async () => {
+  require('events').EventEmitter.defaultMaxListeners = 20;
   performance.mark('app-start');
+
+  // Pre-load like CSS to avoid sync I/O later
+  try {
+    const cssPath = path.join(__dirname, 'CSS', 'CSS_Essential_Pages', 'Titlebar.css');
+    titlebarCssContent = await fs.promises.readFile(cssPath, 'utf8');
+  } catch (err) {
+    console.error('Failed to pre-load titlebar CSS:', err);
+  }
 
   try {
     optimizeStartup();
@@ -1200,13 +985,13 @@ app.whenReady().then(async () => {
 
     const optimal = calculateOptimalWindowSize();
     WINDOW_CONFIG = {
-      ...BASE_WINDOW_CONFIG,
       min: {
         width: Math.floor(optimal.width * 0.9),
         height: Math.floor(optimal.height * 0.4)
       },
       default: {
-        ...PLATFORM_CONFIG[process.platform]?.window || PLATFORM_CONFIG.win32.window,
+        ...BASE_WINDOW_CONFIG,
+        ...(PLATFORM_CONFIG[process.platform]?.window || PLATFORM_CONFIG.win32.window),
         ...optimal
       },
       alwaysOnTop: { width: 340, height: 570 }
@@ -1216,10 +1001,16 @@ app.whenReady().then(async () => {
     centerX = Math.floor((screenWidth - WINDOW_CONFIG.default.width) / 2);
     centerY = Math.floor((screenHeight - WINDOW_CONFIG.default.height) / 2);
 
-    await startupSequence();
+    try {
+      await startupSequence();
+    } catch (err) {
+      // The error is already logged by startupSequence, just quit gracefully.
+      app.quit();
+    }
+
     app.on('activate', async () => {
       if (BrowserWindow.getAllWindows().length === 0) {
-        await startupSequence();
+        await createMainWindow().catch(createSafeModeWindow);
       }
     });
 
@@ -1228,16 +1019,13 @@ app.whenReady().then(async () => {
 
       try {
         const newWindow = await createWindowWithPromise({
-          ...WINDOW_CONFIG.common,
           ...WINDOW_CONFIG.default,
           icon: getThemeIcon(),
           x: centerX,
           y: centerY,
           minWidth: WINDOW_CONFIG.min.width,
           minHeight: WINDOW_CONFIG.min.height,
-          webPreferences: {
-            ...PreferencesWindows.defineNewWindowsPreload,
-          }
+          webPreferences: BASE_WEB_PREFERENCES,
         });
 
         setupWindowFPSHandlers(newWindow);
@@ -1261,18 +1049,6 @@ app.whenReady().then(async () => {
       const { powerSaveBlocker } = require('electron');
       powerSaveBlocker.start('prevent-app-suspension');
     }
-
-    app.commandLine.appendSwitch('ignore-gpu-blocklist');
-    app.commandLine.appendSwitch('enable-gpu-rasterization');
-    app.commandLine.appendSwitch('enable-native-gpu-memory-buffers');
-
-    app.on('browser-window-blur', () => {
-      setTimeout(() => {
-        if (!getFocusedWindow()) {
-          enhancedMemoryManager.smartGC();
-        }
-      }, 5000);
-    });
 
     optimizeCPUAffinity();
 
@@ -1315,7 +1091,9 @@ app.whenReady().then(async () => {
     }
   }
 
-  mainWindow.setTitle("Essential App");
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setTitle("Essential App");
+  }
   process.title = "Essential App";
 });
 
@@ -1342,14 +1120,11 @@ const createMainWindow = async () => {
   try {
     let originalBounds = null;
     mainWindow = await createWindowWithPromise({
-      ...WINDOW_CONFIG.common,
       ...WINDOW_CONFIG.default,
       icon: getThemeIcon(),
       minWidth: WINDOW_CONFIG.min.width,
       minHeight: WINDOW_CONFIG.min.height,
-      webPreferences: {
-        ...PreferencesWindows.DefinePreload
-      }
+      webPreferences: { ...BASE_WEB_PREFERENCES }
     }).catch(async (err) => {
       await handleError(null, err, 'window-creation');
       throw err;
@@ -1588,9 +1363,12 @@ ipcMain.handle('show-context-menu', async (event, pos) => {
 });
 
 ipcMain.handle('safe-navigate', async (event, url) => {
-  if (!focusedWindow) return;
-
-  await safeLoad(focusedWindow, url);
+  try {
+    if (!focusedWindow) return;
+    await safeLoad(focusedWindow, url);
+  } catch (err) {
+    await handleError(focusedWindow, err, 'safe-navigate-ipc');
+  }
 });
 
 ipcMain.handle('open-external-link', async (event, url) => {
@@ -1652,7 +1430,6 @@ ipcMain.on('theme-response', (event, theme) => {
 
 const openedWindows = new Set();
 
-
 ipcMain.handle('open-mintputs-window', async (event, url) => {
   try {
     if (typeof url !== 'string') throw new Error('Invalid URL or file path');
@@ -1660,7 +1437,10 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
     const mintputsWidth = 350;
     const mintputsHeight = 600;
 
-    const win = new BrowserWindow({
+    const minMintputsWidth = 350;
+    const minMintputsHeight = 200;
+    
+    const win = new BrowserWindow({  
       width: mintputsWidth,
       height: mintputsHeight,
       titleBarStyle: 'hidden',
@@ -1672,8 +1452,8 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
       show: false,
       backgroundColor: '#0f0f0f',
       title: 'Mintputs',
-      minWidth: mintputsWidth,
-      minHeight: mintputsHeight,
+      minWidth: minMintputsWidth,
+      minHeight: minMintputsHeight,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -1706,16 +1486,13 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
 ipcMain.handle('create-new-window', async (event, path) => {
   try {
     const newWindow = await createWindowWithPromise({
-      ...WINDOW_CONFIG.common,
       ...WINDOW_CONFIG.default,
       icon: getThemeIcon(),
       x: centerX + 30,
       y: centerY + 30,
       minWidth: WINDOW_CONFIG.min.width,
       minHeight: WINDOW_CONFIG.min.height,
-      webPreferences: {
-        ...PreferencesWindows.defineNewWindowsPreload,
-      }
+      webPreferences: BASE_WEB_PREFERENCES,
     });
 
     setupWindowFPSHandlers(newWindow);
@@ -1747,26 +1524,7 @@ const DialogWindows_Config = {
   resizable: false,
   icon: getThemeIcon(),
   x: centerX + 50,
-  y: centerY + 50,
-  DialogWinConfig_webPreferences: {
-    backgroundThrottling: false,
-    enablePreferredSizeMode: true,
-    spellcheck: false,
-    enableBlinkFeatures: 'CompositorThreading,LazyFrameLoading,CanvasOptimizedRenderer,FastPath,GpuRasterization',
-    v8CacheOptions: 'bypassHeatCheck',
-    offscreen: false,
-    enableWebSQL: false,
-    nodeIntegration: false,
-    contextIsolation: true,
-    sandbox: true,
-    webgl: true,
-    accelerator: 'gpu',
-    paintWhenInitiallyHidden: false,
-    experimentalFeatures: true,
-    zoomFactor: 1.0,
-    scrollBounce: true,
-    defaultFontSize: 16
-  }
+  y: centerY + 50
 }
 
 function ConfigWindowsProperties(windowType) {
@@ -1787,66 +1545,12 @@ const DialogWindowsName = {
   }
 }
 
-const titleUpdateQueue = new Map();
-const updateWindowTitle = async (title) => {
-  return `
-    (() => {
-      const titleElement = document.querySelector('#CenterTitlebar .Title h2');
-      if (titleElement) {
-        requestAnimationFrame(() => titleElement.textContent = '${title}');
-      }
-    })();
-  `;
-};
-
-const handleWindowTitleUpdate = async (window, title) => {
-  if (!window || window.isDestroyed()) return false;
-
-  if (titleUpdateQueue.has(window.id)) {
-    clearTimeout(titleUpdateQueue.get(window.id));
-  }
-
-  return new Promise((resolve) => {
-    titleUpdateQueue.set(window.id, setTimeout(async () => {
-      try {
-        await window.webContents.executeJavaScript(
-          await updateWindowTitle(title)
-        );
-        titleUpdateQueue.delete(window.id);
-        resolve(true);
-      } catch {
-        titleUpdateQueue.delete(window.id);
-        resolve(false);
-      }
-    }, 50));
-  });
-};
-
-const createTitleUpdateHandler = (windowKey, title) => {
-  return async () => {
-    try {
-      const window = eval(windowKey);
-      if (!window || window.isDestroyed()) {
-        console.warn(`Window ${windowKey} not found or destroyed`);
-        return false;
-      }
-      return await handleWindowTitleUpdate(window, title);
-    } catch (err) {
-      console.error(`Title update failed for ${windowKey}:`, err);
-      return false;
-    }
-  };
-};
-
 ipcMain.handle('open-about-window', async () => {
   try {
     if (!aboutWindow || aboutWindow.isDestroyed()) {
       aboutWindow = await createWindowWithPromise({
         ...DialogWindows_Config,
-        webPreferences: {
-          ...PreferencesWindows.defineNewWindowsPreload,
-          ...DialogWindows_Config.DialogWinConfig_webPreferences
-        }
+        webPreferences: BASE_WEB_PREFERENCES
       });
 
       ConfigWindowsProperties('about');
@@ -1855,15 +1559,12 @@ ipcMain.handle('open-about-window', async () => {
         aboutWindow = null;
       });
 
-      const TitlebarcssPath = path.join(__dirname, 'CSS', 'CSS_Essential_Pages', 'Titlebar.css');
-      const TitlebarcssContent = fs.readFileSync(TitlebarcssPath, 'utf8');
-
       await cacheManager.load(aboutWindow, Essential_links.about);
 
       await aboutWindow.webContents.executeJavaScript(`
         (function() {
           const style = document.createElement('style');
-          style.textContent = \`${TitlebarcssContent}\`;
+          style.textContent = \`${titlebarCssContent}\`;
           document.head.appendChild(style);
           
           const content = \`
@@ -1911,6 +1612,43 @@ ipcMain.handle('open-about-window', async () => {
   } catch (err) {
     await handleError(null, err, 'about-window-creation');
     return false;
+  }
+});
+
+ipcMain.handle('open-settings-window', async () => {
+  try {
+    if (!SettingsWindows || SettingsWindows.isDestroyed()) {
+      SettingsWindows = await createWindowWithPromise({
+        ...DialogWindows_Config,
+        webPreferences: { ...BASE_WEB_PREFERENCES }
+      });
+
+      SettingsWindows.on('closed', () => {
+        SettingsWindows = null;
+      });
+
+      await loadFileWithCheck(SettingsWindows, Essential_links.settings, 'settings-window-load');
+
+      await SettingsWindows.webContents.executeJavaScript(`
+          (function() {
+              const style = document.createElement('style');
+              style.textContent = \`${titlebarCssContent}\`;
+              document.head.appendChild(style);
+              document.body.insertAdjacentHTML('beforeend', \`
+                <div id="CenterTitlebar" class="electron-only">
+                  <div class="Text"><div class="Title"><h2>Settings</h2></div></div>
+                </div>
+              \`);
+          })();
+      `);
+
+    } else {
+      SettingsWindows.focus();
+    }
+    return { success: true };
+  } catch (err) {
+    await handleError(null, err, 'settings-window-creation');
+    return { success: false, error: err.message };
   }
 });
 
@@ -1982,9 +1720,32 @@ ipcMain.on('titlebar-theme-change', (event, theme) => {
 
 // Error heading
 
-process.on('uncaughtException', (err) => {
-  console.error('[Uncaught Exception]', err);
-  if (err.message.includes('getstarted') || err.message.includes('GetStarted')) {
-    createMainWindow().catch(console.error);
+process.on('uncaughtException', (error) => {
+  console.error('[Uncaught Exception]', error);
+
+  const errorLogPath = path.join(app.getPath('userData'), 'error.log');
+  const errorMessage = `[${new Date().toISOString()}] Uncaught Exception:\n${error.stack || error}\n\n`;
+  try {
+    fs.appendFileSync(errorLogPath, errorMessage);
+  } catch (logErr) {
+    console.error('Failed to write to error log:', logErr);
   }
+
+  if (app.isReady()) {
+    const choice = dialog.showMessageBoxSync({
+      type: 'error',
+      title: 'EssentialAPP Error',
+      message: 'A critical error occurred.',
+      detail: `The application has encountered an unexpected error. You can try to relaunch the application or quit.\n\nError: ${error.message}`,
+      buttons: ['Relaunch', 'Quit'],
+      defaultId: 0,
+      cancelId: 1
+    });
+
+    if (choice === 0) { // Relaunch
+      app.relaunch();
+    }
+  }
+
+  app.quit();
 });
