@@ -7,8 +7,26 @@ const { performance } = require('perf_hooks');
 const { execSync } = require('child_process');
 const crypto = require('crypto');
 
-// File Synchronous Cache Manager
+const userDataPathForCache = app.getPath('userData');
+const customAppCachePath = path.join(userDataPathForCache, 'EssentialAppCache');
 
+// The custom cache directory exists before the app needs it.
+if (!fs.existsSync(customAppCachePath)) {
+    fs.mkdirSync(customAppCachePath, { recursive: true });
+}
+
+// Disk cache to our custom, pre-created directory.
+app.setPath('cache', customAppCachePath);
+
+// Single Instance Lock
+// This ensures that only one instance of your application can run at a time.
+// It prevents conflicts with cache files and other resources.
+
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+}
+
+// File Synchronous Cache Manager
 class CacheManager {
   constructor(cacheDir, maxAge = 86400000 /* 24 hours */) {
     this.cacheDir = cacheDir;
@@ -86,6 +104,8 @@ class CacheManager {
 
 const cacheManager = new CacheManager(path.join(app.getPath('userData'), 'PageCache'));
 
+// End of cache manager
+
 const ContextMenu = require('./components/ContextMenu');
 const SettingsWindowsComponent = require('./components/WindowsSettings.js');
 
@@ -142,59 +162,56 @@ const optimizeCPUAffinity = () => {
   }
 };
 
-app.commandLine.appendSwitch('enable-features', 'Metal,NetworkServiceInProcess,ParallelDownloading');
-app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors,MediaRouter');
-app.commandLine.appendSwitch('ignore-gpu-blacklist');
-app.commandLine.appendSwitch('disable-gpu-compositing');
+// We group all feature flags into a single list for clarity and to avoid conflicts
+// Redundant, deprecated, or potentially harmful flags have been removed
+
+const enabledFeatures = [
+  // Performance & Rendering
+  'Metal', // (macOS) Use Metal graphics API
+  'NetworkServiceInProcess',
+  'ParallelDownloading',
+  'CanvasOptimizedRenderer',
+  'GpuRasterization',
+  'EnableDrDc',       // Display Compositor
+  'UseOzonePlatform', // (Linux) Wayland support
+  'EnableRawDraw',
+  'EnableAccelerated2dCanvas',
+  'EnableZeroCopy',
+  'EnableGpuMemoryBufferCompositor',
+  'EnableNativeGpuMemoryBuffers',
+  'EnableOopRasterization',
+
+  // Animation & Scrolling
+  'CompositorThreadedScrollbarScrolling',
+  'ThreadedScrolling',
+  'ScrollUnification',
+
+  // Loading & Caching
+  'PaintHolding',
+  'LazyFrameLoading',
+  'BackForwardCache',
+  'PreloadMediaEngagement',
+
+  // System Integration
+  'CalculateNativeWinOcclusion', // Windows
+].join(',');
+
+app.commandLine.appendSwitch('enable-features', enabledFeatures);
+
+// GPU & Video Acceleration
 app.commandLine.appendSwitch('use-gl', 'desktop');
 app.commandLine.appendSwitch('enable-accelerated-mjpeg-decode');
 app.commandLine.appendSwitch('enable-accelerated-video');
-app.commandLine.appendSwitch('disable-gpu-driver-bug-workarounds');
-
-app.commandLine.appendSwitch('enable-features',
-  'CanvasOptimizedRenderer,' +
-  'PreloadMediaEngagement,' +
-  'ThreadedScrolling,' +
-  'PaintHolding,' +
-  'LazyFrameLoading,' +
-  'BackForwardCache,' +
-  'CalculateNativeWinOcclusion,' +
-  'UseSkiaRenderer,' +
-  'EnableDrDc'
-);
-app.commandLine.appendSwitch('enable-zero-copy');
-app.commandLine.appendSwitch('enable-drdc');
-app.commandLine.appendSwitch('force-gpu-mem-available-mb', '2048');
-app.commandLine.appendSwitch('max_tiles_for_interest_area', '512');
-app.commandLine.appendSwitch('default-tile-width', '512');
-app.commandLine.appendSwitch('default-tile-height', '512');
-app.commandLine.appendSwitch('enable-features', 'UseOzonePlatform');
 app.commandLine.appendSwitch('enable-hardware-overlays', 'single-fullscreen,single-video,single-on-top-video');
-app.commandLine.appendSwitch('enable-gpu-memory-buffer-compositor');
-app.commandLine.appendSwitch('enable-native-gpu-memory-buffers');
-app.commandLine.appendSwitch('enable-oop-rasterization');
-app.commandLine.appendSwitch('enable-raw-draw');
-app.commandLine.appendSwitch('enable-accelerated-2d-canvas');
-app.commandLine.appendSwitch('disable-frame-rate-limit');
+
+// Forces GPU acceleration on systems that might be blacklisted.
+// Use with caution, as it can cause instability on some hardware.
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
+app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors,MediaRouter');
 
-app.commandLine.appendSwitch('js-flags',
-  '--max-old-space-size=4096 ' +
-  '--initial-old-space-size=1024 ' +
-  '--optimize-for-size=false ' +
-  '--gc-interval=300000 ' +
-  '--stack-size=2048 ' +
-  '--turbo-fast-api-calls'
-);
-
-// Animation-specific flags
-app.commandLine.appendSwitch('enable-features',
-  'CompositorThreadedScrollbarScrolling,' +
-  'PaintHolding,' +
-  'ThreadedScrolling,' +
-  'ScrollUnification'
-);
-
+// V8 Engine Flags
+// These are set directly via the V8 API for better control and to avoid
+// conflicts with the 'js-flags' command line switch, which has been removed.
 v8.setFlagsFromString('--max_old_space_size=2048');
 v8.setFlagsFromString('--optimize_for_size');
 v8.setFlagsFromString('--max_inlined_source_size=512');
@@ -738,17 +755,23 @@ process.on('unhandledRejection', async (reason, promise) => {
 });
 
 const userDataPath = app.getPath('userData');
-// Another cache function for main appiclation
+// This function ensures that all cache-related directories have the correct permissions.
+// It's a fallback mechanism, especially for Windows, to prevent "Access Denied" errors.
 const setupCachePermissions = () => {
   try {
     if (process.platform === 'win32') {
-      const cachePath = path.join(userDataPath, 'PublicCache EssentialAPP');
+      // We now get the main cache path directly from Electron, which we configured at startup.
+      const networkCachePath = app.getPath('cache');
       const gpuCachePath = path.join(userDataPath, 'GPUCache');
+      const pageCachePath = path.join(userDataPath, 'PageCache'); // Used by our custom CacheManager
+      const publicCachePath = path.join(userDataPath, 'PublicCache EssentialAPP');
 
-      [cachePath, gpuCachePath].forEach(dir => {
+      // Consolidate all known cache paths to ensure they exist and have correct permissions.
+      [networkCachePath, gpuCachePath, pageCachePath, publicCachePath].forEach(dir => {
         if (!fs.existsSync(dir)) {
           fs.mkdirSync(dir, { recursive: true });
         }
+        // The /T flag ensures this applies to all files and subdirectories.
         execSync(`icacls "${dir}" /grant "${process.env.USERNAME}":(OI)(CI)F /T`);
       });
     }
