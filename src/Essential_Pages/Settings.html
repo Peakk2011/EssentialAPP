@@ -8,6 +8,15 @@
     <link rel="stylesheet" href="../CSS/DefaultComp.css">
     <link rel="stylesheet" href="./Settings_Config/Settings.css">
     <link href="https://api.fontshare.com/v2/css?f[]=general-sans@1,2&f[]=satoshi@1,2&display=swap" rel="stylesheet">
+    <script>
+        // Runtime detection
+        (function () {
+            const runtime = window.electronAPI ? 'electron' : 'web';
+            document.documentElement.setAttribute('data-runtime', runtime);
+        })();
+        document.documentElement.setAttribute('data-os', window.runtimeInfo.os);
+        document.body.classList.add(`os-${window.runtimeInfo.os === 'darwin' ? 'mac' : window.runtimeInfo.os === 'win32' ? 'windows' : 'linux'}`);
+    </script>
 </head>
 
 <body>

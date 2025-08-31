@@ -437,6 +437,10 @@ html {
     padding-left: var(--window-controls-width);
 }
 
+[data-runtime="electron"][data-os="darwin"] .zoom-info {
+    right: 45px;
+}
+
 [data-runtime="electron"][data-os="win32"] nav {
     padding-right: var(--window-controls-width);
 }
@@ -489,8 +493,6 @@ html {
     nav {
         top: 0;
     }
-
-
 
     .contentTEXT {
         display: none;

@@ -106,7 +106,7 @@ const ContextMenu = require('./components/ContextMenu');
 let titlebarCssContent = '';
 
 const Essential = {
-  name: "Essential App",
+  name: "EssentialAPP",
 }
 
 require('dotenv').config();
@@ -376,7 +376,7 @@ const PLATFORM_CONFIG = {
   darwin: {
     window: {
       titleBarStyle: 'hiddenInset',
-      trafficLightPosition: { x: 17.5, y: 12 },
+      trafficLightPosition: { x: 12, y: 12 },
     }
   },
   win32: {
@@ -408,11 +408,12 @@ const BASE_WINDOW_CONFIG = {
   maximizable: true,
 };
 
+// Get started window
 const FIRST_TIME_CONFIG = {
   getStartedWindow: null,
   windowConfig: {
-    width: 480,
-    height: 640,
+    width: 720,
+    height: 450,
     frame: false,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
@@ -420,9 +421,10 @@ const FIRST_TIME_CONFIG = {
       color: "0F0F0F",
       symbolColor: "FFF",
     },
-    resizable: false,
-    maximizable: false,
-    minimizable: false,
+    trafficLightPosition: { x: 12, y: 12 },
+    // resizable: false,
+    // maximizable: false,
+    // minimizable: false,
     center: true,
     show: false,
     backgroundColor: '#0f0f0f',
@@ -1092,9 +1094,9 @@ app.whenReady().then(async () => {
   }
 
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.setTitle("Essential App");
+    mainWindow.setTitle("EssentialAPP");
   }
-  process.title = "Essential App";
+  process.title = "EssentialAPP";
 });
 
 app.on('window-all-closed', onWindowAllClosed);
@@ -1439,8 +1441,8 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
 
     const minMintputsWidth = 350;
     const minMintputsHeight = 200;
-    
-    const win = new BrowserWindow({  
+
+    const win = new BrowserWindow({
       width: mintputsWidth,
       height: mintputsHeight,
       titleBarStyle: 'hidden',
@@ -1449,6 +1451,7 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
         color: '#0f0f0f',
         symbolColor: '#f3f2f0',
       },
+      trafficLightPosition: { x: 17.5, y: 12 },
       show: false,
       backgroundColor: '#0f0f0f',
       title: 'Mintputs',
@@ -1511,6 +1514,7 @@ const DialogWindows_Config = {
   title: Essential.name,
   frame: false,
   titleBarStyle: 'hidden',
+  trafficLightPosition: { x: 12, y: 12 },
   titleBarOverlay: {
     color: "0F0F0F",
     symbolColor: "FFF",
@@ -1534,8 +1538,8 @@ function ConfigWindowsProperties(windowType) {
 }
 
 const DialogWindowsName = {
-  about: 'About Essential app',
-  settings: 'Essential app settings',
+  about: 'About EssentialAPP',
+  settings: 'EssentialAPP settings',
   settingsContent: {
     Theme: 'Theme',
     Appearance: 'Appearance',
@@ -1561,48 +1565,70 @@ ipcMain.handle('open-about-window', async () => {
 
       await cacheManager.load(aboutWindow, Essential_links.about);
 
-      await aboutWindow.webContents.executeJavaScript(`
-        (function() {
-          const style = document.createElement('style');
-          style.textContent = \`${titlebarCssContent}\`;
-          document.head.appendChild(style);
-          
-          const content = \`
-                <div id="CenterTitlebar" class="electron-only">
-                    <div class="Text">
-                        <div class="Title">
-                            <svg width="384" height="383" viewBox="0 0 384 383" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <rect x="153" y="343" width="79" height="40" fill="white"/>
-                              <rect x="153" width="79" height="40" fill="white"/>
-                              <rect x="230" y="305" width="41" height="40" fill="white"/>
-                              <rect x="307" y="229" width="39" height="40" fill="white"/>
-                              <rect x="269" y="267" width="40" height="40" fill="white"/>
-                              <rect x="344" y="154" width="40" height="76" fill="white"/>
-                              <rect y="153" width="40" height="77" fill="white"/>
-                              <rect x="306" y="116" width="40" height="39" fill="white"/>
-                              <rect width="40" height="39" transform="matrix(-1 0 0 1 78 116)" fill="white"/>
-                              <rect width="40" height="39" transform="matrix(-1 0 0 1 78 229)" fill="white"/>
-                              <rect width="40" height="39" transform="matrix(-1 0 0 1 116 268)" fill="white"/>
-                              <rect width="40" height="39" transform="matrix(-1 0 0 1 153 306)" fill="white"/>
-                              <rect x="268" y="77" width="41" height="40" fill="white"/>
-                              <rect width="41" height="40" transform="matrix(-1 0 0 1 116 77)" fill="white"/>
-                              <rect x="230" y="40" width="41" height="39" fill="white"/>
-                              <rect width="41" height="39" transform="matrix(-1 0 0 1 154 40)" fill="white"/>
-                              <path d="M172.5 268.5H211V229.5H230.5V191.5H209.5V213H177.5V191.5H153V229.5H172.5V268.5Z" fill="white" stroke="white"/>
-                              <path d="M152.5 153.5H114.5V191.5H152.5V153.5Z" fill="white"/>
-                              <path d="M230.5 191.5H269.5V153.5H230.5V191.5Z" fill="white"/>
-                              <path d="M230.5 153.5V116H152.5V153.5H230.5Z" fill="white"/>
-                              <path d="M230.5 153.5H269.5V191.5H230.5V153.5ZM230.5 153.5V116H152.5V153.5M230.5 153.5H152.5M152.5 153.5H114.5V191.5H152.5V153.5Z" stroke="white"/>
-                            </svg>
-                            <h2>${DialogWindowsName.about}</h2>
-                        </div>
-                    </div>
+      if (process.platform === 'win32') {
+        await aboutWindow.webContents.executeJavaScript(`
+          (function() {
+            const style = document.createElement('style');
+            style.textContent = \`${titlebarCssContent}\`;
+            document.head.appendChild(style);
+            
+            const content = \`
+              <div id="CenterTitlebar" class="electron-only">
+                <div class="Text">
+                  <div class="Title">
+                    <svg width="384" height="383" viewBox="0 0 384 383" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="153" y="343" width="79" height="40" fill="white"/>
+                      <rect x="153" width="79" height="40" fill="white"/>
+                      <rect x="230" y="305" width="41" height="40" fill="white"/>
+                      <rect x="307" y="229" width="39" height="40" fill="white"/>
+                      <rect x="269" y="267" width="40" height="40" fill="white"/>
+                      <rect x="344" y="154" width="40" height="76" fill="white"/>
+                      <rect y="153" width="40" height="77" fill="white"/>
+                      <rect x="306" y="116" width="40" height="39" fill="white"/>
+                      <rect width="40" height="39" transform="matrix(-1 0 0 1 78 116)" fill="white"/>
+                      <rect width="40" height="39" transform="matrix(-1 0 0 1 78 229)" fill="white"/>
+                      <rect width="40" height="39" transform="matrix(-1 0 0 1 116 268)" fill="white"/>
+                      <rect width="40" height="39" transform="matrix(-1 0 0 1 153 306)" fill="white"/>
+                      <rect x="268" y="77" width="41" height="40" fill="white"/>
+                      <rect width="41" height="40" transform="matrix(-1 0 0 1 116 77)" fill="white"/>
+                      <rect x="230" y="40" width="41" height="39" fill="white"/>
+                      <rect width="41" height="39" transform="matrix(-1 0 0 1 154 40)" fill="white"/>
+                      <path d="M172.5 268.5H211V229.5H230.5V191.5H209.5V213H177.5V191.5H153V229.5H172.5V268.5Z" fill="white" stroke="white"/>
+                      <path d="M152.5 153.5H114.5V191.5H152.5V153.5Z" fill="white"/>
+                      <path d="M230.5 191.5H269.5V153.5H230.5V191.5Z" fill="white"/>
+                      <path d="M230.5 153.5V116H152.5V153.5H230.5Z" fill="white"/>
+                      <path d="M230.5 153.5H269.5V191.5H230.5V153.5ZM230.5 153.5V116H152.5V153.5M230.5 153.5H152.5M152.5 153.5H114.5V191.5H152.5V153.5Z" stroke="white"/>
+                    </svg>
+                    <h2>${DialogWindowsName.about}</h2>
+                  </div>
                 </div>
-          \`;
-          
-          document.body.insertAdjacentHTML('beforeend', content);
-        })();
-      `);
+              </div>
+            \`;
+            
+            document.body.insertAdjacentHTML('beforeend', content);
+          })();
+        `);
+      } else if (process.platform === 'darwin') {
+        await aboutWindow.webContents.executeJavaScript(`
+          (function() {
+            const style = document.createElement('style');
+            style.textContent = \`${titlebarCssContent}\`;
+            document.head.appendChild(style);
+            
+            const content = \`
+              <div id="CenterTitlebar" class="electron-only">
+                <div class="Text">
+                  <div class="Title">
+                    <h2>${DialogWindowsName.about}</h2>
+                  </div>
+                </div>
+              </div>
+            \`;
+            
+            document.body.insertAdjacentHTML('beforeend', content);
+          })();
+        `);
+      }
 
       return true;
     } else {
@@ -1620,6 +1646,7 @@ ipcMain.handle('open-settings-window', async () => {
     if (!SettingsWindows || SettingsWindows.isDestroyed()) {
       SettingsWindows = await createWindowWithPromise({
         ...DialogWindows_Config,
+        trafficLightPosition: { x: 18.5, y: 12 },
         webPreferences: { ...BASE_WEB_PREFERENCES }
       });
 
@@ -1629,18 +1656,20 @@ ipcMain.handle('open-settings-window', async () => {
 
       await loadFileWithCheck(SettingsWindows, Essential_links.settings, 'settings-window-load');
 
-      await SettingsWindows.webContents.executeJavaScript(`
+      if (process.platform === 'win32') {
+        await SettingsWindows.webContents.executeJavaScript(`
           (function() {
-              const style = document.createElement('style');
-              style.textContent = \`${titlebarCssContent}\`;
-              document.head.appendChild(style);
-              document.body.insertAdjacentHTML('beforeend', \`
-                <div id="CenterTitlebar" class="electron-only">
-                  <div class="Text"><div class="Title"><h2>Settings</h2></div></div>
-                </div>
-              \`);
+            const style = document.createElement('style');
+            style.textContent = \`${titlebarCssContent}\`;
+            document.head.appendChild(style);
+            document.body.insertAdjacentHTML('beforeend', \`
+              <div id="CenterTitlebar" class="electron-only">
+                <div class="Text"><div class="Title"><h2>Settings</h2></div></div>
+              </div>
+            \`);
           })();
-      `);
+        `);
+      }
 
     } else {
       SettingsWindows.focus();

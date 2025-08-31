@@ -17,12 +17,12 @@
   "type": "commonjs",
   "main": "src/main.js",
   "scripts": {
-    "start": "bun run electron-forge start",
-    "package": "bun run electron-forge package",
-    "make": "bun run electron-forge make",
-    "publish": "bun run electron-forge publish",
-    "lint": "bun run eslint .",
-    "dev": "bun --bun run electron-forge start"
+    "start": "electron-forge start",
+    "package": "run electron-forge package",
+    "make": "run electron-forge make",
+    "publish": "run electron-forge publish",
+    "lint": "run eslint .",
+    "dev": "run electron-forge start"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
@@ -40,13 +40,7 @@
     "@electron-forge/plugin-fuses": "^7.8.0",
     "@electron-forge/publisher-github": "^7.8.0",
     "@electron/fuses": "^1.8.0",
-    "bun": "latest",
-    "bun-types": "^1.2.21",
     "electron": "^36.1.0"
   },
-  "productName": "EssentialAPP",
-  "trustedDependencies": ["bun"],
-  "engines": {
-    "bun": ">=1.0.0"
-  }
+  "productName": "EssentialAPP"
 }

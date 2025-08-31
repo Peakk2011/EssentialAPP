@@ -176,6 +176,7 @@ nav ul li a:hover {
 [data-os="darwin"] #GotoHomePage {
     margin-left: 5.5rem;
     border-left: var(--border);
+    border-bottom: var(--border);
 }
 
 [data-os="darwin"] #KeepONtop {

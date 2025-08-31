@@ -297,3 +297,9 @@ nav {
     }
 
 }
+
+[data-os="darwin"] .ClickableBackButton {
+    left: 0px;
+    right: 0;
+    transform: translateX(500%);
+}

@@ -1,0 +1,8 @@
+.DragAppRegion {
+    width: calc(100vw - 50px);
+    position: fixed;
+    -webkit-app-region: drag;
+    height: 39px;
+    top: 0;
+    right: 0;
+}
