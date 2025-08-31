@@ -413,14 +413,14 @@ const FIRST_TIME_CONFIG = {
   getStartedWindow: null,
   windowConfig: {
     width: 720,
-    height: 450,
+    height: 420,
     frame: false,
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      height: 39,
-      color: "0F0F0F",
-      symbolColor: "FFF",
-    },
+    titleBarStyle: 'default',
+    // titleBarOverlay: {
+    //   height: 39,
+    //   color: "0F0F0F",
+    //   symbolColor: "FFF",
+    // },
     trafficLightPosition: { x: 12, y: 12 },
     // resizable: false,
     // maximizable: false,
@@ -663,48 +663,6 @@ const markFirstLaunchComplete = () => {
   }
 };
 
-const getStartedDefaultHTML = `
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Started With EssentialAPP</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f0f0f;
-            color: white;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            -webkit-app-region: drag;
-        }
-        .welcome-container { text-align: center; max-width: 400px; -webkit-app-region: no-drag; }
-        h1 { color: #ffffff; margin-bottom: 20px; }
-        p { color: #cccccc; line-height: 1.6; margin-bottom: 30px; }
-        button { background: #007acc; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 0 10px; }
-        button:hover { background: #005a9e; }
-        .skip-btn { background: #666; }
-        .skip-btn:hover { background: #555; }
-    </style>
-</head>
-<body>
-    <div class="welcome-container">
-        <h1>Welcome to EssentialAPP</h1>
-        <button onclick="window.electronAPI.invoke('get-started-complete')">Get Started</button>
-        <button class="skip-btn" onclick="window.electronAPI.invoke('skip-get-started')">Skip</button>
-    </div>
-    <script>
-        window.addEventListener('DOMContentLoaded', () => window.focus());
-    </script>
-</body>
-</html>`;
-
 // Create the GetStarted window
 
 const createGetStartedWindow = async () => {
@@ -717,7 +675,6 @@ const createGetStartedWindow = async () => {
 
     const getStartedWindow = FIRST_TIME_CONFIG.getStartedWindow;
 
-    // Setup window cleanup
     setupWindowCleanup(getStartedWindow);
     setupWindowFPSHandlers(getStartedWindow);
     fpsManager.setFPS(getStartedWindow, fpsManager.HIGH_FPS);
@@ -725,14 +682,19 @@ const createGetStartedWindow = async () => {
     // Ensure the GetStarted HTML file exists
     const getStartedPath = path.join(__dirname, 'Essential_Pages/GetStarted.html');
     if (!fs.existsSync(getStartedPath)) {
-      console.log('[GetStarted] File not found, creating default:', getStartedPath);
-      const dir = path.dirname(getStartedPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
-      fs.writeFileSync(getStartedPath, getStartedDefaultHTML, 'utf8');
-      console.log('[GetStarted] Created default HTML file');
+      const title = 'EssentialAPP Error';
+      const message = 'EssentialAPP File Missing';
+      const detail = 'The application cannot start because a required file, `GetStarted.html`, is missing. Please reinstall EssentialAPP to resolve this issue.';
+      console.error(`[FATAL] ${message}: ${detail}`);
+      dialog.showMessageBoxSync({
+        type: 'error',
+        title: title,
+        message: message,
+        detail: detail,
+        buttons: ['Quit']
+      });
+      app.quit();
+      return; // Stop further execution
     }
 
     await loadFileWithCheck(
@@ -892,10 +854,6 @@ ipcMain.handle('get-started-complete', async (event) => {
 
 ipcMain.handle('is-first-time-launch', () => {
   return isFirstTimeLaunch();
-});
-
-ipcMain.handle('skip-get-started', async (event) => {
-  return await ipcMain.handle('get-started-complete')(event);
 });
 
 const onWindowAllClosed = () => {

@@ -19,9 +19,106 @@
             const runtime = window.electronAPI ? 'electron' : 'web';
             document.documentElement.setAttribute('data-runtime', runtime);
         })();
-        document.documentElement.setAttribute('data-os', window.runtimeInfo.os);
-        document.body.classList.add(`os-${window.runtimeInfo.os === 'darwin' ? 'mac' : window.runtimeInfo.os === 'win32' ? 'windows' : 'linux'}`);
+        document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
+        document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
     </script>
+    <style>
+        .appiclationDrawer iframe {
+            display: none;
+            width: 100%;
+            height: calc(100vh - 40px);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            border: none;
+        }
+        
+        .appiclationDrawer iframe.active {
+            display: block;
+        }
+        
+        .appiclationDrawer iframe.cached {
+            /* Keep iframe in DOM but hidden for caching */
+            display: none;
+        }
+        
+        .appiclationDrawer {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 40px);
+            overflow: hidden;
+        }
+        
+        .content {
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .electron-only {
+            height: 100%;
+            width: 100%;
+        }
+        
+        #MainLINKS a {
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+        
+        #MainLINKS a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #appStatus .app-controls a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: var(--theme-links);
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            -webkit-app-region: no-drag;
+        }
+        #appStatus .app-controls a:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        #appStatus .app-status-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            color: #a0a0a0; /* Subtle text color */
+            cursor: default;
+            -webkit-app-region: no-drag;
+        }
+    </style>
 </head>
 
 <body>
@@ -30,7 +127,7 @@
             <h1>Essential app</h1>
         </div>
         <ul>
-            <li id="GotoHomePage"><a href="index.html">
+            <li id="GotoHomePage"><a href="javascript:void(0)" onclick="showHome()">
                     <span class="material-symbols-outlined">home</span>
                 </a></li>
             <li id="KeepONtop" class="electron-only"><a href="javascript:void(0)">
@@ -42,13 +139,13 @@
                 </a></li>
             <div class="zoom-info" id="zoomInfo">100%</div>
             <div id="MainLINKS" class="electron-only">
-                <!-- <li><a href="Todolist.html" id="draggable" draggable="false" class="requestShiftkeyHolder">Todo list</a>
+                <li><a href="javascript:void(0)" onclick="showApp('Todolist', event)" id="draggable" draggable="false" class="requestShiftkeyHolder">Todo list</a>
                 </li>
-                <li><a href="Time.html" id="draggable" draggable="false" class="requestShiftkeyHolder">Clock</a></li>
-                <li><a href="calc.html" draggable="false" class="requestShiftkeyHolder">Calculator</a></li>
-                <li><a href="Notes.html" draggable="false" class="requestShiftkeyHolder">Notes</a></li>
-                <li><a href="Paint.html" draggable="false" class="requestShiftkeyHolder">Paint</a></li> -->
-                <div class="tabs-wrapper"
+                <li><a href="javascript:void(0)" onclick="showApp('Clock', event)" id="draggable" draggable="false" class="requestShiftkeyHolder">Clock</a></li>
+                <li><a href="javascript:void(0)" onclick="showApp('Calculator', event)" draggable="false" class="requestShiftkeyHolder">Calculator</a></li>
+                <li><a href="javascript:void(0)" onclick="showApp('Note', event)" draggable="false" class="requestShiftkeyHolder">Notes</a></li>
+                <li><a href="javascript:void(0)" onclick="showApp('Paint', event)" draggable="false" class="requestShiftkeyHolder">Paint</a></li>
+                <!-- <div class="tabs-wrapper"
                     style="-webkit-app-region: no-drag; position: relative; top: 0; min-width: max-content;"
                     id="tabs-wrapper">
                     <div class="tabs" id="tabs" style="-webkit-app-region: no-drag"></div>
@@ -57,7 +154,7 @@
                     style="-webkit-app-region: no-drag; position: relative; min-width: max-content;">+</button>
                 <div class="header-controls" style="-webkit-app-region: no-drag">
                     <button class="create-area-btn" onclick="showNewAreaModal()">Create Canvas Area</button>
-                </div>
+                </div> -->
             </div>
         </ul>
     </nav>
@@ -71,19 +168,19 @@
             </svg>
         </div>
         <div class="menuLinks electron-only">
-            <li id="Current"><a href="javascript:void(0)" id="CurrentLinks">
+            <li id="Current"><a href="javascript:void(0)" onclick="showAllApps()" id="CurrentLinks">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                         fill="#e3e3e3" id="CurrentLinksSvg">
                         <path
                             d="M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z" />
                     </svg><span id="CurrentLinksText">All Apps</span></a></li>
             <div id="EssentialappLinks">
-                <li><a href="javascript:void(0)" onclick="setupCanvasTab()">
+                <!-- <li><a href="javascript:void(0)" onclick="setupCanvasTab()">
                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                             fill="currentColor">
                             <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
                         </svg>Create New Workspace</a>
-                </li>
+                </li> -->
                 <li><a href="javascript:void(0)" id="NewWindow_Mintputs">
                         <svg width="20" height="20" viewBox="0 0 384 383" fill="none" xmlns="http://www.w3.org/2000/svg"
                             style="translate: 2.25px -1px;">
@@ -114,6 +211,87 @@
                         </svg>
                         Try Mintputs</a>
                 </li>
+                <div id="appStatus">
+                    <!-- Todolist Controls -->
+                    <div class="app-controls" data-app-controls="Todolist" style="display: none;">
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Todolist', 'focusInput')" class="app-action-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
+                            </svg>
+                            Add Task
+                        </a>
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Todolist', 'deleteLast')" class="app-action-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <path d="M360-240h310v-80H360l120-120-56-56-204 204 204 204 56-56-120-120Zm400-40v-400q0-33-23.5-56.5T680-760H280q-33 0-56.5 23.5T200-680v400q0 33 23.5 56.5T280-200h400q33 0 56.5-23.5T760-280Z"/>
+                            </svg>
+                            Delete Last
+                        </a>
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Todolist', 'clearAll')" class="app-action-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T720-120H280Zm150-180h80v-360h-80v360Zm160 0h80v-360h-80v360Z"/>
+                            </svg>
+                            Clear All
+                        </a>
+                        <a class="app-status-info">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h480q33 0 56.5 23.5T800-800v640q0 33-23.5 56.5T720-80H240Zm0-80h480v-640H240v640Z"/>
+                            </svg>
+                            <span id="todolist-status-text">0 Tasks</span>
+                        </a>
+                    </div>
+                    <!-- Note Controls -->
+                    <div class="app-controls" data-app-controls="Note" style="display: none;">
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Note', 'save')">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160v440q0 33-23.5 56.5T760-120H200Zm360-560v-160H200v560h560v-400H560ZM200-720v160-160 560-560Z"/>
+                            </svg>
+                            Save Note
+                        </a>
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Note', 'addSelectedToTodo')" class="app-action-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <path d="M240-160v-80h280v80H240Zm0-160v-80h480v80H240Zm0-160v-80h480v80H240Zm520 480v-160h-80v-80h80v-80h80v80h80v80h-80v160h-80Z"/>
+                            </svg>
+                            Add to Todolist
+                        </a>
+                    </div>
+                    <!-- Paint Controls -->
+                    <div class="app-controls" data-app-controls="Paint" style="display: none;">
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Paint', 'clearCanvas')">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T720-120H280Zm440-600H240v520h480v-520ZM360-200h80v-400h-80v400Zm160 0h80v-400h-80v400ZM240-720v520-520Z"/>
+                            </svg>
+                            Clear Canvas
+                        </a>
+                    </div>
+                    <!-- Calculator Controls -->
+                    <div class="app-controls" data-app-controls="Calculator" style="display: none;">
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Calculator', 'clear')">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T720-120H280Zm440-600H240v520h480v-520Z"/>
+                            </svg>
+                            Clear (AC)
+                        </a>
+                    </div>
+                    <!-- Clock Controls -->
+                    <div class="app-controls" data-app-controls="Clock" style="display: none;">
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Clock', 'start')">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M320-200v-560l440 280-440 280Z"/></svg>
+                            Start
+                        </a>
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Clock', 'stop')">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M280-280v-400h400v400H280Z"/></svg>
+                            Stop
+                        </a>
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Clock', 'reset')">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M480-160q-134 0-227-93t-93-227h80q0 100 70.5 170.5T480-240q100 0 170.5-70.5T720-480q0-100-70.5-170.5T480-720v-80q134 0 227 93t93 227q0 134-93 227t-227 93Z"/></svg>
+                            Reset
+                        </a>
+                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Clock', 'lap')">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M440-280h80v-160h120v-80H520v-120h-80v120H320v80h120v160ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Z"/></svg>
+                            Lap
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- Making menulink for web -->
@@ -158,12 +336,12 @@
 
         <div class="electron-only">
 
-            <div class="canvas-container" id="canvasContainer">
+            <!-- <div class="canvas-container" id="canvasContainer">
                 <div class="canvas-areas" id="canvasAreas"></div>
-            </div>
+            </div>   -->
 
 
-            <div class="modal" id="newAreaModal">
+            <!-- <div class="modal" id="newAreaModal">
                 <div class="modal-content">
                     <h3>สร้าง Canvas Area ใหม่</h3>
                     <div class="form-group">
@@ -203,8 +381,17 @@
                         <button class="btn-create" onclick="createNewArea()">สร้าง</button>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
+            <div class="appiclationDrawer">
+                <!-- Loading overlay -->
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="loading-spinner"></div>
+                    <div>Loading...</div>
+                </div>
+                
+                <!-- iframes will be created dynamically -->
+            </div>
 
         </div>
 
@@ -212,6 +399,266 @@
         <div id="app"></div>
 
     </div>
+
+    <script>
+        // This function will be called by iframes to communicate with the main window.
+        window.iframeAction = function(appId, action, data) {
+            console.log(`Action from ${appId}: ${action}`, data);
+
+            if (action === 'updateStatus') {
+                // Handle Todolist status updates
+                if (appId === 'Todolist') {
+                    const statusTextElement = document.getElementById('todolist-status-text');
+                    const controlBlock = document.querySelector(`[data-app-controls="Todolist"]`);
+                    if (!statusTextElement || !controlBlock) return;
+
+                    const count = data.count !== undefined ? data.count : 0;
+                    statusTextElement.textContent = `${count} Task${count !== 1 ? 's' : ''}`;
+
+                    // Make the control block for this app visible to show its status
+                    controlBlock.style.display = 'block';
+
+                    // Re-evaluate which action buttons should be visible across all apps
+                    updateAppControls(currentActiveApp);
+                }
+                // Add similar logic for other apps here
+            } else if (appId === 'Note' && action === 'addToTodo' && data.text) {
+                // Ensure the todolist app is shown
+                showApp('Todolist');
+                // Then send the command. We need a small delay for the iframe to become active.
+                setTimeout(() => {
+                    sendCommandToIframe('Todolist', 'addTask', { text: data.text });
+                }, 250);
+            }
+        };
+    </script>
+
+    <script>
+        // App configuration with lazy loading
+        const appConfig = {
+            'Todolist': { src: 'Todolist.html', loaded: false },
+            'Clock': { src: 'Time.html', loaded: false },
+            'Calculator': { src: 'calc.html', loaded: false },
+            'Note': { src: 'Notes.html', loaded: false },
+            'Paint': { src: 'Paint.html', loaded: false }
+        };
+
+        let currentActiveApp = null;
+        const cachedApps = new Set();
+
+        const appIcons = {
+            'Todolist': 'M240-160v-80h480v80H240Zm0-160v-80h480v80H240Zm0-160v-80h480v80H240Z', // list
+            'Clock': 'M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm-20-320v-160h80v128l108 108-56 56-132-132Z', // schedule
+            'Calculator': 'M240-160q-33 0-56.5-23.5T160-240v-480q0-33 23.5-56.5T240-800h480q33 0 56.5 23.5T800-720v480q0 33-23.5 56.5T720-160H240Zm0-80h480v-480H240v480Zm80-80h80v-80h-80v80Zm160 0h80v-80h-80v80Zm-160-160h80v-80h-80v80Zm160 0h80v-80h-80v80Z', // calculate
+            'Note': 'M240-160q-33 0-56.5-23.5T160-240v-560q0-33 23.5-56.5T240-880h320l240 240v400q0 33-23.5 56.5T720-160H240Zm280-560v160h160L520-720Z', // note
+            'Paint': 'M160-160v-120l520-520q23-23 56.5-23t56.5 23l40 40q23 23 23 56.5T833-647L313-127H160Zm120-3l287-287-40-40-287 287v40h-40Zm-80 3v-80h80l360-360q9-9 20-9t20 9l40 40q9 9 9 20t-9 20L280-160H200Z', // brush
+            'All Apps': 'M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z' // apps
+        };
+
+        function updateSidebarStatus(appName) {
+            const statusTextElement = document.getElementById('CurrentLinksText');
+            const statusSvgElement = document.getElementById('CurrentLinksSvg');
+
+            if (statusTextElement) {
+                statusTextElement.textContent = appName;
+            }
+
+            if (statusSvgElement && appIcons[appName]) {
+                const svgPath = statusSvgElement.querySelector('path');
+                if (svgPath) {
+                    svgPath.setAttribute('d', appIcons[appName]);
+                }
+            }
+        }
+
+        function updateAppControls(activeAppId) {
+            const allControlBlocks = document.querySelectorAll('#appStatus .app-controls');
+            allControlBlocks.forEach(block => {
+                const blockAppId = block.dataset.appControls;
+                const actionButtons = block.querySelectorAll('.app-action-button');
+
+                // Determine if the action buttons for this block should be shown
+                const shouldShowButtons = (blockAppId === activeAppId);
+
+                actionButtons.forEach(button => {
+                    button.style.display = shouldShowButtons ? 'flex' : 'none';
+                });
+            });
+        }
+
+        function sendCommandToIframe(appId, action, data = {}) {
+            const iframe = document.getElementById(appId);
+            if (iframe && iframe.contentWindow) {
+                console.log(`Sending command to ${appId}:`, { action, data });
+                // ใช้ postMessage เพื่อการสื่อสารที่ปลอดภัย
+                iframe.contentWindow.postMessage({ action, data }, '*'); // ใน Production ควรระบุ Origin ที่เฉพาะเจาะจง
+            } else {
+                console.error(`Could not find active iframe for ${appId}`);
+            }
+        }
+
+        // Function to show loading overlay
+        function showLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'block';
+        }
+
+        // Function to hide loading overlay
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'none';
+        }
+
+        // Function to create iframe if not exists
+        function createIframe(appId) {
+            let iframe = document.getElementById(appId);
+            
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = appId;
+                iframe.frameBorder = '0';
+                iframe.src = appConfig[appId].src;
+                
+                // Add loading event listeners
+                iframe.addEventListener('load', function() {
+                    appConfig[appId].loaded = true;
+                    cachedApps.add(appId);
+                    hideLoading();
+                });
+                
+                iframe.addEventListener('error', function() {
+                    hideLoading();
+                    console.error(`Failed to load ${appId}`);
+                });
+                
+                document.querySelector('.appiclationDrawer').appendChild(iframe);
+            }
+            
+            return iframe;
+        }
+
+        // Function to hide all iframes
+        function hideAllIframes() {
+            const iframes = document.querySelectorAll('.appiclationDrawer iframe');
+            iframes.forEach(iframe => {
+                if (iframe.id !== 'loadingOverlay') {
+                    iframe.classList.remove('active');
+                    if (cachedApps.has(iframe.id)) {
+                        iframe.classList.add('cached');
+                    }
+                }
+            });
+            
+            // Remove active class from all navigation links
+            const navLinks = document.querySelectorAll('#MainLINKS a');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+        }
+
+        // Function to show specific app iframe with lazy loading and caching
+        function showApp(appId, event) {
+            // If same app is already active, do nothing
+            if (currentActiveApp === appId) {
+                return;
+            }
+
+            localStorage.setItem('EssentialApp.lastActiveApp', appId);
+            
+            hideAllIframes();
+            
+            let iframe = document.getElementById(appId);
+            
+            // If iframe doesn't exist or hasn't been loaded, create/load it
+            if (!iframe || !appConfig[appId].loaded) {
+                showLoading();
+                iframe = createIframe(appId);
+            } else {
+                // App is cached, show immediately
+                hideLoading();
+            }
+            
+            // Show the iframe
+            if (iframe) {
+                iframe.classList.remove('cached');
+                iframe.classList.add('active');
+                currentActiveApp = appId;
+                updateSidebarStatus(appId);
+                updateAppControls(appId);
+            }
+            
+            // Add active class to clicked link
+            if (event && event.target) {
+                const clickedLink = event.target.closest('a');
+                if (clickedLink) {
+                    clickedLink.classList.add('active');
+                }
+            } else {
+                const link = document.querySelector(`#MainLINKS a[onclick="showApp('${appId}')"]`);
+                if (link) {
+                    link.classList.add('active');
+                }
+            }
+        }
+
+        // Function to show home/all apps view
+        function showHome() {
+            hideAllIframes();
+            hideLoading();
+            currentActiveApp = null;
+            updateSidebarStatus('All Apps');
+            updateAppControls(null);
+            localStorage.removeItem('EssentialApp.lastActiveApp');
+        }
+
+        function showAllApps() {
+            hideAllIframes();
+            hideLoading();
+            currentActiveApp = null;
+            updateSidebarStatus('All Apps');
+            updateAppControls(null);
+            localStorage.removeItem('EssentialApp.lastActiveApp');
+        }
+
+        // Preload function for better performance (optional)
+        function preloadApp(appId) {
+            if (!appConfig[appId].loaded && !document.getElementById(appId)) {
+                createIframe(appId);
+            }
+        }
+
+        // Initialize - hide all iframes on load
+        document.addEventListener('DOMContentLoaded', function() {
+            hideAllIframes();
+            hideLoading();
+            updateAppControls(null);
+
+            const lastApp = localStorage.getItem('EssentialApp.lastActiveApp');
+            if (lastApp && appConfig[lastApp]) {
+                // Use a small timeout to ensure the rest of the UI is ready
+                setTimeout(() => showApp(lastApp), 100);
+            } else {
+                // Optional: Preload the first app after a delay if no last app is set
+                setTimeout(() => {
+                    preloadApp('Todolist');
+                }, 1000);
+            }
+        });
+
+        // Optional: Preload apps on hover for even faster loading
+        document.querySelectorAll('#MainLINKS a').forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                const onclick = this.getAttribute('onclick');
+                if (onclick && onclick.includes('showApp')) {
+                    const appId = onclick.match(/showApp\('(.+?)'\)/)?.[1];
+                    if (appId && !appConfig[appId].loaded) {
+                        setTimeout(() => preloadApp(appId), 200);
+                    }
+                }
+            });
+        });
+    </script>
+
     <script src="./frontendJS/PUBLICscripts.js" type="module" defer></script>
     <script src="renderer.js" defer></script>
     <script src="./frontendJS/Mainpage.js" defer></script>

@@ -24,130 +24,349 @@
         document.documentElement.setAttribute('data-os', window.runtimeInfo.os);
         document.body.classList.add(`os-${window.runtimeInfo.os === 'darwin' ? 'mac' : window.runtimeInfo.os === 'win32' ? 'windows' : 'linux'}`);
     </script>
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .notes-sidebar {
+            width: 250px;
+            background-color: var(--theme-bg-secondary, #1c1c1c);
+            border-right: 1px solid var(--theme-border, #3a3a3a);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .notes-sidebar button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: var(--theme-accent, #5DADE2);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        #notes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+        }
+
+        #notes-list li {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #notes-list li:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        #notes-list li.active {
+            background-color: var(--theme-accent, #5DADE2);
+            color: white;
+        }
+
+        #notes-list li input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid var(--theme-accent);
+            background-color: var(--theme-bg);
+            color: var(--theme-fg);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: inherit;
+        }
+
+        .notes-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .textarea-container {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        #autoSaveTextarea {
+            height: 100%;
+        }
+
+        #notes-list li {
+            position: relative;
+        }
+
+        .delete-note-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            padding: 2px 5px;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.15s ease-in-out;
+        }
+
+        #notes-list li:hover .delete-note-btn {
+            opacity: 1;
+        }
+
+        .delete-note-btn:hover {
+            color: #e57373;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
 </head>
 
 <body>
+    <div class="notes-sidebar">
+        <button id="new-note-btn">New Note</button>
+        <ul id="notes-list"></ul>
+    </div>
 
-    <!-- import Navbar as <nav> -->
-
-    <nav id="MainNavbar">
-        <div class="contentTEXT">
-            <h1>Notes app</h1>
+    <div class="notes-main">
+        <div class="status">
+            <div class="dot" id="saveIndicator"></div>
+            <span id="statusText">Saved</span>
         </div>
-        <ul>
-            <li id="GotoHomePage"><a href="index.html">
-                    <span class="material-symbols-outlined">home</span>
-                </a></li>
-            <li id="KeepONtop"><a href="javascript:void(0)">
+
+        <div class="textarea-container">
+            <textarea id="autoSaveTextarea" placeholder="Select or create a note to start..." spellcheck="false"
+                disabled></textarea>
+
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomOut()">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                        fill="var(--theme-links)">
-                        <path
-                            d="M204-129q-30.94 0-52.97-22.03Q129-173.06 129-204v-552q0-30.94 22.03-52.97Q173.06-831 204-831h273v75H204v552h552v-273h75v273q0 30.94-22.03 52.97Q786.94-129 756-129H204Zm185.5-208L337-389.5 703.5-756H552v-75h279v279h-75v-151.5L389.5-337Z" />
+                        fill="currentColor">
+                        <path d="M200-440v-80h560v80H200Z" />
                     </svg>
-                </a></li>
-            <div id="MainLINKS">
-                <li><a href="Todolist.html" class="requestShiftkeyHolder">Todo list</a></li>
-                <li><a href="Time.html" id="draggable" draggable="true" class="requestShiftkeyHolder">Clock</a></li>
-                <li><a href="calc.html" draggable="false" class="requestShiftkeyHolder">Calculator</a></li>
-                <li id="CurrentPage"><a href="#" draggable="false" class="requestShiftkeyHolder">Notes</a></li>
-                <li><a href="Paint.html" draggable="false" class="requestShiftkeyHolder">Paint</a></li>
-            </div>
-        </ul>
-    </nav>
-
-    <!-- Import Sidebar (menu drawer) -->
-
-    <!-- <div class="menu">
-        <div class="menuText">
-            <h1>Notes app</h1>
-        </div>
-        <div class="menuLinks">
-            <li id="Current"><a href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" height="24px"
-                        viewBox="0 -960 960 960" width="24px" fill="var(--theme-links)">
-                        <path
-                            d="M244-204h116v-238.5h240V-204h116v-355L480-736 244-559v355Zm-75 75v-467.5L480-830l311 233.67V-129H525v-238.5h-90V-129H169Zm311-341Z" />
-                    </svg>Home</a></li>
-            <li><a href="javascript:void(0)"><svg xmlns="http://www.w3.org/2000/svg" height="24px"
-                        viewBox="0 -960 960 960" width="24px" fill="var(--theme-links)">
-                        <path d="M445-445.5H210v-70h235v-235h70v235h235v70H515v235h-70v-235Z" />
-                    </svg>Add list</a></li>
-        </div>
-        <hr>
-        <div class="AllmenuLinks">
-            <li><a href="#"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                        fill="var(--theme-fg)">
-                        <path
-                            d="m634-479 78 77v75H517.5v233L480-56l-37.5-38v-233H248v-75l78-77v-278h-40v-75h388v75h-40v278Zm-279 77h250l-46-45v-310H401v310l-46 45Zm125 0Z" />
-                    </svg>Planned</a></li>
-            <li><a href="#"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                        fill="var(--theme-fg)">
-                        <path
-                            d="M350-281.5 480-360l130 79-34.5-148 115-99-151-13.5-59.5-140L420.5-542l-151 13 115 99.5-34.5 148ZM236.5-125 301-402 86-588l283.5-24.5 110.5-261 110.5 261L874-588 659-402l64.5 277L480-272 236.5-125ZM480-471Z" />
-                    </svg>Important</a></li>
-            <li><a href="#"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                        fill="var(--theme-fg)">
-                        <path
-                            d="M345-540H205q-30.94 0-52.97-22.03Q130-584.06 130-615v-140q0-30.94 22.03-52.97Q174.06-830 205-830h140q30.94 0 52.97 22.03Q420-785.94 420-755v140q0 30.94-22.03 52.97Q375.94-540 345-540Zm-140-75h140v-140H205v140Zm140 485H205q-30.94 0-52.97-22.03Q130-174.06 130-205v-140q0-30.94 22.03-52.97Q174.06-420 205-420h140q30.94 0 52.97 22.03Q420-375.94 420-345v140q0 30.94-22.03 52.97Q375.94-130 345-130Zm-140-75h140v-140H205v140Zm550-335H615q-30.94 0-52.97-22.03Q540-584.06 540-615v-140q0-30.94 22.03-52.97Q584.06-830 615-830h140q30.94 0 52.97 22.03Q830-785.94 830-755v140q0 30.94-22.03 52.97Q785.94-540 755-540Zm-140-75h140v-140H615v140Zm140 485H615q-30.94 0-52.97-22.03Q540-174.06 540-205v-140q0-30.94 22.03-52.97Q584.06-420 615-420h140q30.94 0 52.97 22.03Q830-375.94 830-345v140q0 30.94-22.03 52.97Q785.94-130 755-130Zm-140-75h140v-140H615v140ZM345-615Zm0 270Zm270-270Zm0 270Z" />
-                    </svg>Tasks</a></li>
-        </div>
-
-        <div class="bottomCradit">
-            <div class="bottomCraditcontent">
-                <li class="BottomLinks" id="NewWindow_Settings">
-                    <a href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="auto" viewBox="0 -960 960 960" width="24px"
-                            fill="var(--theme-links)">
-                            <path
-                                d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z" />
-                        </svg>
-                        Settings</a>
-                </li>
-                <li class="BottomLinks" id="NewWindow_AboutMint">
-                    <a href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="auto" viewBox="0 -960 960 960" width="24px"
-                            fill="var(--theme-links)">
-                            <path
-                                d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
-                        </svg>
-                        About this app</a>
-                </li>
+                </button>
+                <button class="zoom-btn" onclick="zoomIn()">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="currentColor">
+                        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+                    </svg>
+                </button>
+                <button onclick="resetZoom()" title="Reset" id="reset-zoom"><span>Reset</span></button>
             </div>
         </div>
-    </div> -->
-
-    <!-- Content -->
-
-    <div class="status">
-        <div class="dot" id="saveIndicator"></div>
-        <span id="statusText">Saved</span>
     </div>
-
-    <div class="textarea-container">
-        <textarea id="autoSaveTextarea" placeholder="Start write your texts here" spellcheck="false"></textarea>
-
-        <div class="zoom-controls">
-            <button class="zoom-btn" onclick="zoomOut()">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M200-440v-80h560v80H200Z"/></svg>
-            </button>
-            <button class="zoom-btn" onclick="zoomIn()">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-            </button>
-            <button onclick="resetZoom()" title="Reset" id="reset-zoom"><span>Reset</span></button>
-        </div>
-    </div>
-
-    <!-- BottomNavbar -->
-    <div id="app"></div>
 
     <script src="renderer.js" defer></script>
     <script src="./frontendJS/PUBLICscripts.js" defer></script>
-    <script src="./frontendJS/EssentialAPP_OptionsFeatured.js" defer></script>  
+    <script src="./frontendJS/EssentialAPP_OptionsFeatured.js" defer></script>
     <script src="./frontendJS/BottomNavbar.js" type="module" defer></script>
-    <script src="./Featured/notes.js" defer></script>
     <script type="module">
         import { initTheme, listenThemeSync } from './Essential_Pages/Settings_Config/theme.js';
         initTheme();
         listenThemeSync();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const NOTES_STORAGE_KEY = 'essential_app_notes_v2'; // New key for new format
+            const ACTIVE_NOTE_ID_KEY = 'essential_app_active_note_id';
+
+            const newNoteBtn = document.getElementById('new-note-btn');
+            const notesListEl = document.getElementById('notes-list');
+            const textarea = document.getElementById('autoSaveTextarea');
+            const statusText = document.getElementById('statusText');
+            const saveIndicator = document.getElementById('saveIndicator');
+
+            let notes = [];
+            let activeNoteId = localStorage.getItem(ACTIVE_NOTE_ID_KEY);
+            let saveTimeout;
+
+            function migrateAndLoadNotes() {
+                const storedNotes = JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY)) || [];
+                notes = storedNotes.map(note => {
+                    if (typeof note.title === 'undefined') {
+                        return {
+                            id: note.id || Date.now(),
+                            title: (note.content ? note.content.substring(0, 30).split('\n')[0] : '') || 'Untitled Note',
+                            content: note.content || ''
+                        };
+                    }
+                    return note;
+                });
+                saveNotes();
+            }
+
+            function saveNotes() {
+                localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
+                statusText.textContent = 'Saved';
+                saveIndicator.style.backgroundColor = '#4CAF50';
+            }
+
+            function deleteNote(id) {
+                const indexToDelete = notes.findIndex(n => n.id == id);
+                if (indexToDelete === -1) return;
+
+                notes.splice(indexToDelete, 1);
+
+                if (activeNoteId == id) {
+                    // If the active note was deleted, switch to another one
+                    if (notes.length > 0) {
+                        // Try to select the previous note, or the first one
+                        const newActiveIndex = Math.max(0, indexToDelete - 1);
+                        setActiveNote(notes[newActiveIndex].id);
+                    } else {
+                        // No notes left, create a new one
+                        activeNoteId = null; // clear active id
+                        newNoteBtn.click();
+                    }
+                }
+                saveNotes();
+                renderNotesList(); // Re-render the list without the deleted note
+            }
+
+            function renderNotesList() {
+                notesListEl.innerHTML = '';
+                notes.forEach(note => {
+                    const li = document.createElement('li');
+                    li.dataset.id = note.id;
+                    li.textContent = note.title || 'Untitled Note';
+                    if (note.id == activeNoteId) {
+                        li.classList.add('active');
+                    }
+                    li.addEventListener('click', () => {
+                        if (!li.classList.contains('editing')) {
+                            setActiveNote(note.id);
+                        }
+                    });
+                    li.addEventListener('dblclick', () => {
+                        if (li.classList.contains('editing')) return;
+                        li.classList.add('editing');
+                        const originalTitle = li.textContent;
+                        li.innerHTML = `<input type="text" value="${originalTitle}" />`;
+                        const input = li.querySelector('input');
+                        input.focus();
+                        input.select();
+
+                        const finishRename = () => {
+                            const newTitle = input.value.trim();
+                            const noteToUpdate = notes.find(n => n.id == note.id);
+                            if (newTitle && noteToUpdate) {
+                                noteToUpdate.title = newTitle;
+                            }
+                            li.classList.remove('editing');
+                            saveNotes();
+                            renderNotesList();
+                        };
+
+                        input.addEventListener('blur', finishRename);
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') finishRename();
+                            else if (e.key === 'Escape') {
+                                li.classList.remove('editing');
+                                renderNotesList();
+                            }
+                        });
+                    });
+
+                    // Add delete button
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-note-btn';
+                    deleteBtn.innerHTML = '&times;';
+                    deleteBtn.title = 'Delete Note';
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (confirm(`Are you sure you want to delete "${note.title}"?`)) {
+                            deleteNote(note.id);
+                        }
+                    });
+                    li.appendChild(deleteBtn);
+                    notesListEl.appendChild(li);
+                });
+            }
+
+            function setActiveNote(id) {
+                activeNoteId = id;
+                localStorage.setItem(ACTIVE_NOTE_ID_KEY, id);
+                const activeNote = notes.find(n => n.id == id);
+                if (activeNote) {
+                    textarea.value = activeNote.content;
+                    textarea.disabled = false;
+                    textarea.focus();
+                } else {
+                    textarea.value = '';
+                    textarea.disabled = true;
+                }
+                renderNotesList();
+            }
+
+            newNoteBtn.addEventListener('click', () => {
+                const newNote = {
+                    id: Date.now(),
+                    title: `New Note ${notes.length + 1}`,
+                    content: ''
+                };
+                notes.unshift(newNote);
+                setActiveNote(newNote.id);
+                saveNotes();
+            });
+
+            textarea.addEventListener('input', () => {
+                statusText.textContent = 'Saving...';
+                saveIndicator.style.backgroundColor = '#FFC107';
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    const activeNote = notes.find(n => n.id == activeNoteId);
+                    if (activeNote) {
+                        activeNote.content = textarea.value;
+                        saveNotes();
+                    }
+                }, 500);
+            });
+
+            // Initial load
+            migrateAndLoadNotes();
+            if (activeNoteId && notes.some(n => n.id == activeNoteId)) {
+                setActiveNote(activeNoteId);
+            } else if (notes.length > 0) {
+                setActiveNote(notes[0].id);
+            } else {
+                newNoteBtn.click(); // Create a first note if none exist
+            }
+
+            // Parent communication
+            if (window.parent && typeof window.parent.iframeAction === 'function') {
+                window.parent.iframeAction('Note', 'loaded', { timestamp: new Date() });
+            }
+
+            window.addEventListener('message', (event) => {
+                const { action, data } = event.data;
+                console.log('Note iframe received command:', { action, data });
+
+                if (action === 'save') {
+                    clearTimeout(saveTimeout);
+                    saveNotes();
+                } else if (action === 'addSelectedToTodo') {
+                    const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+                    if (selectedText && window.parent && typeof window.parent.iframeAction === 'function') {
+                        window.parent.iframeAction('Note', 'addToTodo', { text: selectedText });
+                    } else if (!selectedText) {
+                        alert('Please select some text in the note to add to your to-do list.');
+                    }
+                }
+            });
+        });
     </script>
 </body>
 

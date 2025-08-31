@@ -150,60 +150,6 @@
     display: none;
 }
 
-/* End Date you can add more custom here */
-
-#todo-app {
-    max-width: 380px;
-    margin: 20px auto;
-    padding: 10px;
-    background: var(--theme-background, #f0f0f0);
-    border-radius: 8px;
-}
-
-#todo-input {
-    width: calc(100% - 60px);
-    padding: 8px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-#add-btn {
-    width: 50px;
-    padding: 8px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-#todo-list {
-    margin-top: 15px;
-    padding-left: 0;
-    list-style: none;
-}
-
-#todo-list li {
-    background: var(--theme-card-background, white);
-    margin-bottom: 8px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#todo-list li button {
-    background-color: #e74c3c;
-    border: none;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-#todo-list li button:hover {
-    background-color: #c0392b;
-}
-
-
 @media screen and (max-width: 720px) {
 
     .contentTEXT {

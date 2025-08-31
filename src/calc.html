@@ -27,7 +27,7 @@
 
     <!-- import Navbar as <nav> -->
 
-    <nav id="MainNavbar">
+    <!-- <nav id="MainNavbar">
         <div class="contentTEXT">
             <h1>Calculator</h1>
         </div>
@@ -50,7 +50,7 @@
                 <li><a href="Paint.html" draggable="false" class="requestShiftkeyHolder">Paint</a></li>
             </div>
         </ul>
-    </nav>
+    </nav> -->
 
     <!-- Import Sidebar (menu drawer) -->
 
@@ -279,6 +279,25 @@
                 }
                 updateDisplay();
             }
+        });
+
+        // Communicate with parent window
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Notify parent that the app has loaded
+            if (window.parent && typeof window.parent.iframeAction === 'function') {
+                window.parent.iframeAction('Calculator', 'loaded', { timestamp: new Date() });
+            }
+
+            // 2. Listen for commands from the parent window
+            window.addEventListener('message', (event) => {
+                const { action, data } = event.data;
+                console.log('Calculator iframe received command:', { action, data });
+
+                if (action === 'clear') {
+                    // Call the existing clear function
+                    clearDisplay();
+                }
+            });
         });
     </script>
 

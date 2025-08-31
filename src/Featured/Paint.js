@@ -18,13 +18,14 @@ const exportFormat = document.getElementById('exportFormat');
 const clearBtn = document.getElementById('clearBtn');
 const saveBtn = document.getElementById('saveBtn');
 
-let autoSaveData = null;
-let lastSaveTime = 0;
+const tabsContainer = document.getElementById('paint-tabs');
+const newTabBtn = document.getElementById('new-paint-tab-btn');
 
-// Undo/Redo system for canvas
-let historyStack = [];
-let historyIndex = -1;
-const MAX_HISTORY = 20; // Adjusted for potentially large image data
+// --- State Management for Multiple Files ---
+let paintFiles = [];
+let activeFileId = null;
+const PAINT_STORAGE_KEY = 'essential_app_paint_files';
+const MAX_HISTORY_PER_FILE = 20;
 
 const colorPicker = new iro.ColorPicker(iroPickerContainer, {
     width: 150,
@@ -77,40 +78,48 @@ let stickyNotes = [];
 let isDraggingSticky = false;
 
 const saveToHistory = () => {
-    if (historyIndex > 0 && historyIndex === historyStack.length - 1) {
-        const lastState = historyStack[historyIndex];
+    const activeFile = paintFiles.find(f => f.id === activeFileId);
+    if (!activeFile) return;
+
+    if (activeFile.historyIndex > 0 && activeFile.historyIndex === activeFile.history.length - 1) {
+        const lastState = activeFile.history[activeFile.historyIndex];
         const now = Date.now();
         if (now - lastState.timestamp < 500) {
-            historyStack[historyIndex] = {
+            // Overwrite last state if it was very recent (part of the same stroke)
+            activeFile.history[activeFile.historyIndex] = {
                 imageData: drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height),
                 stickyNotes: JSON.parse(JSON.stringify(stickyNotes)), 
                 timestamp: now
             };
+            saveAllPaintFiles();
             return;
         }
     }
 
-    historyStack = historyStack.slice(0, historyIndex + 1);
-    historyStack.push({
+    activeFile.history = activeFile.history.slice(0, activeFile.historyIndex + 1);
+    activeFile.history.push({
         imageData: drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height),
         stickyNotes: JSON.parse(JSON.stringify(stickyNotes)),
         timestamp: Date.now()
     });
 
-    if (historyStack.length > MAX_HISTORY) {
-        historyStack.shift();
-    } else {
-        historyIndex++;
+    if (activeFile.history.length > MAX_HISTORY_PER_FILE) {
+        activeFile.history.shift();
     }
+    activeFile.historyIndex = activeFile.history.length - 1;
+    saveAllPaintFiles();
 };
 
 
 const restoreFromHistory = (state) => {
     if (!state) return;
-    drawingCtx.putImageData(state.imageData, 0, 0);
 
+    // Clear current canvas and SVG
+    drawingCtx.putImageData(state.imageData, 0, 0);
     stickyNotes.forEach(sticky => sticky.remove());
     stickyNotes = [];
+
+    // Recreate sticky notes from the state
     if (state.stickyNotes) {
         state.stickyNotes.forEach(noteData => {
             const sticky = createStickyNote(noteData.x, noteData.y, noteData.width, noteData.height);
@@ -124,16 +133,20 @@ const restoreFromHistory = (state) => {
 };
 
 const undo = () => {
-    if (historyIndex > 0) {
-        historyIndex--;
-        restoreFromHistory(historyStack[historyIndex]);
+    const activeFile = paintFiles.find(f => f.id === activeFileId);
+    if (activeFile && activeFile.historyIndex > 0) {
+        activeFile.historyIndex--;
+        restoreFromHistory(activeFile.history[activeFile.historyIndex]);
+        saveAllPaintFiles();
     }
 };
 
 const redo = () => {
-    if (historyIndex < historyStack.length - 1) {
-        historyIndex++;
-        restoreFromHistory(historyStack[historyIndex]);
+    const activeFile = paintFiles.find(f => f.id === activeFileId);
+    if (activeFile && activeFile.historyIndex < activeFile.history.length - 1) {
+        activeFile.historyIndex++;
+        restoreFromHistory(activeFile.history[activeFile.historyIndex]);
+        saveAllPaintFiles();
     }
 };
 
@@ -544,7 +557,172 @@ const clearCanvas = () => {
     saveToHistory();
 };
 
-const saveImage = () => {
+const saveAllPaintFiles = () => {
+    // To save space, we don't save the full imageData objects in localStorage.
+    // Instead, we convert them to data URLs.
+    const storableFiles = paintFiles.map(file => {
+        const storableHistory = file.history.map(state => {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = state.imageData.width;
+            tempCanvas.height = state.imageData.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.putImageData(state.imageData, 0, 0);
+            return {
+                dataUrl: tempCanvas.toDataURL(),
+                stickyNotes: state.stickyNotes,
+                timestamp: state.timestamp
+            };
+        });
+        return { ...file, history: storableHistory };
+    });
+    localStorage.setItem(PAINT_STORAGE_KEY, JSON.stringify(storableFiles));
+};
+
+const loadAllPaintFiles = () => {
+    const storedFiles = localStorage.getItem(PAINT_STORAGE_KEY);
+    if (storedFiles) {
+        const parsedFiles = JSON.parse(storedFiles);
+        const promises = parsedFiles.map(file => {
+            const historyPromises = file.history.map(state => {
+                return new Promise(resolve => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = img.width;
+                        tempCanvas.height = img.height;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(img, 0, 0);
+                        resolve({
+                            imageData: tempCtx.getImageData(0, 0, img.width, img.height),
+                            stickyNotes: state.stickyNotes,
+                            timestamp: state.timestamp
+                        });
+                    };
+                    img.src = state.dataUrl;
+                });
+            });
+            return Promise.all(historyPromises).then(history => {
+                return { ...file, history };
+            });
+        });
+        return Promise.all(promises);
+    }
+    return Promise.resolve(null);
+};
+
+const createNewFile = () => {
+    const newFile = {
+        id: Date.now(),
+        name: `Drawing ${paintFiles.length + 1}`,
+        history: [],
+        historyIndex: -1,
+    };
+    paintFiles.push(newFile);
+    switchToFile(newFile.id);
+};
+
+const switchToFile = (fileId) => {
+    activeFileId = fileId;
+    const activeFile = paintFiles.find(f => f.id === fileId);
+    if (activeFile && activeFile.history.length > 0) {
+        restoreFromHistory(activeFile.history[activeFile.historyIndex]);
+    } else {
+        // It's a new file or corrupted, clear the canvas
+        clearCanvas();
+    }
+    renderTabs();
+};
+
+const deleteFile = (fileId) => {
+    const indexToDelete = paintFiles.findIndex(f => f.id === fileId);
+    if (indexToDelete === -1 || paintFiles.length <= 1) {
+        return; // Can't delete the last file
+    }
+
+    paintFiles.splice(indexToDelete, 1);
+
+    // If the active file was deleted, determine the new active file
+    if (activeFileId === fileId) {
+        const newActiveIndex = Math.max(0, indexToDelete - 1);
+        if (paintFiles.length > 0) {
+            const newActiveId = paintFiles[newActiveIndex].id;
+            switchToFile(newActiveId);
+        } else {
+            // This case should not be reached due to the guard clause, but for safety:
+            createNewFile();
+        }
+    } else {
+        // If a non-active file was deleted, just re-render the tabs
+        // The activeFileId remains correct.
+        renderTabs();
+    }
+
+    saveAllPaintFiles();
+};
+
+const renderTabs = () => {
+    tabsContainer.innerHTML = '';
+    paintFiles.forEach(file => {
+        const tab = document.createElement('button');
+        tab.className = 'tab';
+        tab.textContent = file.name;
+        if (file.id === activeFileId) {
+            tab.classList.add('active');
+        }
+
+        // Add close button if more than one file exists
+        if (paintFiles.length > 1) {
+            const closeBtn = document.createElement('span');
+            closeBtn.className = 'tab-close-btn';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.title = 'Close Drawing';
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm(`Are you sure you want to delete "${file.name}"? This cannot be undone.`)) {
+                    deleteFile(file.id);
+                }
+            });
+            tab.appendChild(closeBtn);
+        }
+
+        tab.addEventListener('click', () => switchToFile(file.id));
+
+        tab.addEventListener('dblclick', () => {
+            if (tab.classList.contains('editing')) return;
+            tab.classList.add('editing');
+            
+            const originalName = file.name;
+            tab.innerHTML = `<input type="text" value="${originalName}" />`;
+            const input = tab.querySelector('input');
+            input.focus();
+            input.select();
+
+            const finishRename = () => {
+                const newName = input.value.trim();
+                const fileToUpdate = paintFiles.find(f => f.id === file.id);
+                if (newName && fileToUpdate) {
+                    fileToUpdate.name = newName;
+                }
+                tab.classList.remove('editing');
+                saveAllPaintFiles();
+                renderTabs(); // Re-render to finalize
+            };
+
+            input.addEventListener('blur', finishRename);
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') finishRename();
+                else if (e.key === 'Escape') {
+                    tab.classList.remove('editing');
+                    renderTabs(); // Revert
+                }
+            });
+        });
+
+        tabsContainer.appendChild(tab);
+    });
+};
+
+const exportImage = () => {
     const format = exportFormat.value;
     const timestamp = Date.now();
 
@@ -636,7 +814,7 @@ canvasContainer.addEventListener('touchmove', handleTouchMove, { passive: false 
 canvasContainer.addEventListener('touchend', stopDrawing);
 
 if (clearBtn) clearBtn.addEventListener('click', clearCanvas);
-if (saveBtn) saveBtn.addEventListener('click', saveImage);
+if (saveBtn) saveBtn.addEventListener('click', exportImage);
 
 if (sizePicker && sizeDisplay) {
     sizePicker.addEventListener('input', () => {
@@ -652,7 +830,7 @@ document.addEventListener('keydown', e => {
     }
     if ((e.key === 's' || e.key === 'S') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        saveImage();
+        exportImage();
     }
 });
 
@@ -667,14 +845,22 @@ const adjustTheme = () => {
     colorPickerTrigger.style.backgroundColor = brushColor;
 };
 
-const initializePaint = () => {
-    setupCanvas();
-    adjustTheme();
-    saveToHistory(); // Save initial empty state
+newTabBtn.addEventListener('click', createNewFile);
+
+const initializePaint = async () => {
+    const loadedFiles = await loadAllPaintFiles();
+    if (loadedFiles && loadedFiles.length > 0) {
+        paintFiles = loadedFiles;
+        activeFileId = paintFiles[0].id;
+    } else {
+        // Create the first file if none exist
+        createNewFile();
+    }
+    switchToFile(activeFileId);
 };
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializePaint);
+    document.addEventListener('DOMContentLoaded', () => { setupCanvas(); initializePaint(); });
 } else {
     initializePaint();
 }

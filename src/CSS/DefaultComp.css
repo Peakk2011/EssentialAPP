@@ -28,31 +28,34 @@
 }
 
 :root {
-    /* Theme Colors */
-    --theme-bg: #0F0F0F;
-    --theme-fg: #ffffff;
-    --theme-primary: #080808;
-    --theme-accent: hsl(0, 15%, 75%);
-    --theme-border: hsl(0, 0%, 18%);
-    --theme-card: #141414;
-    --theme-titlebar: #0f0f0f;
-    --theme-links: #C4C4C4;
-    --HoverColor: #313131;
-    --SoftHoverColor: #1e1e1e;
-    --NameColorSvg: #fff;
+    /* HSL Theme Colors - Dark Mode */
+    --theme-bg: hsl(0, 0%, 6%);           /* #0F0F0F */
+    --theme-fg: hsl(0, 0%, 100%);         /* #ffffff */
+    --theme-primary: hsl(0, 0%, 3%);      /* #080808 */
+    --theme-accent: hsl(0, 15%, 75%);     
+    --theme-border: hsl(0, 0%, 18%);      /* #2e2e2e */
+    --theme-card: hsl(0, 0%, 8%);         /* #141414 */
+    --theme-titlebar: hsl(0, 0%, 6%);     /* #0f0f0f */
+    --theme-links: hsl(0, 0%, 77%);       /* #C4C4C4 */
+    --HoverColor: hsl(0, 0%, 19%);        /* #313131 */
+    --SoftHoverColor: hsl(0, 0%, 12%);    /* #1e1e1e */
+    --NameColorSvg: hsl(0, 0%, 100%);     /* #fff */
 
+    /* Typography */
     --font-primary: "Manrope", sans-serif;
     --font-text: "Inter Tight", system-ui, sans-serif;
     --font-size-base: 14px;
     --font-scale: 1.2;
     --line-height: 1.5;
 
+    /* Spacing */
     --spacing-unit: 8px;
     --spacing-xs: calc(var(--spacing-unit) * 0.5);
     --spacing-sm: var(--spacing-unit);
     --spacing-md: calc(var(--spacing-unit) * 2);
     --spacing-lg: calc(var(--spacing-unit) * 3);
 
+    /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
     --menu-transition: 300ms cubic-bezier(0.075, 0.82, 0.165, 1);
@@ -68,109 +71,121 @@
     --ColorHighlight: var(--theme-accent);
     --CardMainColor: var(--theme-card);
     --accent: var(--theme-accent);
-    --HRborder: solid 1px #2f2f2f;
-    --RippleEffectColor: rgba(255, 255, 255, 0.270);
+    --HRborder: solid 1px hsl(0, 0%, 18%);        /* #2f2f2f */
+    --RippleEffectColor: hsla(0, 0%, 100%, 0.27); /* rgba(255, 255, 255, 0.270) */
 
-    /* Titlebar color */
-    --TitlebarColor: #0f0f0f;
-    --TitlebarColorButton: #fff;
+    /* Titlebar */
+    --TitlebarColor: hsl(0, 0%, 6%);              /* #0f0f0f */
+    --TitlebarColorButton: hsl(0, 0%, 100%);      /* #fff */
     --TitlebarColorBorder: solid 1px var(--theme-border);
     --TitlebarColorHover: var(--SoftHoverColor);
 
-    /* Contextmenu color */
-    --ctx-menu-bg: #1A1A1A;
-    --ctx-menu-hover: #313131;
-    --ctx-menu-active: #0c0c0c;
-    --ctx-menu-text: #e3e3e3;
-    --ctx-menu-text-hover: #ffffff;
+    /* Context Menu */
+    --ctx-menu-bg: hsl(0, 0%, 10%);               /* #1A1A1A */
+    --ctx-menu-hover: hsl(0, 0%, 19%);            /* #313131 */
+    --ctx-menu-active: hsl(0, 0%, 5%);            /* #0c0c0c */
+    --ctx-menu-text: hsl(0, 0%, 89%);             /* #e3e3e3 */
+    --ctx-menu-text-hover: hsl(0, 0%, 100%);      /* #ffffff */
 
-    /* Shadow */
-    --ctx-menu-shadow: 0px 24px 38px rgba(0, 0, 0, 0.14),
-        0px 9px 46px rgba(0, 0, 0, 0.12),
-        0px 11px 15px rgba(0, 0, 0, 0.20);
+    /* Shadows */
+    --ctx-menu-shadow: 
+        0px 24px 38px hsla(0, 0%, 0%, 0.14),
+        0px 9px 46px hsla(0, 0%, 0%, 0.12),
+        0px 11px 15px hsla(0, 0%, 0%, 0.20);
 
     /* Buttons */
-    --PrimaryButtonsColors: #222;
+    --PrimaryButtonsColors: hsl(0, 0%, 13%);      /* #222 */
     --PrimaryButtonsColors: var(--HoverColor);
-    /* Toggle Essential logo */
+
+    /* Toggle States */
     --LightmodeToggleButtons: none;
     --DarkmodeToggleButtons: block;
-    /* BackgroundBlur color */
-    --BackgroundBlurColor: rgba(15, 15, 15, 0.920);
+
+    /* Background Blur */
+    --BackgroundBlurColor: hsla(0, 0%, 6%, 0.92); /* rgba(15, 15, 15, 0.920) */
 }
 
-/* (default) */
+/* Dark Theme (Default) */
 :root[data-theme="dark"] {
-    --theme-bg: #0F0F0F;
-    --theme-fg: #ffffff;
-    --theme-primary: #080808;
+    --theme-bg: hsl(0, 0%, 6%);
+    --theme-fg: hsl(0, 0%, 100%);
+    --theme-primary: hsl(0, 0%, 3%);
     --theme-accent: hsl(0, 15%, 75%);
-    --theme-border: #3f3f3f;
-    --theme-card: #141414;
-    --theme-titlebar: #0f0f0f;
-    --theme-links: #C4C4C4;
-    --HoverColor: #313131;
-    --SoftHoverColor: #1e1e1e;
-    --NameColorSvg: #fff;
-    --HRborder: solid 1px #2f2f2f;
-    --RippleEffectColor: rgba(255, 255, 255, 0.270);
-    --TitlebarColor: #0f0f0f;
-    --TitlebarColorButton: #fff;
-    --TitlebarColorBorder: solid 1px #3f3f3f;
-    --TitlebarColorHover: #1e1e1e;
-    --ctx-menu-bg: #1A1A1A;
-    --ctx-menu-hover: #313131;
-    --ctx-menu-active: #0c0c0c;
-    --ctx-menu-text: #e3e3e3;
-    --ctx-menu-text-hover: #ffffff;
-    --ctx-menu-shadow: 0px 24px 38px rgba(0, 0, 0, 0.14),
-        0px 9px 46px rgba(0, 0, 0, 0.12),
-        0px 11px 15px rgba(0, 0, 0, 0.20);
-    --PrimaryButtonsColors: #222;
-    --PrimaryButtonsColors: var(--HoverColor);
+    --theme-border: hsl(0, 0%, 25%);              /* #3f3f3f */
+    --theme-card: hsl(0, 0%, 8%);
+    --theme-titlebar: hsl(0, 0%, 6%);
+    --theme-links: hsl(0, 0%, 77%);
+    --HoverColor: hsl(0, 0%, 19%);
+    --SoftHoverColor: hsl(0, 0%, 12%);
+    --NameColorSvg: hsl(0, 0%, 100%);
+    --HRborder: solid 1px hsl(0, 0%, 18%);
+    --RippleEffectColor: hsla(0, 0%, 100%, 0.27);
+    --TitlebarColor: hsl(0, 0%, 6%);
+    --TitlebarColorButton: hsl(0, 0%, 100%);
+    --TitlebarColorBorder: solid 1px hsl(0, 0%, 25%);
+    --TitlebarColorHover: hsl(0, 0%, 12%);
+    --ctx-menu-bg: hsl(0, 0%, 10%);
+    --ctx-menu-hover: hsl(0, 0%, 19%);
+    --ctx-menu-active: hsl(0, 0%, 5%);
+    --ctx-menu-text: hsl(0, 0%, 89%);
+    --ctx-menu-text-hover: hsl(0, 0%, 100%);
+    --ctx-menu-shadow: 
+        0px 24px 38px hsla(0, 0%, 0%, 0.14),
+        0px 9px 46px hsla(0, 0%, 0%, 0.12),
+        0px 11px 15px hsla(0, 0%, 0%, 0.20);
+    --PrimaryButtonsColors: hsl(0, 0%, 13%);
     --LightmodeToggleButtons: none;
     --DarkmodeToggleButtons: block;
-    --BackgroundBlurColor: rgba(15, 15, 15, 0.920);
+    --BackgroundBlurColor: hsla(0, 0%, 6%, 0.92);
     color-scheme: dark;
     background: var(--theme-bg);
     color: var(--theme-fg);
 }
 
-/* Light mode overrides */
+/* Light Theme */
 :root[data-theme="light"], html.light, body.light {
-    --theme-bg: #faf8f0;
-    --theme-fg: #0f0f0f;
-    --theme-primary: #ffffff;
-    --theme-card: #fcfcfc;
-    --theme-titlebar: #f0f0f0;
-    --theme-border: #cfcfcf;
-    --HoverColor: hsl(40, 10%, 85%);
-    --SoftHoverColor: hsl(40, 10%, 88%);
-    --theme-links: #222;
-    --NameColorSvg: #000;
-    --theme-accent: #ccaeae;
-    --HRborder: solid 1px #e6e6e6;
-    --RippleEffectColor: rgba(0, 0, 0, 0.27);
-    --TitlebarColor: #f3f2f0;
-    --TitlebarColorButton: #303030;
-    --TitlebarColorBorder: solid 1px #cfcfcf;
-    --TitlebarColorHover: hsl(40, 10%, 82.5%);
-    --ctx-menu-bg: #f6f6f5;
-    --ctx-menu-hover: #e4e4e4;
-    --ctx-menu-active: #e8e8e8;
-    --ctx-menu-text: #000;
-    --ctx-menu-text-hover: #000000;
-    --ctx-menu-shadow: 0px 24px 38px rgba(0, 0, 0, 0.10),
-        0px 9px 46px rgba(0, 0, 0, 0.08),
-        0px 11px 15px rgba(0, 0, 0, 0.12);
-    --PrimaryButtonsColors: #cecdc6;
-    --PrimaryButtonsColors: var(--HoverColor);
+    --theme-bg: hsl(45, 43%, 96%);               /* #faf8f0 */
+    --theme-fg: hsl(0, 0%, 6%);                  /* #0f0f0f */
+    --theme-primary: hsl(0, 0%, 100%);           /* #ffffff */
+    --theme-card: hsl(0, 0%, 99%);               /* #fcfcfc */
+    --theme-titlebar: hsl(0, 0%, 94%);           /* #f0f0f0 */
+    --theme-border: hsl(0, 0%, 81%);             /* #cfcfcf */
+    --HoverColor: hsl(40, 10%, 85%);             /* Already HSL */
+    --SoftHoverColor: hsl(40, 10%, 88%);         /* Already HSL */
+    --theme-links: hsl(0, 0%, 13%);              /* #222 */
+    --NameColorSvg: hsl(0, 0%, 0%);              /* #000 */
+    --theme-accent: hsl(0, 15%, 80%);            /* #ccaeae */
+    --HRborder: solid 1px hsl(0, 0%, 90%);       /* #e6e6e6 */
+    --RippleEffectColor: hsla(0, 0%, 0%, 0.27);  /* rgba(0, 0, 0, 0.27) */
+    --TitlebarColor: hsl(42, 14%, 95%);          /* #f3f2f0 */
+    --TitlebarColorButton: hsl(0, 0%, 19%);      /* #303030 */
+    --TitlebarColorBorder: solid 1px hsl(0, 0%, 81%);
+    --TitlebarColorHover: hsl(40, 10%, 82.5%);   /* Already HSL */
+    --ctx-menu-bg: hsl(60, 9%, 96%);             /* #f6f6f5 */
+    --ctx-menu-hover: hsl(0, 0%, 89%);           /* #e4e4e4 */
+    --ctx-menu-active: hsl(0, 0%, 91%);          /* #e8e8e8 */
+    --ctx-menu-text: hsl(0, 0%, 0%);             /* #000 */
+    --ctx-menu-text-hover: hsl(0, 0%, 0%);       /* #000000 */
+    --ctx-menu-shadow: 
+        0px 24px 38px hsla(0, 0%, 0%, 0.10),
+        0px 9px 46px hsla(0, 0%, 0%, 0.08),
+        0px 11px 15px hsla(0, 0%, 0%, 0.12);
+    --PrimaryButtonsColors: hsl(45, 8%, 81%);    /* #cecdc6 */
     --LightmodeToggleButtons: block;
     --DarkmodeToggleButtons: none;
-    --BackgroundBlurColor: rgba(250, 248, 240, 0.765);
+    --BackgroundBlurColor: hsla(45, 43%, 96%, 0.765); /* rgba(250, 248, 240, 0.765) */
     color-scheme: light;
     background: var(--theme-bg);
     color: var(--theme-fg);
+}
+
+/* Utility classes for easy color variations */
+.hsl-variations {
+    /* Example of how to create color variations with HSL */
+    --color-primary-lighter: hsl(from var(--theme-primary) h s calc(l + 10%));
+    --color-primary-darker: hsl(from var(--theme-primary) h s calc(l - 10%));
+    --color-accent-muted: hsl(from var(--theme-accent) h calc(s - 20%) l);
+    --color-accent-vibrant: hsl(from var(--theme-accent) h calc(s + 20%) l);
 }
 
 /* Base styles */
