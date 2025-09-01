@@ -48,83 +48,85 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const menu = document.querySelector('.menu');
   const content = document.querySelector('.content');
-  const resizeHandle = document.createElement('div');
-  resizeHandle.className = 'resize-handle';
-  menu.appendChild(resizeHandle);
+  if (menu && content) {
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'resize-handle';
+    menu.appendChild(resizeHandle);
 
-  let isResizing = false;
-  let startX, startWidth;
+    let isResizing = false;
+    let startX, startWidth;
 
-  const updateWidth = (width) => {
-    // Check reset
-    if (window.innerWidth <= 340) {
-      menu.style.width = '';
-      document.documentElement.style.setProperty('--sidebar-width', '0px');
-      return;
+    const updateWidth = (width) => {
+      // Check reset
+      if (window.innerWidth <= 340) {
+        menu.style.width = '';
+        document.documentElement.style.setProperty('--sidebar-width', '0px');
+        return;
+      }
+
+      // Normal width handling
+      width = Math.max(170, Math.min(350, width));
+      menu.style.width = `${width}px`;
+      document.documentElement.style.setProperty('--sidebar-width', `${width}px`);
+      localStorage.setItem('EssentialApp.Electron.sidebar-width', width);
+    };
+
+    // Reset
+    const resetOnMobile = () => {
+      if (window.innerWidth <= 340) {
+        updateWidth(0);
+      } else {
+        const savedWidth = localStorage.getItem('EssentialApp.Electron.sidebar-width');
+        if (savedWidth) updateWidth(parseInt(savedWidth));
+      }
+    };
+
+    window.addEventListener('resize', resetOnMobile);
+    resetOnMobile(); // Initial check
+
+    // Load width
+    const savedWidth = localStorage.getItem('EssentialApp.Electron.sidebar-width');
+    if (savedWidth) {
+      requestAnimationFrame(() => updateWidth(parseInt(savedWidth)));
     }
 
-    // Normal width handling
-    width = Math.max(170, Math.min(350, width));
-    menu.style.width = `${width}px`;
-    document.documentElement.style.setProperty('--sidebar-width', `${width}px`);
-    localStorage.setItem('EssentialApp.Electron.sidebar-width', width);
-  };
+    const startResizing = (e) => {
+      isResizing = true;
+      startX = e.pageX;
+      startWidth = menu.offsetWidth;
 
-  // Reset
-  const resetOnMobile = () => {
-    if (window.innerWidth <= 340) {
-      updateWidth(0);
-    } else {
-      const savedWidth = localStorage.getItem('EssentialApp.Electron.sidebar-width');
-      if (savedWidth) updateWidth(parseInt(savedWidth));
-    }
-  };
+      menu.style.transition = 'none';
+      content.style.transition = 'none';
+      menu.style.willChange = 'width';
+      content.style.willChange = 'width';
+      document.body.style.cursor = 'col-resize';
 
-  window.addEventListener('resize', resetOnMobile);
-  resetOnMobile(); // Initial check
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', stopResizing);
+    };
 
-  // Load width
-  const savedWidth = localStorage.getItem('EssentialApp.Electron.sidebar-width');
-  if (savedWidth) {
-    requestAnimationFrame(() => updateWidth(parseInt(savedWidth)));
+    const handleMouseMove = (e) => {
+      if (!isResizing) return;
+      requestAnimationFrame(() => {
+        const diff = e.pageX - startX;
+        updateWidth(startWidth + diff);
+      });
+    };
+
+    const stopResizing = () => {
+      isResizing = false;
+      document.body.style.cursor = '';
+      menu.style.transition = '';
+      content.style.transition = '';
+      menu.style.willChange = 'auto';
+      content.style.willChange = 'auto';
+
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', stopResizing);
+    };
+
+    resizeHandle.addEventListener('mousedown', startResizing);
   }
-
-  const startResizing = (e) => {
-    isResizing = true;
-    startX = e.pageX;
-    startWidth = menu.offsetWidth;
-
-    menu.style.transition = 'none';
-    content.style.transition = 'none';
-    menu.style.willChange = 'width';
-    content.style.willChange = 'width';
-    document.body.style.cursor = 'col-resize';
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', stopResizing);
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isResizing) return;
-    requestAnimationFrame(() => {
-      const diff = e.pageX - startX;
-      updateWidth(startWidth + diff);
-    });
-  };
-
-  const stopResizing = () => {
-    isResizing = false;
-    document.body.style.cursor = '';
-    menu.style.transition = '';
-    content.style.transition = '';
-    menu.style.willChange = 'auto';
-    content.style.willChange = 'auto';
-
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', stopResizing);
-  };
-
-  resizeHandle.addEventListener('mousedown', startResizing);
 });
 
 // Set default new windows as bug set to featured.
@@ -177,20 +179,24 @@ const createWindows = {
   }
 }
 
-createWindows.Aboutus.AboutEssential.addEventListener('click', async (eventToggleNewwindows_Aboutus) => {
-  eventToggleNewwindows_Aboutus.preventDefault();
-  await window.electronAPI.openAboutWindow();
-});
-
-createWindows.Settings.SettingsEssential.addEventListener('click', async (eventToggleNewwindows_Settings) => {
-  eventToggleNewwindows_Settings.preventDefault();
-  await window.electronAPI.openSettingsWindow('settings.html');
-});
-
-createWindows.Aboutus.Mintputs.addEventListener('click', async (eventToggleNewwindows_Mintputs) => {
-  eventToggleNewwindows_Mintputs.preventDefault();
-  await window.electronAPI.openMintputsWindow('openMintputs.html');
-});
+if (createWindows.Aboutus.AboutEssential) {
+  createWindows.Aboutus.AboutEssential.addEventListener('click', async (eventToggleNewwindows_Aboutus) => {
+    eventToggleNewwindows_Aboutus.preventDefault();
+    await window.electronAPI.openAboutWindow();
+  });
+}
+if (createWindows.Settings.SettingsEssential) {
+  createWindows.Settings.SettingsEssential.addEventListener('click', async (eventToggleNewwindows_Settings) => {
+    eventToggleNewwindows_Settings.preventDefault();
+    await window.electronAPI.openSettingsWindow('settings.html');
+  });
+}
+if (createWindows.Aboutus.Mintputs) {
+  createWindows.Aboutus.Mintputs.addEventListener('click', async (eventToggleNewwindows_Mintputs) => {
+    eventToggleNewwindows_Mintputs.preventDefault();
+    await window.electronAPI.openMintputsWindow('openMintputs.html');
+  });
+}
 
 // Add event listeners
 document.getElementById('CurrentPage')?.addEventListener('click', currentPageHandler);

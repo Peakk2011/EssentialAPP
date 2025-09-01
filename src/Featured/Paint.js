@@ -1,3 +1,4 @@
+// DOM Elements
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const canvasContainer = document.getElementById('canvasContainer');
@@ -9,24 +10,34 @@ const previewCtx = previewCanvas.getContext('2d');
 
 const colorPickerTrigger = document.getElementById('color-picker-trigger');
 const iroPickerContainer = document.getElementById('iro-picker-container');
-let brushColor = '#000000';
-
 const sizePicker = document.getElementById('brushSize');
 const sizeDisplay = document.getElementById('sizeDisplay');
 const brushType = document.getElementById('brushType');
 const exportFormat = document.getElementById('exportFormat');
 const clearBtn = document.getElementById('clearBtn');
 const saveBtn = document.getElementById('saveBtn');
-
 const tabsContainer = document.getElementById('paint-tabs');
 const newTabBtn = document.getElementById('new-paint-tab-btn');
 
-// --- State Management for Multiple Files ---
+// State Variables
+let brushColor = '#007ACC'; // Fixed blue color
 let paintFiles = [];
 let activeFileId = null;
-const PAINT_STORAGE_KEY = 'essential_app_paint_files';
-const MAX_HISTORY_PER_FILE = 20;
+let svg, svgGroup;
+let isDrawing = false;
+let points = [];
+let panX = 0;
+let panY = 0;
+let scale = 1;
+let isInitialized = false;
+let clickCount = 0;
+let clickTimer = null;
+let canvasWidth = 7680;
+let canvasHeight = 4320;
+let stickyNotes = [];
+let isDraggingSticky = false;
 
+// Color Picker Setup
 const colorPicker = new iro.ColorPicker(iroPickerContainer, {
     width: 150,
     borderWidth: 2,
@@ -40,6 +51,7 @@ const colorPicker = new iro.ColorPicker(iroPickerContainer, {
     ]
 });
 
+// Event Listeners for Color Picker
 colorPicker.on('color:change', (color) => {
     brushColor = color.hexString;
     colorPickerTrigger.style.backgroundColor = brushColor;
@@ -57,35 +69,16 @@ document.addEventListener('click', (e) => {
     }
 });
 
-let svg, svgGroup; // For sticky notes
-let isDrawing = false;
-let points = [];
-let panX = 0;
-let panY = 0;
-let scale = 1;
-let minScale = 0.1;
-let maxScale = 10;
-
-let isInitialized = false;
-let clickCount = 0;
-let clickTimer = null;
-const clickDelay = 400;
-
-let canvasWidth = 7680;
-let canvasHeight = 4320;
-
-let stickyNotes = [];
-let isDraggingSticky = false;
-
+// History Management
 const saveToHistory = () => {
     const activeFile = paintFiles.find(f => f.id === activeFileId);
     if (!activeFile) return;
 
+    // Check if we should overwrite recent history (same stroke)
     if (activeFile.historyIndex > 0 && activeFile.historyIndex === activeFile.history.length - 1) {
         const lastState = activeFile.history[activeFile.historyIndex];
         const now = Date.now();
         if (now - lastState.timestamp < 500) {
-            // Overwrite last state if it was very recent (part of the same stroke)
             activeFile.history[activeFile.historyIndex] = {
                 imageData: drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height),
                 stickyNotes: JSON.parse(JSON.stringify(stickyNotes)), 
@@ -96,6 +89,7 @@ const saveToHistory = () => {
         }
     }
 
+    // Add new history state
     activeFile.history = activeFile.history.slice(0, activeFile.historyIndex + 1);
     activeFile.history.push({
         imageData: drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height),
@@ -103,23 +97,21 @@ const saveToHistory = () => {
         timestamp: Date.now()
     });
 
-    if (activeFile.history.length > MAX_HISTORY_PER_FILE) {
+    // Maintain history limit
+    if (activeFile.history.length > 20) {
         activeFile.history.shift();
     }
     activeFile.historyIndex = activeFile.history.length - 1;
     saveAllPaintFiles();
 };
 
-
 const restoreFromHistory = (state) => {
     if (!state) return;
 
-    // Clear current canvas and SVG
     drawingCtx.putImageData(state.imageData, 0, 0);
     stickyNotes.forEach(sticky => sticky.remove());
     stickyNotes = [];
 
-    // Recreate sticky notes from the state
     if (state.stickyNotes) {
         state.stickyNotes.forEach(noteData => {
             const sticky = createStickyNote(noteData.x, noteData.y, noteData.width, noteData.height);
@@ -150,7 +142,7 @@ const redo = () => {
     }
 };
 
-
+// SVG Initialization for Sticky Notes
 const initSVG = () => {
     if (svg) svg.remove();
 
@@ -168,19 +160,17 @@ const initSVG = () => {
     canvasContainer.appendChild(svg);
 };
 
+// Canvas Setup and Sizing
 const setupCanvas = () => {
     const containerRect = canvasContainer.getBoundingClientRect();
     const devicePixelRatio = window.devicePixelRatio || 1;
-
     const newWidth = Math.round(containerRect.width);
     const newHeight = Math.round(containerRect.height);
 
-    // Only resize and redraw if dimensions have actually changed
     if (canvasWidth !== newWidth || canvasHeight !== newHeight) {
         canvasWidth = newWidth;
         canvasHeight = newHeight;
 
-        // Preserve drawing buffer content
         const tempImage = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
 
         [canvas, drawingCanvas, previewCanvas].forEach(c => {
@@ -206,16 +196,26 @@ const setupCanvas = () => {
     }
 
     updateTransform();
-    initSVG(); // For sticky notes
+    initSVG();
     requestRedraw();
 };
 
+// Transform and Coordinate Functions
 const updateTransform = () => {
     const cssTransform = `translate(${panX}px, ${panY}px) scale(${scale})`;
     canvas.style.transform = cssTransform;
     if (svgGroup) {
         svgGroup.setAttribute("transform", `translate(${panX}, ${panY}) scale(${scale})`);
     }
+
+    // Dynamically show grid dots only when zoomed in
+    if (scale > 2) {
+        canvas.style.backgroundImage = 'radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.08) 1px, transparent 0)';
+        canvas.style.backgroundSize = '20px 20px';
+    } else {
+        canvas.style.backgroundImage = 'none';
+    }
+
     requestRedraw();
 };
 
@@ -226,6 +226,7 @@ const getCanvasCoords = (e) => {
     return { x, y };
 };
 
+// Sticky Notes Functions
 const createStickyNote = (x, y, width = 200, height = 150) => {
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     group.style.pointerEvents = 'auto';
@@ -253,14 +254,21 @@ const createStickyNote = (x, y, width = 200, height = 150) => {
     group.append(rect, textElement);
     svgGroup.appendChild(group);
 
-    let isEditing = false;
     const stickyObj = {
-        x, y, width, height, text: 'Double-click to edit', color: '#ffeb3b', group, rect, textElement,
+        x, y, width, height, 
+        text: 'Double-click to edit', 
+        color: '#ffeb3b', 
+        group, rect, textElement,
         remove: () => {
             if (group && group.parentNode) group.parentNode.removeChild(group);
         }
     };
 
+    setupStickyEvents(stickyObj);
+    return stickyObj;
+};
+
+const setupStickyEvents = (stickyObj) => {
     let isDragging = false;
     let dragOffset = { x: 0, y: 0 };
 
@@ -295,13 +303,10 @@ const createStickyNote = (x, y, width = 200, height = 150) => {
         startStickyEditing(stickyObj);
     };
 
-    rect.addEventListener('mousedown', onMouseDown);
-    rect.addEventListener('dblclick', onDoubleClick);
-
+    stickyObj.rect.addEventListener('mousedown', onMouseDown);
+    stickyObj.rect.addEventListener('dblclick', onDoubleClick);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-
-    return stickyObj;
 };
 
 const updateStickyPosition = sticky => {
@@ -346,6 +351,7 @@ const startStickyEditing = sticky => {
     textarea.focus();
 };
 
+// Triple Click Handler for Sticky Notes
 const handleTripleClick = e => {
     clickCount++;
     if (clickTimer) clearTimeout(clickTimer);
@@ -357,11 +363,14 @@ const handleTripleClick = e => {
             saveToHistory();
         }
         clickCount = 0;
-    }, clickDelay);
+    }, 400);
 };
 
+// Drawing Functions
 const requestRedraw = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const bgColor = window.getComputedStyle(canvas).backgroundColor;
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(drawingCanvas, 0, 0);
     ctx.drawImage(previewCanvas, 0, 0);
 };
@@ -384,7 +393,6 @@ const createSmoothTexture = (context, p1, p2) => {
     const size = parseFloat(sizePicker.value);
     const distance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
     const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-
     const density = Math.max(4, distance / (size * 0.04));
 
     for (let i = 0; i < density; i++) {
@@ -394,14 +402,10 @@ const createSmoothTexture = (context, p1, p2) => {
 
         const jitterX = (Math.random() - 0.5) * (size * 0.1);
         const jitterY = (Math.random() - 0.5) * (size * 0.1);
-
         const bristleAngle = angle + (Math.random() - 0.5) * 0.25;
         const bristleLength = (Math.random() * size * 0.6) + (size * 0.4);
-
         const speedFactor = 1 - (i / density);
         const bristleWidth = (Math.random() * (size / 6) + (size / 8)) * (0.5 + speedFactor);
-
-        // ink flow effect
         const alpha = Math.random() * 0.2 + 0.7;
 
         context.beginPath();
@@ -414,7 +418,7 @@ const createSmoothTexture = (context, p1, p2) => {
             y + jitterY + Math.sin(bristleAngle) * bristleLength / 2
         );
 
-        context.strokeStyle = brushColor;
+        context.strokeStyle = '#007ACC'; // Use fixed color
         context.lineWidth = bristleWidth;
         context.globalAlpha = alpha;
         context.lineCap = "round";
@@ -428,18 +432,18 @@ const createSmoothTexture = (context, p1, p2) => {
     context.globalAlpha = 1.0;
 };
 
+// Drawing Event Handlers
 const startDrawing = e => {
     if (e.button && e.button !== 0) return;
     if (isDraggingSticky) return;
     if (e.target && e.target.tagName && (e.target.tagName === 'rect' || e.target.tagName === 'text')) return;
+    
     e.preventDefault();
     e.stopPropagation();
     handleTripleClick(e);
 
     isDrawing = true;
     points = [getCanvasCoords(e)];
-
-    // Clear preview canvas for the new line
     previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 };
 
@@ -447,13 +451,11 @@ const draw = e => {
     if (!isDrawing || isDraggingSticky) return;
 
     points.push(getCanvasCoords(e));
-
     const currentBrush = brushType ? brushType.value : 'smooth';
 
     if (currentBrush === 'smooth') {
-        // For smooth lines, we need to redraw the whole line on preview to get curves right
         previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-        previewCtx.strokeStyle = brushColor;
+        previewCtx.strokeStyle = '#007ACC'; // Use fixed color
         previewCtx.lineWidth = parseFloat(sizePicker.value);
         drawLine(previewCtx, points);
     } else {
@@ -476,28 +478,34 @@ const stopDrawing = () => {
     }
 };
 
+// Zoom and Pan Functions
 const handleWheel = e => {
     e.preventDefault();
     const rect = canvasContainer.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
+    
     if (e.ctrlKey || e.metaKey) {
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
-        const newScale = Math.max(minScale, Math.min(maxScale, scale * delta));
+        const newScale = Math.max(0.1, Math.min(10, scale * delta));
+        
         if (newScale !== scale) {
             const containerWidth = rect.width;
             const containerHeight = rect.height;
             const scaledCanvasWidth = canvasWidth * newScale;
             const scaledCanvasHeight = canvasHeight * newScale;
             const scaleDiff = newScale - scale;
+            
             let newPanX = panX - (mouseX - panX) * scaleDiff / scale;
             let newPanY = panY - (mouseY - panY) * scaleDiff / scale;
+            
             newPanX = scaledCanvasWidth > containerWidth
                 ? Math.min(0, Math.max(containerWidth - scaledCanvasWidth, newPanX))
                 : (containerWidth - scaledCanvasWidth) / 2;
             newPanY = scaledCanvasHeight > containerHeight
                 ? Math.min(0, Math.max(containerHeight - scaledCanvasHeight, newPanY))
                 : (containerHeight - scaledCanvasHeight) / 2;
+                
             panX = newPanX;
             panY = newPanY;
             scale = newScale;
@@ -520,8 +528,10 @@ const handleWheel = e => {
     }
 };
 
+// Keyboard Event Handler
 const handleKeyboard = e => {
     const ctrl = e.ctrlKey || e.metaKey;
+    
     if (ctrl && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         undo();
@@ -530,11 +540,11 @@ const handleKeyboard = e => {
         redo();
     } else if (ctrl && (e.key === '=' || e.key === '+' || e.key === 'Add')) {
         e.preventDefault();
-        scale = Math.min(maxScale, scale * 1.1);
+        scale = Math.min(10, scale * 1.1);
         updateTransform();
     } else if (ctrl && (e.key === '-' || e.key === '_' || e.key === 'Subtract')) {
         e.preventDefault();
-        scale = Math.max(minScale, scale * 0.9);
+        scale = Math.max(0.1, scale * 0.9);
         updateTransform();
     } else if (ctrl && (e.key === '0' || e.key === 'Digit0')) {
         e.preventDefault();
@@ -546,8 +556,11 @@ const handleKeyboard = e => {
     }
 };
 
+// Canvas Clear Function
 const clearCanvas = () => {
-    drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    const bgColor = window.getComputedStyle(canvas).backgroundColor;
+    drawingCtx.fillStyle = bgColor;
+    drawingCtx.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
     previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 
     stickyNotes.forEach(sticky => sticky.remove());
@@ -557,9 +570,8 @@ const clearCanvas = () => {
     saveToHistory();
 };
 
+// File Management Functions
 const saveAllPaintFiles = () => {
-    // To save space, we don't save the full imageData objects in localStorage.
-    // Instead, we convert them to data URLs.
     const storableFiles = paintFiles.map(file => {
         const storableHistory = file.history.map(state => {
             const tempCanvas = document.createElement('canvas');
@@ -575,11 +587,11 @@ const saveAllPaintFiles = () => {
         });
         return { ...file, history: storableHistory };
     });
-    localStorage.setItem(PAINT_STORAGE_KEY, JSON.stringify(storableFiles));
+    localStorage.setItem('essential_app_paint_files', JSON.stringify(storableFiles));
 };
 
 const loadAllPaintFiles = () => {
-    const storedFiles = localStorage.getItem(PAINT_STORAGE_KEY);
+    const storedFiles = localStorage.getItem('essential_app_paint_files');
     if (storedFiles) {
         const parsedFiles = JSON.parse(storedFiles);
         const promises = parsedFiles.map(file => {
@@ -627,7 +639,6 @@ const switchToFile = (fileId) => {
     if (activeFile && activeFile.history.length > 0) {
         restoreFromHistory(activeFile.history[activeFile.historyIndex]);
     } else {
-        // It's a new file or corrupted, clear the canvas
         clearCanvas();
     }
     renderTabs();
@@ -635,31 +646,25 @@ const switchToFile = (fileId) => {
 
 const deleteFile = (fileId) => {
     const indexToDelete = paintFiles.findIndex(f => f.id === fileId);
-    if (indexToDelete === -1 || paintFiles.length <= 1) {
-        return; // Can't delete the last file
-    }
+    if (indexToDelete === -1 || paintFiles.length <= 1) return;
 
     paintFiles.splice(indexToDelete, 1);
 
-    // If the active file was deleted, determine the new active file
     if (activeFileId === fileId) {
         const newActiveIndex = Math.max(0, indexToDelete - 1);
         if (paintFiles.length > 0) {
             const newActiveId = paintFiles[newActiveIndex].id;
             switchToFile(newActiveId);
         } else {
-            // This case should not be reached due to the guard clause, but for safety:
             createNewFile();
         }
     } else {
-        // If a non-active file was deleted, just re-render the tabs
-        // The activeFileId remains correct.
         renderTabs();
     }
-
     saveAllPaintFiles();
 };
 
+// Tab Rendering
 const renderTabs = () => {
     tabsContainer.innerHTML = '';
     paintFiles.forEach(file => {
@@ -670,7 +675,6 @@ const renderTabs = () => {
             tab.classList.add('active');
         }
 
-        // Add close button if more than one file exists
         if (paintFiles.length > 1) {
             const closeBtn = document.createElement('span');
             closeBtn.className = 'tab-close-btn';
@@ -686,42 +690,43 @@ const renderTabs = () => {
         }
 
         tab.addEventListener('click', () => switchToFile(file.id));
-
-        tab.addEventListener('dblclick', () => {
-            if (tab.classList.contains('editing')) return;
-            tab.classList.add('editing');
-            
-            const originalName = file.name;
-            tab.innerHTML = `<input type="text" value="${originalName}" />`;
-            const input = tab.querySelector('input');
-            input.focus();
-            input.select();
-
-            const finishRename = () => {
-                const newName = input.value.trim();
-                const fileToUpdate = paintFiles.find(f => f.id === file.id);
-                if (newName && fileToUpdate) {
-                    fileToUpdate.name = newName;
-                }
-                tab.classList.remove('editing');
-                saveAllPaintFiles();
-                renderTabs(); // Re-render to finalize
-            };
-
-            input.addEventListener('blur', finishRename);
-            input.addEventListener('keydown', e => {
-                if (e.key === 'Enter') finishRename();
-                else if (e.key === 'Escape') {
-                    tab.classList.remove('editing');
-                    renderTabs(); // Revert
-                }
-            });
-        });
-
+        tab.addEventListener('dblclick', () => setupTabRename(tab, file));
         tabsContainer.appendChild(tab);
     });
 };
 
+const setupTabRename = (tab, file) => {
+    if (tab.classList.contains('editing')) return;
+    tab.classList.add('editing');
+    
+    const originalName = file.name;
+    tab.innerHTML = `<input type="text" value="${originalName}" />`;
+    const input = tab.querySelector('input');
+    input.focus();
+    input.select();
+
+    const finishRename = () => {
+        const newName = input.value.trim();
+        const fileToUpdate = paintFiles.find(f => f.id === file.id);
+        if (newName && fileToUpdate) {
+            fileToUpdate.name = newName;
+        }
+        tab.classList.remove('editing');
+        saveAllPaintFiles();
+        renderTabs();
+    };
+
+    input.addEventListener('blur', finishRename);
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') finishRename();
+        else if (e.key === 'Escape') {
+            tab.classList.remove('editing');
+            renderTabs();
+        }
+    });
+};
+
+// Export Function
 const exportImage = () => {
     const format = exportFormat.value;
     const timestamp = Date.now();
@@ -748,8 +753,10 @@ const exportImage = () => {
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(svgBlob);
     const img = new Image();
+    
     img.onload = () => {
         exportCtx.drawImage(img, 0, 0, canvasWidth * devicePixelRatio, canvasHeight * devicePixelRatio);
+        
         let dataUrl, filename;
         switch (format) {
             case 'png':
@@ -768,6 +775,7 @@ const exportImage = () => {
                 dataUrl = exportCanvas.toDataURL('image/png');
                 filename = `drawing_${timestamp}.png`;
         }
+        
         const link = document.createElement('a');
         link.download = filename;
         link.href = dataUrl;
@@ -777,6 +785,7 @@ const exportImage = () => {
     img.src = url;
 };
 
+// Touch Event Handlers
 const handleTouch = e => {
     e.preventDefault();
     const touch = e.touches[0];
@@ -785,8 +794,8 @@ const handleTouch = e => {
         clientY: touch.clientY,
         button: 0,
         target: e.target,
-        preventDefault: () => { },
-        stopPropagation: () => { }
+        preventDefault: () => {},
+        stopPropagation: () => {}
     };
     startDrawing(mouseEvent);
 };
@@ -801,73 +810,82 @@ const handleTouchMove = e => {
     draw(mouseEvent);
 };
 
-canvasContainer.addEventListener('mousedown', startDrawing);
-canvasContainer.addEventListener('mousemove', draw);
-document.addEventListener('mouseup', stopDrawing);
-document.addEventListener('mouseleave', stopDrawing);
-canvasContainer.addEventListener('contextmenu', e => e.preventDefault());
-
-canvasContainer.addEventListener('wheel', handleWheel, { passive: false });
-
-canvasContainer.addEventListener('touchstart', handleTouch, { passive: false });
-canvasContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-canvasContainer.addEventListener('touchend', stopDrawing);
-
-if (clearBtn) clearBtn.addEventListener('click', clearCanvas);
-if (saveBtn) saveBtn.addEventListener('click', exportImage);
-
-if (sizePicker && sizeDisplay) {
-    sizePicker.addEventListener('input', () => {
-        sizeDisplay.textContent = `${sizePicker.value}px`;
-    });
-}
-
-document.addEventListener('keydown', e => {
-    handleKeyboard(e);
-    if ((e.key === 'c' || e.key === 'C') && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        clearCanvas();
-    }
-    if ((e.key === 's' || e.key === 'S') && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        exportImage();
-    }
-});
-
+// Theme Adjustment
 const adjustTheme = () => {
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (isDark && brushColor === '#000000') {
-        brushColor = '#ffffff';
-    } else if (!isDark && brushColor === '#ffffff') {
-        brushColor = '#000000';
-    }
+    // Always use fixed blue color
+    brushColor = '#007ACC';
     colorPicker.color.hexString = brushColor;
     colorPickerTrigger.style.backgroundColor = brushColor;
 };
 
-newTabBtn.addEventListener('click', createNewFile);
-
+// Main Initialization
 const initializePaint = async () => {
     const loadedFiles = await loadAllPaintFiles();
     if (loadedFiles && loadedFiles.length > 0) {
         paintFiles = loadedFiles;
         activeFileId = paintFiles[0].id;
     } else {
-        // Create the first file if none exist
         createNewFile();
     }
     switchToFile(activeFileId);
 };
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { setupCanvas(); initializePaint(); });
-} else {
-    initializePaint();
-}
+// Event Listeners Setup
+const setupEventListeners = () => {
+    // Canvas events
+    canvasContainer.addEventListener('mousedown', startDrawing);
+    canvasContainer.addEventListener('mousemove', draw);
+    document.addEventListener('mouseup', stopDrawing);
+    document.addEventListener('mouseleave', stopDrawing);
+    canvasContainer.addEventListener('contextmenu', e => e.preventDefault());
 
-const handleResize = () => {
-    setupCanvas();
+    // Wheel and touch events
+    canvasContainer.addEventListener('wheel', handleWheel, { passive: false });
+    canvasContainer.addEventListener('touchstart', handleTouch, { passive: false });
+    canvasContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvasContainer.addEventListener('touchend', stopDrawing);
+
+    // Button events
+    if (clearBtn) clearBtn.addEventListener('click', clearCanvas);
+    if (saveBtn) saveBtn.addEventListener('click', exportImage);
+    newTabBtn.addEventListener('click', createNewFile);
+
+    // Size picker event
+    if (sizePicker && sizeDisplay) {
+        sizePicker.addEventListener('input', () => {
+            sizeDisplay.textContent = `${sizePicker.value}px`;
+        });
+    }
+
+    // Keyboard events
+    document.addEventListener('keydown', e => {
+        handleKeyboard(e);
+        if ((e.key === 'c' || e.key === 'C') && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            clearCanvas();
+        }
+        if ((e.key === 's' || e.key === 'S') && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            exportImage();
+        }
+    });
+
+    // Window events
+    window.addEventListener('resize', setupCanvas);
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', adjustTheme);
 };
 
-window.addEventListener('resize', handleResize);
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', adjustTheme);
+// Application Startup
+const startApp = () => {
+    setupCanvas();
+    initializePaint();
+    setupEventListeners();
+    adjustTheme(); // Set initial blue color
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startApp);
+} else {
+    startApp();
+}

@@ -34,10 +34,13 @@
             font-family: inherit;
             font-size: inherit;
         }
+
         .tab {
             position: relative;
-            padding-right: 28px !important; /* Make space for the button */
+            padding-right: 28px !important;
+            /* Make space for the button */
         }
+
         .tab-close-btn {
             position: absolute;
             right: 4px;
@@ -55,6 +58,7 @@
             cursor: pointer;
             transition: background-color 0.2s, color 0.2s;
         }
+
         .tab-close-btn:hover {
             background-color: rgba(255, 82, 82, 0.8);
             color: white;
@@ -117,7 +121,7 @@
                 transform: translateX(-50%);
                 min-width: 310px;"></div>
         </div>
-        
+
         <div class="control" id="brushSizeControl">
             <input type="range" id="brushSize" min="1" max="50" value="5">
             <span class="size-display" id="sizeDisplay">5px</span>
@@ -126,10 +130,10 @@
         <div class="control">
             <select id="brushType">
                 <option value="smooth">Smooth</option>
-                <option value="texture">Pen Style</option>
+                <option value="texture" selected>Texture</option>
             </select>
         </div>
-
+        
         <div class="control">
             <select id="exportFormat">
                 <option value="png">PNG</option>
@@ -147,7 +151,6 @@
     </div>
 
     <script src="./Featured/paint.js" defer></script>
-    <script src="renderer.js" defer></script>
     <script src="./frontendJS/PUBLICscripts.js" defer></script>
     <script type="module">
         import { initTheme, listenThemeSync, setTheme } from './Essential_Pages/Settings_Config/theme.js';

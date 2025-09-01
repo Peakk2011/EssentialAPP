@@ -200,6 +200,7 @@ html {
     margin-top: 40px;
     z-index: 5;
     animation: fadeIn 0.5s ease-in-out;
+    overflow: hidden;
 }
 
 .tabs-container {
@@ -417,6 +418,94 @@ html {
         opacity: 1;
         transform: scale(1);
     }
+}
+
+.appiclationDrawer iframe {
+    display: none;
+    width: 100%;
+    height: calc(100vh - 40px);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    border: none;
+}
+
+.appiclationDrawer iframe.active {
+    display: block;
+}
+
+.appiclationDrawer iframe.cached {
+    /* Keep iframe in DOM but hidden for caching */
+    display: none;
+}
+
+.appiclationDrawer {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 40px);
+    overflow: hidden;
+}
+
+.electron-only {
+    height: 100%;
+    width: 100%;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    color: white;
+    font-size: 18px;
+}
+
+.loading-spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#appStatus .app-controls a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: var(--theme-links);
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    -webkit-app-region: no-drag;
+}
+
+#appStatus .app-controls a:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+#appStatus .app-status-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    color: #a0a0a0;
+    /* Subtle text color */
+    cursor: default;
+    -webkit-app-region: no-drag;
 }
 
 /* Test to define platform */

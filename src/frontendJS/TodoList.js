@@ -258,14 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
             margin-right: 0.25rem;
         }
 
-        #search-input {
-            background: none;
-            border: none;
-            color: var(--theme-fg);
-            font-size: 0.9rem;
-            padding: 0.25rem 0.5rem;
-        }
-
         /* --- Edit Input --- */
         #todo-list li .edit-input {
             flex-grow: 1;
@@ -307,11 +299,6 @@ document.addEventListener('DOMContentLoaded', () => {
     dueDateInput.id = 'due-date-input';
     input.parentElement.insertBefore(dueDateInput, addBtn);
 
-    const searchInput = document.createElement('input');
-    searchInput.type = 'search';
-    searchInput.placeholder = 'Search tasks...';
-    searchInput.id = 'search-input';
-
     const categoryFiltersContainer = document.createElement('div');
     categoryFiltersContainer.className = 'category-filters';
     categoryFiltersContainer.id = 'category-filters';
@@ -319,14 +306,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const todoAppContainer = document.getElementById('todo-app');
     if (todoAppContainer && list) {
         todoAppContainer.insertBefore(categoryFiltersContainer, list);
-        categoryFiltersContainer.appendChild(searchInput);
     }
 
     // --- State Management ---
     let todos = JSON.parse(localStorage.getItem('todos_v2')) || [];
     let categories = [];
     let currentCategoryFilter = 'All';
-    let currentSearchTerm = '';
 
     const defaultColors = ['#5DADE2', '#58D68D', '#F5B041', '#EC7063', '#AF7AC5', '#AAB7B8', '#48C9B0', '#FAD7A0'];
 
@@ -453,7 +438,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         categoryFiltersContainer.appendChild(addCategoryBtn);
 
-        categoryFiltersContainer.appendChild(searchInput); // Ensure search is at the end
     }
 
     function createContextMenu(e, todo) {
@@ -496,11 +480,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('click', removeContextMenu);
-
-    searchInput.addEventListener('input', (e) => {
-        currentSearchTerm = e.target.value;
-        render();
-    });
 
     function handleEdit(todoId, liElement) {
         // Prevent re-triggering edit on an item that is already being edited.
@@ -554,14 +533,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let filteredTodos = currentCategoryFilter === 'All'
             ? todos
             : todos.filter(todo => todo.category === currentCategoryFilter);
-
-        // Apply search filter
-        if (currentSearchTerm) {
-            const searchTermLower = currentSearchTerm.toLowerCase();
-            filteredTodos = filteredTodos.filter(todo =>
-                todo.text.toLowerCase().includes(searchTermLower)
-            );
-        }
 
         filteredTodos.forEach((todo, index) => {
             const originalIndex = todos.findIndex(t => t.id === todo.id);

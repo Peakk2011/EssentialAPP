@@ -21,127 +21,40 @@
             const runtime = window.electronAPI ? 'electron' : 'web';
             document.documentElement.setAttribute('data-runtime', runtime);
         })();
-        document.documentElement.setAttribute('data-os', window.runtimeInfo.os);
-        document.body.classList.add(`os-${window.runtimeInfo.os === 'darwin' ? 'mac' : window.runtimeInfo.os === 'win32' ? 'windows' : 'linux'}`);
+        document.addEventListener('DOMContentLoaded', () => {
+            document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
+            document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
+        });
     </script>
     <style>
         body {
             display: flex;
             height: 100vh;
             overflow: hidden;
-        }
-
-        .notes-sidebar {
-            width: 250px;
-            background-color: var(--theme-bg-secondary, #1c1c1c);
-            border-right: 1px solid var(--theme-border, #3a3a3a);
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-        }
-
-        .notes-sidebar button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: var(--theme-accent, #5DADE2);
-            border: none;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        #notes-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            overflow-y: auto;
-        }
-
-        #notes-list li {
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        #notes-list li:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        #notes-list li.active {
-            background-color: var(--theme-accent, #5DADE2);
-            color: white;
-        }
-
-        #notes-list li input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-            border: 1px solid var(--theme-accent);
             background-color: var(--theme-bg);
-            color: var(--theme-fg);
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: inherit;
         }
 
         .notes-main {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
+            width: 100%;
+            height: 100%;
         }
 
         .textarea-container {
             position: relative;
             flex-grow: 1;
+            height: 100%;
         }
 
         #autoSaveTextarea {
             height: 100%;
         }
-
-        #notes-list li {
-            position: relative;
-        }
-
-        .delete-note-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #aaa;
-            cursor: pointer;
-            font-size: 1.2rem;
-            line-height: 1;
-            padding: 2px 5px;
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.15s ease-in-out;
-        }
-
-        #notes-list li:hover .delete-note-btn {
-            opacity: 1;
-        }
-
-        .delete-note-btn:hover {
-            color: #e57373;
-            background-color: rgba(255, 255, 255, 0.1);
-        }
     </style>
 </head>
 
 <body>
-    <div class="notes-sidebar">
-        <button id="new-note-btn">New Note</button>
-        <ul id="notes-list"></ul>
-    </div>
-
     <div class="notes-main">
         <div class="status">
             <div class="dot" id="saveIndicator"></div>
@@ -170,180 +83,53 @@
         </div>
     </div>
 
-    <script src="renderer.js" defer></script>
     <script src="./frontendJS/PUBLICscripts.js" defer></script>
-    <script src="./frontendJS/EssentialAPP_OptionsFeatured.js" defer></script>
-    <script src="./frontendJS/BottomNavbar.js" type="module" defer></script>
+    <script>
+        // Local zoom functions to fix "not defined" error
+        const textareaForZoom = document.getElementById('autoSaveTextarea');
+        let currentZoom = 16; // Default font size
+
+        function applyZoom() {
+            textareaForZoom.style.fontSize = `${currentZoom}px`;
+        }
+        function zoomIn() {
+            currentZoom = Math.min(48, currentZoom + 2);
+            applyZoom();
+        }
+        function zoomOut() {
+            currentZoom = Math.max(8, currentZoom - 2);
+            applyZoom();
+        }
+        function resetZoom() {
+            currentZoom = 16;
+            applyZoom();
+        }
+    </script>
     <script type="module">
         import { initTheme, listenThemeSync } from './Essential_Pages/Settings_Config/theme.js';
         initTheme();
         listenThemeSync();
 
         document.addEventListener('DOMContentLoaded', () => {
-            const NOTES_STORAGE_KEY = 'essential_app_notes_v2'; // New key for new format
-            const ACTIVE_NOTE_ID_KEY = 'essential_app_active_note_id';
-
-            const newNoteBtn = document.getElementById('new-note-btn');
-            const notesListEl = document.getElementById('notes-list');
+            const NOTES_STORAGE_KEY = 'essential_app_note_content'; // Simple key for single note
             const textarea = document.getElementById('autoSaveTextarea');
-            const statusText = document.getElementById('statusText');
-            const saveIndicator = document.getElementById('saveIndicator');
-
-            let notes = [];
-            let activeNoteId = localStorage.getItem(ACTIVE_NOTE_ID_KEY);
             let saveTimeout;
 
-            function migrateAndLoadNotes() {
-                const storedNotes = JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY)) || [];
-                notes = storedNotes.map(note => {
-                    if (typeof note.title === 'undefined') {
-                        return {
-                            id: note.id || Date.now(),
-                            title: (note.content ? note.content.substring(0, 30).split('\n')[0] : '') || 'Untitled Note',
-                            content: note.content || ''
-                        };
-                    }
-                    return note;
-                });
-                saveNotes();
+            function forceSave() {
+                localStorage.setItem(NOTES_STORAGE_KEY, textarea.value);
             }
-
-            function saveNotes() {
-                localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
-                statusText.textContent = 'Saved';
-                saveIndicator.style.backgroundColor = '#4CAF50';
-            }
-
-            function deleteNote(id) {
-                const indexToDelete = notes.findIndex(n => n.id == id);
-                if (indexToDelete === -1) return;
-
-                notes.splice(indexToDelete, 1);
-
-                if (activeNoteId == id) {
-                    // If the active note was deleted, switch to another one
-                    if (notes.length > 0) {
-                        // Try to select the previous note, or the first one
-                        const newActiveIndex = Math.max(0, indexToDelete - 1);
-                        setActiveNote(notes[newActiveIndex].id);
-                    } else {
-                        // No notes left, create a new one
-                        activeNoteId = null; // clear active id
-                        newNoteBtn.click();
-                    }
-                }
-                saveNotes();
-                renderNotesList(); // Re-render the list without the deleted note
-            }
-
-            function renderNotesList() {
-                notesListEl.innerHTML = '';
-                notes.forEach(note => {
-                    const li = document.createElement('li');
-                    li.dataset.id = note.id;
-                    li.textContent = note.title || 'Untitled Note';
-                    if (note.id == activeNoteId) {
-                        li.classList.add('active');
-                    }
-                    li.addEventListener('click', () => {
-                        if (!li.classList.contains('editing')) {
-                            setActiveNote(note.id);
-                        }
-                    });
-                    li.addEventListener('dblclick', () => {
-                        if (li.classList.contains('editing')) return;
-                        li.classList.add('editing');
-                        const originalTitle = li.textContent;
-                        li.innerHTML = `<input type="text" value="${originalTitle}" />`;
-                        const input = li.querySelector('input');
-                        input.focus();
-                        input.select();
-
-                        const finishRename = () => {
-                            const newTitle = input.value.trim();
-                            const noteToUpdate = notes.find(n => n.id == note.id);
-                            if (newTitle && noteToUpdate) {
-                                noteToUpdate.title = newTitle;
-                            }
-                            li.classList.remove('editing');
-                            saveNotes();
-                            renderNotesList();
-                        };
-
-                        input.addEventListener('blur', finishRename);
-                        input.addEventListener('keydown', (e) => {
-                            if (e.key === 'Enter') finishRename();
-                            else if (e.key === 'Escape') {
-                                li.classList.remove('editing');
-                                renderNotesList();
-                            }
-                        });
-                    });
-
-                    // Add delete button
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'delete-note-btn';
-                    deleteBtn.innerHTML = '&times;';
-                    deleteBtn.title = 'Delete Note';
-                    deleteBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (confirm(`Are you sure you want to delete "${note.title}"?`)) {
-                            deleteNote(note.id);
-                        }
-                    });
-                    li.appendChild(deleteBtn);
-                    notesListEl.appendChild(li);
-                });
-            }
-
-            function setActiveNote(id) {
-                activeNoteId = id;
-                localStorage.setItem(ACTIVE_NOTE_ID_KEY, id);
-                const activeNote = notes.find(n => n.id == id);
-                if (activeNote) {
-                    textarea.value = activeNote.content;
-                    textarea.disabled = false;
-                    textarea.focus();
-                } else {
-                    textarea.value = '';
-                    textarea.disabled = true;
-                }
-                renderNotesList();
-            }
-
-            newNoteBtn.addEventListener('click', () => {
-                const newNote = {
-                    id: Date.now(),
-                    title: `New Note ${notes.length + 1}`,
-                    content: ''
-                };
-                notes.unshift(newNote);
-                setActiveNote(newNote.id);
-                saveNotes();
-            });
 
             textarea.addEventListener('input', () => {
-                statusText.textContent = 'Saving...';
-                saveIndicator.style.backgroundColor = '#FFC107';
                 clearTimeout(saveTimeout);
                 saveTimeout = setTimeout(() => {
-                    const activeNote = notes.find(n => n.id == activeNoteId);
-                    if (activeNote) {
-                        activeNote.content = textarea.value;
-                        saveNotes();
-                    }
+                    forceSave();
                 }, 500);
             });
 
             // Initial load
-            migrateAndLoadNotes();
-            if (activeNoteId && notes.some(n => n.id == activeNoteId)) {
-                setActiveNote(activeNoteId);
-            } else if (notes.length > 0) {
-                setActiveNote(notes[0].id);
-            } else {
-                newNoteBtn.click(); // Create a first note if none exist
-            }
+            textarea.value = localStorage.getItem(NOTES_STORAGE_KEY) || '';
+            textarea.disabled = false;
+            textarea.placeholder = "Start writing your notes here...";
 
             // Parent communication
             if (window.parent && typeof window.parent.iframeAction === 'function') {
@@ -356,7 +142,7 @@
 
                 if (action === 'save') {
                     clearTimeout(saveTimeout);
-                    saveNotes();
+                    forceSave();
                 } else if (action === 'addSelectedToTodo') {
                     const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
                     if (selectedText && window.parent && typeof window.parent.iframeAction === 'function') {
@@ -364,6 +150,8 @@
                     } else if (!selectedText) {
                         alert('Please select some text in the note to add to your to-do list.');
                     }
+                } else if (action === 'focusInput') {
+                    textarea.focus();
                 }
             });
         });
