@@ -358,18 +358,11 @@
 
                     const count = data.count !== undefined ? data.count : 0;
                     statusTextElement.textContent = `${count} Task${count !== 1 ? 's' : ''}`;
-
-                    // Make the control block for this app visible to show its status
                     controlBlock.style.display = 'block';
-
-                    // Re-evaluate which action buttons should be visible across all apps
                     updateAppControls(currentActiveApp);
                 }
-                // Add similar logic for other apps here
             } else if (appId === 'Note' && action === 'addToTodo' && data.text) {
-                // Ensure the todolist app is shown
                 showApp('Todolist');
-                // Then send the command. We need a small delay for the iframe to become active.
                 setTimeout(() => {
                     sendCommandToIframe('Todolist', 'addTask', { text: data.text });
                 }, 250);

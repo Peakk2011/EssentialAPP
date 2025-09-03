@@ -20,7 +20,7 @@ const tabsContainer = document.getElementById('paint-tabs');
 const newTabBtn = document.getElementById('new-paint-tab-btn');
 
 // State Variables
-let brushColor = '#007ACC'; // Fixed blue color
+let brushColor = '#007ACC'; 
 let paintFiles = [];
 let activeFileId = null;
 let svg, svgGroup;
@@ -36,6 +36,9 @@ let canvasWidth = 7680;
 let canvasHeight = 4320;
 let stickyNotes = [];
 let isDraggingSticky = false;
+let redrawRequest = null;
+
+const HISTORY_LIMIT = 20;
 
 // Color Picker Setup
 const colorPicker = new iro.ColorPicker(iroPickerContainer, {
@@ -81,7 +84,7 @@ const saveToHistory = () => {
         if (now - lastState.timestamp < 500) {
             activeFile.history[activeFile.historyIndex] = {
                 imageData: drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height),
-                stickyNotes: JSON.parse(JSON.stringify(stickyNotes)), 
+                stickyNotes: JSON.parse(JSON.stringify(stickyNotes)),
                 timestamp: now
             };
             saveAllPaintFiles();
@@ -98,7 +101,7 @@ const saveToHistory = () => {
     });
 
     // Maintain history limit
-    if (activeFile.history.length > 20) {
+    if (activeFile.history.length > HISTORY_LIMIT) {
         activeFile.history.shift();
     }
     activeFile.historyIndex = activeFile.history.length - 1;
@@ -129,7 +132,9 @@ const undo = () => {
     if (activeFile && activeFile.historyIndex > 0) {
         activeFile.historyIndex--;
         restoreFromHistory(activeFile.history[activeFile.historyIndex]);
+
         saveAllPaintFiles();
+        requestRedraw();
     }
 };
 
@@ -138,7 +143,9 @@ const redo = () => {
     if (activeFile && activeFile.historyIndex < activeFile.history.length - 1) {
         activeFile.historyIndex++;
         restoreFromHistory(activeFile.history[activeFile.historyIndex]);
+
         saveAllPaintFiles();
+        requestRedraw();
     }
 };
 
@@ -255,9 +262,9 @@ const createStickyNote = (x, y, width = 200, height = 150) => {
     svgGroup.appendChild(group);
 
     const stickyObj = {
-        x, y, width, height, 
-        text: 'Double-click to edit', 
-        color: '#ffeb3b', 
+        x, y, width, height,
+        text: 'Double-click to edit',
+        color: '#ffeb3b',
         group, rect, textElement,
         remove: () => {
             if (group && group.parentNode) group.parentNode.removeChild(group);
@@ -368,22 +375,44 @@ const handleTripleClick = e => {
 
 // Drawing Functions
 const requestRedraw = () => {
+    if (redrawRequest) return;
+    redrawRequest = requestAnimationFrame(() => {
     const bgColor = window.getComputedStyle(canvas).backgroundColor;
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(drawingCanvas, 0, 0);
     ctx.drawImage(previewCanvas, 0, 0);
+        redrawRequest = null;
+    });
 };
 
+
 const drawLine = (context, points) => {
-    if (points.length < 2) return;
+    if (points.length < 1) return;
+
+    // If only one point, draw a dot
+    if (points.length === 1) {
+        context.beginPath();
+        context.arc(points[0].x, points[0].y, context.lineWidth / 2, 0, Math.PI * 2);
+        context.fill();
+        return;
+    }
+
     context.beginPath();
     context.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length - 1; i++) {
+
+    // Use Catmull-Rom spline
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = i > 0 ? points[i - 1] : points[0];
         const p1 = points[i];
         const p2 = points[i + 1];
-        const midPoint = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
-        context.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y);
+        const p3 = i < points.length - 2 ? points[i + 2] : p2;
+
+        for (let t = 0; t < 1; t += 0.1) {
+            const x = 0.5 * ((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t * t + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t * t * t);
+            const y = 0.5 * ((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t * t + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t * t * t);
+            context.lineTo(x, y);
+        }
     }
     context.lineTo(points[points.length - 1].x, points[points.length - 1].y);
     context.stroke();
@@ -393,8 +422,9 @@ const createSmoothTexture = (context, p1, p2) => {
     const size = parseFloat(sizePicker.value);
     const distance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
     const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-    const density = Math.max(4, distance / (size * 0.04));
+    const density = Math.max(5, Math.ceil(distance / Math.max(1, size * 0.02)));
 
+    context.strokeStyle = brushColor;
     for (let i = 0; i < density; i++) {
         const t = i / density;
         const x = p1.x + (p2.x - p1.x) * t;
@@ -418,7 +448,6 @@ const createSmoothTexture = (context, p1, p2) => {
             y + jitterY + Math.sin(bristleAngle) * bristleLength / 2
         );
 
-        context.strokeStyle = '#007ACC'; // Use fixed color
         context.lineWidth = bristleWidth;
         context.globalAlpha = alpha;
         context.lineCap = "round";
@@ -437,7 +466,7 @@ const startDrawing = e => {
     if (e.button && e.button !== 0) return;
     if (isDraggingSticky) return;
     if (e.target && e.target.tagName && (e.target.tagName === 'rect' || e.target.tagName === 'text')) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
     handleTripleClick(e);
@@ -455,7 +484,8 @@ const draw = e => {
 
     if (currentBrush === 'smooth') {
         previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-        previewCtx.strokeStyle = '#007ACC'; // Use fixed color
+        previewCtx.strokeStyle = brushColor;
+        previewCtx.fillStyle = brushColor; // For single-point dots
         previewCtx.lineWidth = parseFloat(sizePicker.value);
         drawLine(previewCtx, points);
     } else {
@@ -484,28 +514,28 @@ const handleWheel = e => {
     const rect = canvasContainer.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-    
+
     if (e.ctrlKey || e.metaKey) {
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
         const newScale = Math.max(0.1, Math.min(10, scale * delta));
-        
+
         if (newScale !== scale) {
             const containerWidth = rect.width;
             const containerHeight = rect.height;
             const scaledCanvasWidth = canvasWidth * newScale;
             const scaledCanvasHeight = canvasHeight * newScale;
             const scaleDiff = newScale - scale;
-            
+
             let newPanX = panX - (mouseX - panX) * scaleDiff / scale;
             let newPanY = panY - (mouseY - panY) * scaleDiff / scale;
-            
+
             newPanX = scaledCanvasWidth > containerWidth
                 ? Math.min(0, Math.max(containerWidth - scaledCanvasWidth, newPanX))
                 : (containerWidth - scaledCanvasWidth) / 2;
             newPanY = scaledCanvasHeight > containerHeight
                 ? Math.min(0, Math.max(containerHeight - scaledCanvasHeight, newPanY))
                 : (containerHeight - scaledCanvasHeight) / 2;
-                
+
             panX = newPanX;
             panY = newPanY;
             scale = newScale;
@@ -531,7 +561,7 @@ const handleWheel = e => {
 // Keyboard Event Handler
 const handleKeyboard = e => {
     const ctrl = e.ctrlKey || e.metaKey;
-    
+
     if (ctrl && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         undo();
@@ -572,22 +602,23 @@ const clearCanvas = () => {
 
 // File Management Functions
 const saveAllPaintFiles = () => {
-    const storableFiles = paintFiles.map(file => {
-        const storableHistory = file.history.map(state => {
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = state.imageData.width;
-            tempCanvas.height = state.imageData.height;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.putImageData(state.imageData, 0, 0);
-            return {
-                dataUrl: tempCanvas.toDataURL(),
-                stickyNotes: state.stickyNotes,
-                timestamp: state.timestamp
-            };
+    try {
+        const storableFiles = paintFiles.map(file => {
+            const storableHistory = file.history.map(state => {
+                // Convert ImageData to a serializable format without creating a new canvas
+                return {
+                    imageData: { data: Array.from(state.imageData.data), width: state.imageData.width, height: state.imageData.height },
+                    stickyNotes: state.stickyNotes,
+                    timestamp: state.timestamp
+                };
+            });
+            return { ...file, history: storableHistory };
         });
-        return { ...file, history: storableHistory };
-    });
-    localStorage.setItem('essential_app_paint_files', JSON.stringify(storableFiles));
+        localStorage.setItem('essential_app_paint_files', JSON.stringify(storableFiles));
+    } catch (error) {
+        console.error("Failed to save paint files:", error);
+        // Potentially notify the user that saving failed
+    }
 };
 
 const loadAllPaintFiles = () => {
@@ -595,27 +626,15 @@ const loadAllPaintFiles = () => {
     if (storedFiles) {
         const parsedFiles = JSON.parse(storedFiles);
         const promises = parsedFiles.map(file => {
-            const historyPromises = file.history.map(state => {
-                return new Promise(resolve => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = img.width;
-                        tempCanvas.height = img.height;
-                        const tempCtx = tempCanvas.getContext('2d');
-                        tempCtx.drawImage(img, 0, 0);
-                        resolve({
-                            imageData: tempCtx.getImageData(0, 0, img.width, img.height),
-                            stickyNotes: state.stickyNotes,
-                            timestamp: state.timestamp
-                        });
-                    };
-                    img.src = state.dataUrl;
-                });
+            const history = file.history.map(state => {
+                const imageData = new ImageData(
+                    new Uint8ClampedArray(state.imageData.data),
+                    state.imageData.width,
+                    state.imageData.height
+                );
+                return { imageData, stickyNotes: state.stickyNotes, timestamp: state.timestamp };
             });
-            return Promise.all(historyPromises).then(history => {
-                return { ...file, history };
-            });
+            return Promise.resolve({ ...file, history });
         });
         return Promise.all(promises);
     }
@@ -698,7 +717,7 @@ const renderTabs = () => {
 const setupTabRename = (tab, file) => {
     if (tab.classList.contains('editing')) return;
     tab.classList.add('editing');
-    
+
     const originalName = file.name;
     tab.innerHTML = `<input type="text" value="${originalName}" />`;
     const input = tab.querySelector('input');
@@ -753,10 +772,10 @@ const exportImage = () => {
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(svgBlob);
     const img = new Image();
-    
+
     img.onload = () => {
         exportCtx.drawImage(img, 0, 0, canvasWidth * devicePixelRatio, canvasHeight * devicePixelRatio);
-        
+
         let dataUrl, filename;
         switch (format) {
             case 'png':
@@ -775,7 +794,7 @@ const exportImage = () => {
                 dataUrl = exportCanvas.toDataURL('image/png');
                 filename = `drawing_${timestamp}.png`;
         }
-        
+
         const link = document.createElement('a');
         link.download = filename;
         link.href = dataUrl;
@@ -794,8 +813,8 @@ const handleTouch = e => {
         clientY: touch.clientY,
         button: 0,
         target: e.target,
-        preventDefault: () => {},
-        stopPropagation: () => {}
+        preventDefault: () => { },
+        stopPropagation: () => { }
     };
     startDrawing(mouseEvent);
 };
@@ -814,7 +833,7 @@ const handleTouchMove = e => {
 const adjustTheme = () => {
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     // Always use fixed blue color
-    brushColor = '#007ACC';
+    brushColor = '#007ACC'; // This is now the only place setting the brush color initially
     colorPicker.color.hexString = brushColor;
     colorPickerTrigger.style.backgroundColor = brushColor;
 };
@@ -859,7 +878,7 @@ const setupEventListeners = () => {
     }
 
     // Keyboard events
-    document.addEventListener('keydown', e => {
+    window.addEventListener('keydown', e => {
         handleKeyboard(e);
         if ((e.key === 'c' || e.key === 'C') && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
