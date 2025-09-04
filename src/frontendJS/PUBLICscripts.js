@@ -1,5 +1,5 @@
 // This script for public app electron need to be define in the all html files
-// ** Make by Peakk - Mint teams **
+// ** Made by Mint teams **
 // Sync with main process
 
 let isClickedAlwaysOnTop = false;
@@ -106,20 +106,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleMouseMove = (e) => {
-      if (!isResizing) return;
-      requestAnimationFrame(() => {
+        if (!isResizing) return;
         const diff = e.pageX - startX;
-        updateWidth(startWidth + diff);
-      });
-    };
+        const newWidth = startWidth + diff;
+        updateWidth(newWidth);
+      };
 
     const stopResizing = () => {
       isResizing = false;
       document.body.style.cursor = '';
-      menu.style.transition = '';
-      content.style.transition = '';
-      menu.style.willChange = 'auto';
-      content.style.willChange = 'auto';
+      requestAnimationFrame(() => {
+        menu.style.transition = '';
+        menu.style.willChange = 'auto';
+        content.style.willChange = 'auto';
+      });
 
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', stopResizing);

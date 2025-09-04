@@ -132,22 +132,23 @@
             textarea.placeholder = "Start writing your notes here...";
 
             // Parent communication
-            if (window.parent && typeof window.parent.iframeAction === 'function') {
-                window.parent.iframeAction('Note', 'loaded', { timestamp: new Date() });
+            function postToParent(action, data = {}) {
+                window.parent.postMessage({ appId: 'Note', action, data }, '*'); 
             }
 
+            postToParent('loaded', { timestamp: new Date() });
+            
             window.addEventListener('message', (event) => {
                 const { action, data } = event.data;
-                console.log('Note iframe received command:', { action, data });
 
                 if (action === 'save') {
                     clearTimeout(saveTimeout);
                     forceSave();
                 } else if (action === 'addSelectedToTodo') {
                     const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
-                    if (selectedText && window.parent && typeof window.parent.iframeAction === 'function') {
-                        window.parent.iframeAction('Note', 'addToTodo', { text: selectedText });
-                    } else if (!selectedText) {
+                    if (selectedText) {
+                        postToParent('addToTodo', { text: selectedText });
+                    }  else {
                         alert('Please select some text in the note to add to your to-do list.');
                     }
                 } else if (action === 'focusInput') {

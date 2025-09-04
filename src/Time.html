@@ -73,15 +73,14 @@
 
         // Communicate with parent window
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Notify parent that the app has loaded
+            // Notify parent that the app has loaded
             if (window.parent && typeof window.parent.iframeAction === 'function') {
                 window.parent.iframeAction('Clock', 'loaded', { timestamp: new Date() });
             }
 
-            // 2. Listen for commands from the parent window
+            // Listen for commands from the parent window
             window.addEventListener('message', (event) => {
                 const { action, data } = event.data;
-                console.log('Clock iframe received command:', { action, data });
 
                 // Trigger clicks on existing buttons based on the action
                 switch (action) {

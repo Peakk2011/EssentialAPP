@@ -179,9 +179,7 @@
     color: var(--theme-fg);
 }
 
-/* Utility classes for easy color variations */
 .hsl-variations {
-    /* Example of how to create color variations with HSL */
     --color-primary-lighter: hsl(from var(--theme-primary) h s calc(l + 10%));
     --color-primary-darker: hsl(from var(--theme-primary) h s calc(l - 10%));
     --color-accent-muted: hsl(from var(--theme-accent) h calc(s - 20%) l);

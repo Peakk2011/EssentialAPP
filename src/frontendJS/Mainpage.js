@@ -1,13 +1,32 @@
-const TabsWrapper = document.getElementById('tabs-wrapper');
-
 // Initialize elements
-const container = document.getElementById('canvasContainer');
+const container = document.getElementById('home-content');
 const canvasAreas = document.getElementById('canvasAreas');
 const tabsContainer = document.getElementById('tabs');
 const zoomInfo = document.getElementById('zoomInfo');
 
 const CardElement = {
     Navbar: document.getElementById('MainNavbar'),
+};
+
+const appConfig = {
+    'Todolist': { src: 'Todolist.html', loaded: false },
+    'Clock': { src: 'Time.html', loaded: false },
+    'Calculator': { src: 'calc.html', loaded: false },
+    'Note': { src: 'Notes.html', loaded: false },
+    'Paint': { src: 'Paint.html', loaded: false }
+};
+
+let openApps = new Set(); 
+let currentActiveApp = null;
+const cachedApps = new Set();
+
+const appIcons = {
+    'Todolist': 'M360-200v-80h480v80H360Zm0-240v-80h480v80H360Zm0-240v-80h480v80H360ZM200-160q-33 0-56.5-23.5T120-240q0-33 23.5-56.5T200-320q33 0 56.5 23.5T280-240q0 33-23.5 56.5T200-160Zm0-240q-33 0-56.5-23.5T120-480q0-33 23.5-56.5T200-560q33 0 56.5 23.5T280-480q0 33-23.5 56.5T200-400Zm0-240q-33 0-56.5-23.5T120-720q0-33 23.5-56.5T200-800q33 0 56.5 23.5T280-720q0 33-23.5 56.5T200-640Z', // list
+    'Clock': 'M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm-20-320v-160h80v128l108 108-56 56-132-132Z', // schedule
+    'Calculator': 'M400-240v-80h62l105-120-105-120h-66l-64 344q-8 45-37 70.5T221-120q-45 0-73-24t-28-64q0-32 17-51.5t43-19.5q25 0 42.5 17t17.5 41q0 5-.5 9t-1.5 9q5-1 8.5-5.5T252-221l62-339H200v-80h129l21-114q7-38 37.5-62t72.5-24q44 0 72 26t28 65q0 30-17 49.5T500-680q-25 0-42.5-17T440-739q0-5 .5-9t1.5-9q-6 2-9 6t-5 12l-17 99h189v80h-32l52 59 52-59h-32v-80h200v80h-62L673-440l105 120h62v80H640v-80h32l-52-60-52 60h32v80H400Z', // calculate
+    'Note': 'M280-160v-441q0-33 24-56t57-23h439q33 0 56.5 23.5T880-600v320L680-80H360q-33 0-56.5-23.5T280-160ZM81-710q-6-33 13-59.5t52-32.5l434-77q33-6 59.5 13t32.5 52l10 54h-82l-7-40-433 77 40 226v279q-16-9-27.5-24T158-276L81-710Zm279 110v440h280v-160h160v-280H360Zm220 220Z', // note
+    'Paint': 'M360-80q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35Zm179-139q-6-55-41-97t-87-57l106-107H236q-32 0-54-22t-22-54q0-20 10.5-37.5T198-622l486-291q18-11 38-5.5t31 23.5q11 18 5.5 37.5T736-827L360-600h364q32 0 54 22t22 54q0 18-4.5 35.5T778-458L539-219Z ', // brush
+    'All Apps': 'M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z' // apps
 };
 
 // Global State
@@ -26,9 +45,7 @@ const state = {
     draggedAreaId: null,
     editingTabIndex: -1,
     highestZIndex: 10,
-    justCreatedCanvas: false,
-    resizeStartPos: { x: 0, y: 0, width: 0, height: 0 },
-    isTabsOpen: false
+    resizeStartPos: { x: 0, y: 0, width: 0, height: 0 }
 };
 
 // Mouse & Wheel Event Handlers
@@ -493,3 +510,377 @@ loadFromMemory();
 if (state.canvases.length === 0) {
     createCanvas('New Workspace');
 }
+
+window.addEventListener('message', (event) => {
+    const { appId, action, data } = event.data;
+    if (!appId || !action) return;
+
+    if (appId === 'Todolist' && action === 'updateStatus') {
+        const statusTextElement = document.getElementById('todolist-status-text');
+        if (!statusTextElement) return;
+        const count = data.count !== undefined ? data.count : 0;
+        statusTextElement.textContent = `${count} Task${count !== 1 ? 's' : ''}`;
+    } else if (appId === 'Note' && action === 'addToTodo' && data.text) {
+        showApp('Todolist');
+        setTimeout(() => sendCommandToIframe('Todolist', 'addTask', { text: data.text }), 250);
+    }
+});
+
+function updateNavbar() {
+    const navbarLinksContainer = document.getElementById('MainLINKS');
+    navbarLinksContainer.innerHTML = '';
+}
+
+function updateSidebarStatus(appName) {
+    const statusTextElement = document.getElementById('CurrentLinksText');
+    const statusSvgElement = document.getElementById('CurrentLinksSvg');
+
+    if (statusTextElement) {
+        statusTextElement.textContent = appName;
+    }
+
+    if (statusSvgElement && appIcons[appName]) {
+        const svgPath = statusSvgElement.querySelector('path');
+        if (svgPath) {
+            svgPath.setAttribute('d', appIcons[appName]);
+        }
+    }
+}
+
+function updateAppControls(activeAppId) {
+    const allControlBlocks = document.querySelectorAll('#appStatus .app-controls');
+    allControlBlocks.forEach(block => {
+        const blockAppId = block.dataset.appControls;
+        const actionButtons = block.querySelectorAll('.app-action-button');
+
+        const shouldShowButtons = (blockAppId === activeAppId);
+
+        actionButtons.forEach(button => {
+            button.style.display = shouldShowButtons ? 'flex' : 'none';
+        });
+    });
+}
+
+function sendCommandToIframe(appId, action, data = {}) {
+    const iframe = document.getElementById(appId);
+    if (iframe && iframe.contentWindow) {
+        console.log(`Sending command to ${appId}:`, { action, data });
+        // ใช้ postMessage เพื่อการสื่อสารที่ปลอดภัย
+        iframe.contentWindow.postMessage({ action, data }, '*');
+    } else {
+        console.error(`Could not find active iframe for ${appId}`);
+    }
+}
+
+// Function to show loading overlay
+function showLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    loadingOverlay.style.display = 'block';
+}
+
+// Function to hide loading overlay
+function hideLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    loadingOverlay.style.display = 'none';
+}
+
+// Function to create iframe if not exists
+function createIframe(appId) {
+    let iframe = document.getElementById(appId);
+
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = appId;
+        iframe.frameBorder = '0';
+        iframe.src = appConfig[appId].src;
+
+        iframe.addEventListener('load', function () {
+            appConfig[appId].loaded = true;
+            cachedApps.add(appId);
+            hideLoading();
+        });
+
+        iframe.addEventListener('error', function () {
+            hideLoading();
+            console.error(`Failed to load ${appId}`);
+        });
+
+        document.querySelector('.appiclationDrawer').appendChild(iframe);
+    }
+
+    return iframe;
+}
+
+// Function to hide all iframes
+function hideAllIframes() {
+    const iframes = document.querySelectorAll('.appiclationDrawer iframe');
+    iframes.forEach(iframe => {
+        if (iframe.id !== 'loadingOverlay') {
+            iframe.classList.remove('active');
+        }
+    });
+
+    const navLinks = document.querySelectorAll('#MainLINKS a');
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+    });
+}
+
+function showApp(appId, event) {
+    if (event) event.preventDefault();
+
+    const focusableApps = ['Todolist', 'Note'];
+
+    // If app is already open, just switch to it
+    if (openApps.has(appId)) {
+        if (currentActiveApp === appId) {
+            const iframe = document.getElementById(appId);
+            if (iframe && iframe.contentWindow) {
+                setTimeout(() => {
+                    iframe.contentWindow.focus();
+                    if (focusableApps.includes(appId)) {
+                        sendCommandToIframe(appId, 'focusInput');
+                    }
+                }, 50);
+            }
+            return;
+        }
+        // if thare not just make it the active one
+        hideAllIframes();
+        const iframe = document.getElementById(appId);
+        iframe.classList.add('active');
+        currentActiveApp = appId;
+        updateUIForActiveApp(appId);
+        return;
+    }
+
+    openApps.add(appId);
+    localStorage.setItem('EssentialApp.openApps', JSON.stringify(Array.from(openApps)));
+    localStorage.setItem('EssentialApp.lastActiveApp', appId);
+
+    hideAllIframes();
+
+    let iframe = document.getElementById(appId);
+
+    if (!iframe || !appConfig[appId].loaded) {
+        showLoading();
+        iframe = createIframe(appId);
+    } else {
+        hideLoading();
+    }
+
+    if (iframe) {
+        iframe.classList.remove('cached');
+        iframe.classList.add('active');
+        currentActiveApp = appId;
+        updateUIForActiveApp(appId);
+
+        setTimeout(() => {
+            if (iframe.contentWindow) {
+                iframe.contentWindow.focus();
+                if (focusableApps.includes(appId)) {
+                    sendCommandToIframe(appId, 'focusInput');
+                }
+            }
+        }, 50);
+    }
+}
+
+function closeApp(appId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    openApps.delete(appId);
+    localStorage.setItem('EssentialApp.openApps', JSON.stringify(Array.from(openApps)));
+
+    const iframe = document.getElementById(appId);
+    if (iframe) {
+        iframe.classList.remove('active');
+        iframe.classList.add('cached');
+    }
+
+    // If the closed app was the active one, decide which app to show next
+    if (currentActiveApp === appId) {
+        const remainingApps = Array.from(openApps);
+        if (remainingApps.length > 0) {
+            showApp(remainingApps[remainingApps.length - 1]);
+        } else {
+            showHome();
+        }
+    }
+
+    updateUIForActiveApp(currentActiveApp); // Update tabs and navbar
+}
+
+function updateUIForActiveApp(activeAppId) {
+    updateSidebarStatus(activeAppId || 'All Apps');
+    updateAppControls(activeAppId);    
+    updateNavbarLinks(activeAppId);
+
+    const homeContent = document.getElementById('home-content');
+    homeContent.style.display = activeAppId ? 'none' : 'flex';
+}
+
+function updateNavbarLinks(activeAppId) {
+    const navbarLinksContainer = document.getElementById('MainLINKS');
+    navbarLinksContainer.innerHTML = '';
+
+    openApps.forEach(appId => {
+        const li = document.createElement('li');
+        li.className = `app-tab app-tab-${appId}`; // Add unique class for targeting
+
+        const a = document.createElement('a');
+        if (appId === activeAppId) {
+            li.classList.add('active');
+            a.classList.add('active');
+        }
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'navbar-tab-close-btn';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.title = `Close ${appId}`;
+        closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            const tabElement = e.target.closest('.app-tab');
+            if (tabElement) {
+                tabElement.classList.add('closing');
+                tabElement.addEventListener('animationend', () => {
+                    closeApp(appId, e);
+                }, { once: true });
+            } else { // Fallback if animation fails
+                closeApp(appId, e); // Fallback if animation fails
+            }
+        };
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = appId;
+
+        a.href = 'javascript:void(0)';
+        a.onclick = () => showApp(appId);
+        a.oncontextmenu = (e) => { e.preventDefault(); window.electronAPI.showTabContextMenu(appId); };
+        a.appendChild(textSpan);
+        a.appendChild(closeBtn);
+        li.appendChild(a);
+        navbarLinksContainer.appendChild(li);
+    });
+}
+
+// Show home/all apps view
+function showHome() {
+    hideAllIframes();
+    hideLoading();
+    // Don't clear openApps here, just set the active app to null
+    currentActiveApp = null;
+    updateUIForActiveApp(null);
+    localStorage.setItem('EssentialApp.lastActiveApp', 'home'); // Save 'home' as last state
+}
+
+function showAllApps() {
+    hideAllIframes();
+    hideLoading();
+    showHome();
+}
+
+// Preload function for better performance
+function preloadApp(appId) {
+    if (!appConfig[appId].loaded && !document.getElementById(appId)) {
+        createIframe(appId);
+    }
+}
+
+function reloadApp(appId) {
+    const iframe = document.getElementById(appId);
+    if (iframe) {
+        iframe.src = iframe.src;
+    }
+}
+
+function duplicateApp(appId) {
+    if (window.electronAPI && appConfig[appId]) {
+        window.electronAPI.createNewWindow(appConfig[appId].src);
+    }
+}
+
+function closeOtherApps(appIdToKeep) {
+    Array.from(openApps).filter(id => id !== appIdToKeep).forEach(id => closeApp(id));
+}
+
+function closeAppsToTheRight(appId) {
+    const appIds = Array.from(openApps);
+    const currentAppIndex = appIds.indexOf(appId);
+    if (currentAppIndex > -1) {
+        const tabsToClose = appIds.slice(currentAppIndex + 1);
+        tabsToClose.forEach(id => closeApp(id));
+    }
+}
+
+const tabActionHandlers = {
+    'reload': reloadApp,
+    'duplicate': duplicateApp,
+    'close-others': closeOtherApps,
+    'close-right': closeAppsToTheRight,
+    'close': closeApp
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+    hideAllIframes();
+
+    // Restore open tabs from localStorage
+    const savedOpenApps = JSON.parse(localStorage.getItem('EssentialApp.openApps') || '[]');
+    openApps = new Set(savedOpenApps);
+
+    const lastApp = localStorage.getItem('EssentialApp.lastActiveApp');
+
+    if (lastApp && lastApp !== 'home' && appConfig[lastApp]) {
+        setTimeout(() => showApp(lastApp), 100);
+    } else {
+        // If no specific app was active, or it was the home screen,
+        // just update the UI to show the restored tabs without activating any app.
+        updateUIForActiveApp(null);
+        showHome(); // Show home screen by default
+        setTimeout(() => {
+            // Preload the most common app to make it faster on first click
+            preloadApp('Todolist');
+        }, 1000);
+    }
+
+    // Listen for tab actions from the main process
+    if (window.electronAPI?.onTabAction) {
+        window.electronAPI.onTabAction(({ action, appId }) => {
+            if (tabActionHandlers[action]) {
+                tabActionHandlers[action](appId); // Correctly call the handler with appId
+            }
+        });
+    }
+});
+
+// Preload apps on hover for even faster loading
+document.querySelectorAll('#app-selection-list a').forEach(link => {
+    link.addEventListener('mouseenter', function () {
+        const onclick = this.getAttribute('onclick');
+        if (onclick && onclick.includes('showApp')) {
+            const appId = onclick.match(/showApp\('(.+?)'\)/)?.[1];
+            if (appId && !appConfig[appId].loaded) {
+                setTimeout(() => preloadApp(appId), 200);
+            }
+        }
+    });
+});
+
+// Lazy load elements with IntersectionObserver
+const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const element = entry.target;
+            element.style.visibility = 'visible';
+            observer.unobserve(element);
+        }
+    });
+});
+
+document.querySelectorAll('.lazy-load').forEach(el => {
+    el.style.visibility = 'hidden';
+    lazyLoadObserver.observe(el);
+});

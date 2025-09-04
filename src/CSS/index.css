@@ -484,11 +484,9 @@ html {
 #appStatus .app-controls a {
     display: flex;
     align-items: center;
-    gap: 12px;
     padding: 8px 12px;
     text-decoration: none;
     color: var(--theme-links);
-    border-radius: 6px;
     transition: background-color 0.2s;
     -webkit-app-region: no-drag;
 }
@@ -497,15 +495,36 @@ html {
     background-color: rgba(255, 255, 255, 0.08);
 }
 
+#appStatus .app-controls svg {
+    transform: scale(90%);
+    margin-right: 0.5rem;
+}
+
 #appStatus .app-status-info {
     display: flex;
     align-items: center;
-    gap: 12px;
     padding: 8px 12px;
-    color: #a0a0a0;
+    color: currentColor;
     /* Subtle text color */
     cursor: default;
     -webkit-app-region: no-drag;
+}
+
+.navbar-tab-close-btn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 28px;
+    line-height: 1;
+    margin-left: 8px;
+    padding: 0;
+    transition: all 0.15s ease-in-out;
+    transform: translateY(4.8px);
+    font-weight: 100;
+    opacity: 70%;
 }
 
 /* Test to define platform */
@@ -597,5 +616,31 @@ html {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes tab-spawn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes tab-close {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
     }
 }

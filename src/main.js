@@ -41,10 +41,9 @@ class CacheManager {
     return path.join(this.cacheDir, `${this._getCacheKey(url)}.html`);
   }
 
-  async _isCacheValid(url) {
-    const cachePath = this._getCachePath(url);
+  async isCacheValid(filePath) {
     try {
-      const stats = await fs.promises.stat(cachePath);
+      const stats = await fs.promises.stat(filePath);
       return (Date.now() - stats.mtime.getTime()) < this.maxAge;
     } catch {
       return false;
@@ -55,36 +54,46 @@ class CacheManager {
     const cachePath = this._getCachePath(url);
     try {
       await fs.promises.writeFile(cachePath, content, 'utf8');
+      return true;
     } catch (err) {
       console.error(`[CacheManager] Failed to write cache for ${url}:`, err);
+      return false;
     }
   }
 
-  async load(win, url) {
+  async load(win, url, { signal } = {}) {
     const isRemote = url.startsWith('http://') || url.startsWith('https://');
     if (!isRemote) {
-      return loadFileWithCheck(win, url, 'local-file-load');
+      await loadFileWithCheck(win, url, 'local-file-load');
+      return;
     }
 
+    // Abort if requested
+    if (signal?.aborted) {
+      console.log(`[Cache] Load aborted for ${url}`);
+      return;
+    }
+    
     const cachePath = this._getCachePath(url);
-    if (await this._isCacheValid(url)) {
+    if (await this.isCacheValid(cachePath)) {
       try {
         await win.loadFile(cachePath);
+        console.log(`[Cache] Loaded ${url} from disk cache.`);
         return;
       } catch (err) {
         console.warn(`[Cache] Failed to load from disk cache, fetching from network.`, err);
       }
     }
 
+    console.log(`[Cache] Fetching ${url} from network.`);
     try {
-      await win.loadURL(url);
+      await win.loadURL(url, { userAgent: 'EssentialApp' });
       win.webContents.once('dom-ready', async () => {
+        if (signal?.aborted || win.isDestroyed()) return;
         try {
           const html = await win.webContents.executeJavaScript('document.documentElement.outerHTML');
           await this.set(url, html);
-        } catch (err) {
-          console.warn(`[Cache] Could not save ${url} to cache after load:`, err.message);
-        }
+        } catch (err) { /* Ignore errors if window is closed */ }
       });
     } catch (networkErr) {
       console.error(`[Cache] Network failed for ${url}:`, networkErr.message);
@@ -463,7 +472,6 @@ const validateMenuLink = (href) => {
 let WINDOW_CONFIG;
 let mainWindow;
 let isAlwaysOnTop = false;
-let centerX, centerY;
 let focusedWindow = null;
 let aboutWindow = null;
 let SettingsWindows = null;
@@ -924,42 +932,19 @@ app.whenReady().then(async () => {
       }
     }
 
-    const calculateOptimalWindowSize = () => {
-      const display = screen.getPrimaryDisplay();
-      const { width: screenWidth, height: screenHeight } = display.workAreaSize;
-      const aspectRatio = 16 / 9;
-
-      // const baseWidth = 860;
-      // const baseHeight = 800;
-      const baseWidth = 730;
-      const baseHeight = 840;
-      const scaleFactor = Math.min(screenWidth / 1280, screenHeight / 720);
-      let width = Math.min(baseWidth, Math.floor(screenWidth * 0.7));
-      let height = Math.min(baseHeight, Math.floor(screenHeight * 0.7));
-      width = Math.floor(width / 8) * 8;
-      height = Math.floor(height / 8) * 8;
-      width = Math.max(width, 670);
-      height = Math.max(height, 480);
-      return { width, height };
-    };
-
-    const optimal = calculateOptimalWindowSize();
     WINDOW_CONFIG = {
       min: {
-        width: Math.floor(optimal.width * 0.9),
-        height: Math.floor(optimal.height * 0.4)
+        width: 720,
+        height: 600
       },
       default: {
         ...BASE_WINDOW_CONFIG,
         ...(PLATFORM_CONFIG[process.platform]?.window || PLATFORM_CONFIG.win32.window),
-        ...optimal
+        width: 1320,
+        height: 860
       },
       alwaysOnTop: { width: 340, height: 570 }
     };
-
-    const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
-    centerX = Math.floor((screenWidth - WINDOW_CONFIG.default.width) / 2);
-    centerY = Math.floor((screenHeight - WINDOW_CONFIG.default.height) / 2);
 
     try {
       await startupSequence();
@@ -980,9 +965,8 @@ app.whenReady().then(async () => {
       try {
         const newWindow = await createWindowWithPromise({
           ...WINDOW_CONFIG.default,
+          center: true,
           icon: getThemeIcon(),
-          x: centerX,
-          y: centerY,
           minWidth: WINDOW_CONFIG.min.width,
           minHeight: WINDOW_CONFIG.min.height,
           webPreferences: BASE_WEB_PREFERENCES,
@@ -1081,6 +1065,7 @@ const createMainWindow = async () => {
     let originalBounds = null;
     mainWindow = await createWindowWithPromise({
       ...WINDOW_CONFIG.default,
+      center: true,
       icon: getThemeIcon(),
       minWidth: WINDOW_CONFIG.min.width,
       minHeight: WINDOW_CONFIG.min.height,
@@ -1219,13 +1204,14 @@ ipcMain.on('Keepontop', async (event, message) => {
     const alwaysOnTopWidth = 340;
     const alwaysOnTopHeight = 570;
 
-    if (isAlwaysOnTop) {
-      const x = Math.floor((screenWidth - alwaysOnTopWidth) / 2);
-      const y = screenHeight - alwaysOnTopHeight - 10;
+    const x = Math.floor((screenWidth - alwaysOnTopWidth) / 2);
+    const y = screenHeight - alwaysOnTopHeight - 20;
 
+    if (isAlwaysOnTop) {
       await Promise.all([
         focusedWindow.setAlwaysOnTop(true),
         focusedWindow.setResizable(false),
+        focusedWindow.setMinimizable(false),
         focusedWindow.setBounds({
           width: alwaysOnTopWidth,
           height: alwaysOnTopHeight,
@@ -1237,12 +1223,12 @@ ipcMain.on('Keepontop', async (event, message) => {
       await Promise.all([
         focusedWindow.setAlwaysOnTop(false),
         focusedWindow.setResizable(true),
+        focusedWindow.setMinimizable(true),
         focusedWindow.setBounds({
           width: WINDOW_CONFIG.default.width,
           height: WINDOW_CONFIG.default.height,
-          x: centerX,
-          y: centerY
-        })
+        }),
+        focusedWindow.center()
       ]);
     }
 
@@ -1413,6 +1399,7 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
       show: false,
       backgroundColor: '#0f0f0f',
       title: 'Mintputs',
+      center: true,
       minWidth: minMintputsWidth,
       minHeight: minMintputsHeight,
       webPreferences: {
@@ -1427,11 +1414,22 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
 
     openedWindows.add(win);
     win.on('closed', () => openedWindows.delete(win));
+    
+    const loadController = new AbortController();
+    const { signal } = loadController;
 
+    win.once('closed', () => {
+      loadController.abort();
+    });
+    
     win.show();
 
     // Use the new cache manager to load content asynchronously
-    setImmediate(() => cacheManager.load(win, url));
+    cacheManager.load(win, url, { signal }).catch(err => {
+      if (err.name !== 'AbortError') {
+        console.error('Failed to load content for Mintputs window:', err);
+      }
+    });
 
     return {
       success: true,
@@ -1444,13 +1442,12 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
   }
 });
 
-ipcMain.handle('create-new-window', async (event, path) => {
+ipcMain.handle('create-new-window', async (event, url) => {
   try {
     const newWindow = await createWindowWithPromise({
       ...WINDOW_CONFIG.default,
+      center: true,
       icon: getThemeIcon(),
-      x: centerX + 30,
-      y: centerY + 30,
       minWidth: WINDOW_CONFIG.min.width,
       minHeight: WINDOW_CONFIG.min.height,
       webPreferences: BASE_WEB_PREFERENCES,
@@ -1459,7 +1456,7 @@ ipcMain.handle('create-new-window', async (event, path) => {
     setupWindowFPSHandlers(newWindow);
     fpsManager.setFPS(newWindow, fpsManager.HIGH_FPS);
 
-    await cacheManager.load(newWindow, path);
+    await cacheManager.load(newWindow, url);
 
     return true;
   } catch (err) {
@@ -1485,8 +1482,7 @@ const DialogWindows_Config = {
   minimizable: false,
   resizable: false,
   icon: getThemeIcon(),
-  x: centerX + 50,
-  y: centerY + 50
+  center: true
 }
 
 function ConfigWindowsProperties(windowType) {

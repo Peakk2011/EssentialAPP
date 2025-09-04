@@ -91,14 +91,12 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer: {
         on: (channel, func) => {
             ipcRenderer.on(channel, (event, ...args) => func(...args));
-        }
+        },
+        send: (channel, data) => ipcRenderer.send(channel, data),
     },
     theme: {
         onChange: (callback) => {
             ipcRenderer.on('theme-changed', (_, theme) => callback(theme));
-            return () => {
-                ipcRenderer.removeListener('theme-changed', callback);
-            };
         }
     }
 });

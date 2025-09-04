@@ -126,7 +126,7 @@ nav ul li a:hover {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(95%);
     font-size: 1.5rem;
     fill: var(--theme-fg);
     width: 20px;
@@ -151,6 +151,23 @@ nav ul li a:hover {
     background-color: var(--nav-hover);
 }
 
+#MainLINKS .app-tab.spawning {
+    animation: tab-spawn 0.2s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+}
+
+#MainLINKS .app-tab.closing {
+    animation: tab-close 0.2s ease-out forwards;
+    -webkit-app-region: no-drag;
+}
+
+#MainLINKS .app-tab.active a {
+    background-color: var(--SoftHoverColor);
+    color: var(--theme-fg);
+}
+
 /* Navbar Responsive */
 
 @media (max-width: 768px) {
@@ -168,7 +185,13 @@ nav ul li a:hover {
 
 @media (max-width: 340px) {
     #KeepONtop {
-        right: 90px;
+        right: 45px;
+        background-color: var(--TitlebarColor);
+    }
+
+    #GotoHomePage {
+        border-bottom: var(--TitlebarColorBorder);
+        background-color: var(--TitlebarColor);
     }
 }
 

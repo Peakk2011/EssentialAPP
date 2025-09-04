@@ -22,9 +22,6 @@
         document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
         document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
     </script>
-    <style>
-        
-    </style>
 </head>
 
 <body>
@@ -42,37 +39,16 @@
                         <path
                             d="M204-129q-30.94 0-52.97-22.03Q129-173.06 129-204v-552q0-30.94 22.03-52.97Q173.06-831 204-831h273v75H204v552h552v-273h75v273q0 30.94-22.03 52.97Q786.94-129 756-129H204Zm185.5-208L337-389.5 703.5-756H552v-75h279v279h-75v-151.5L389.5-337Z" />
                     </svg>
-                </a></li>
-            <div class="zoom-info" id="zoomInfo">100%</div>
-            <div id="MainLINKS" class="electron-only">
-                <li><a href="javascript:void(0)" onclick="showApp('Todolist', event)" id="draggable" draggable="false"
-                        class="requestShiftkeyHolder">Todo list</a>
-                </li>
-                <li><a href="javascript:void(0)" onclick="showApp('Clock', event)" id="draggable" draggable="false"
-                        class="requestShiftkeyHolder">Clock</a></li>
-                <li><a href="javascript:void(0)" onclick="showApp('Calculator', event)" draggable="false"
-                        class="requestShiftkeyHolder">Calculator</a></li>
-                <li><a href="javascript:void(0)" onclick="showApp('Note', event)" draggable="false"
-                        class="requestShiftkeyHolder">Notes</a></li>
-                <li><a href="javascript:void(0)" onclick="showApp('Paint', event)" draggable="false"
-                        class="requestShiftkeyHolder">Paint</a></li>
-                <!-- <div class="tabs-wrapper"
-                    style="-webkit-app-region: no-drag; position: relative; top: 0; min-width: max-content;"
-                    id="tabs-wrapper">
-                    <div class="tabs" id="tabs" style="-webkit-app-region: no-drag"></div>
-                </div>
-                <button class="new-tab-btn" onclick="setupCanvasTab()" title="Create your new workspace"
-                    style="-webkit-app-region: no-drag; position: relative; min-width: max-content;">+</button>
-                <div class="header-controls" style="-webkit-app-region: no-drag">
-                    <button class="create-area-btn" onclick="showNewAreaModal()">Create Canvas Area</button>
-                </div> -->
-            </div>
+                </a>
+            </li>
+            <div id="MainLINKS" class="electron-only"></div>
         </ul>
     </nav>
 
     <div class="menu">
         <div class="menuText">
-            <svg width="553" height="72" viewBox="0 0 553 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="lazy-load" width="553" height="72" viewBox="0 0 553 72" fill="none"
+                xmlns="http://www.w3.org/2000/svg" data-src="path-to-svg-or-inline-data">
                 <path
                     d="M0.856 70V2.8H42.712V9.904H9.496V32.656H39.832V39.568H9.496V62.896H42.712V70H0.856ZM69.6318 71.152C63.8078 71.152 58.9438 69.808 55.0398 67.12C51.1358 64.368 48.8638 60.368 48.2238 55.12H57.1518C57.6638 57.872 59.0398 60.048 61.2798 61.648C63.5198 63.248 66.3998 64.048 69.9198 64.048C73.2478 64.048 75.8078 63.344 77.5998 61.936C79.3918 60.528 80.2878 58.736 80.2878 56.56C80.2878 54.96 79.7118 53.744 78.5598 52.912C77.4718 52.016 75.4238 51.312 72.4158 50.8C71.1998 50.544 69.8878 50.288 68.4798 50.032C67.1358 49.776 65.8558 49.552 64.6398 49.36C62.4638 48.912 60.2878 48.176 58.1118 47.152C55.9998 46.128 54.2398 44.688 52.8318 42.832C51.4238 40.976 50.7198 38.576 50.7198 35.632C50.7198 31.536 52.2878 28.112 55.4238 25.36C58.5598 22.608 62.8478 21.232 68.2878 21.232C73.5358 21.232 77.8878 22.448 81.3438 24.88C84.7998 27.248 86.7518 30.96 87.1998 36.016H78.6558C78.3998 33.264 77.2798 31.312 75.2958 30.16C73.3758 28.944 71.0078 28.336 68.1918 28.336C65.4398 28.336 63.1678 28.944 61.3758 30.16C59.6478 31.376 58.7838 32.976 58.7838 34.96C58.7838 38.416 61.3758 40.656 66.5598 41.68C67.3278 41.744 68.1278 41.872 68.9598 42.064C69.8558 42.192 70.7518 42.352 71.6478 42.544C72.5438 42.672 73.3438 42.8 74.0478 42.928C75.5838 43.184 77.1838 43.568 78.8478 44.08C80.5118 44.528 82.0798 45.232 83.5518 46.192C85.0238 47.088 86.2078 48.336 87.1038 49.936C88.0638 51.472 88.5438 53.456 88.5438 55.888C88.5438 58.832 87.7758 61.456 86.2398 63.76C84.7038 66.064 82.5278 67.888 79.7118 69.232C76.8958 70.512 73.5358 71.152 69.6318 71.152ZM115.757 71.152C109.933 71.152 105.069 69.808 101.165 67.12C97.2608 64.368 94.9888 60.368 94.3488 55.12H103.277C103.789 57.872 105.165 60.048 107.405 61.648C109.645 63.248 112.525 64.048 116.045 64.048C119.373 64.048 121.933 63.344 123.725 61.936C125.517 60.528 126.413 58.736 126.413 56.56C126.413 54.96 125.837 53.744 124.685 52.912C123.597 52.016 121.549 51.312 118.541 50.8C117.325 50.544 116.013 50.288 114.605 50.032C113.261 49.776 111.981 49.552 110.765 49.36C108.589 48.912 106.413 48.176 104.237 47.152C102.125 46.128 100.365 44.688 98.9568 42.832C97.5488 40.976 96.8448 38.576 96.8448 35.632C96.8448 31.536 98.4128 28.112 101.549 25.36C104.685 22.608 108.973 21.232 114.413 21.232C119.661 21.232 124.013 22.448 127.469 24.88C130.925 27.248 132.877 30.96 133.325 36.016H124.781C124.525 33.264 123.405 31.312 121.421 30.16C119.501 28.944 117.133 28.336 114.317 28.336C111.565 28.336 109.293 28.944 107.501 30.16C105.773 31.376 104.909 32.976 104.909 34.96C104.909 38.416 107.501 40.656 112.685 41.68C113.453 41.744 114.253 41.872 115.085 42.064C115.981 42.192 116.877 42.352 117.773 42.544C118.669 42.672 119.469 42.8 120.173 42.928C121.709 43.184 123.309 43.568 124.973 44.08C126.637 44.528 128.205 45.232 129.677 46.192C131.149 47.088 132.333 48.336 133.229 49.936C134.189 51.472 134.669 53.456 134.669 55.888C134.669 58.832 133.901 61.456 132.365 63.76C130.829 66.064 128.653 67.888 125.837 69.232C123.021 70.512 119.661 71.152 115.757 71.152ZM165.219 71.152C160.611 71.152 156.515 70.128 152.931 68.08C149.411 65.968 146.627 63.056 144.579 59.344C142.595 55.632 141.603 51.28 141.603 46.288C141.603 41.232 142.595 36.848 144.579 33.136C146.563 29.36 149.347 26.448 152.931 24.4C156.515 22.288 160.643 21.232 165.315 21.232C169.987 21.232 173.987 22.288 177.315 24.4C180.707 26.448 183.299 29.168 185.091 32.56C186.947 35.952 187.875 39.664 187.875 43.696C187.875 44.336 187.875 45.04 187.875 45.808C187.875 46.512 187.843 47.28 187.779 48.112H148.035V41.776H179.331C179.139 37.616 177.699 34.352 175.011 31.984C172.387 29.616 169.091 28.432 165.123 28.432C162.435 28.432 159.939 29.04 157.635 30.256C155.331 31.408 153.475 33.168 152.067 35.536C150.723 37.84 150.051 40.72 150.051 44.176V46.768C150.051 50.544 150.755 53.712 152.163 56.272C153.571 58.832 155.427 60.752 157.731 62.032C160.035 63.312 162.499 63.952 165.123 63.952C168.323 63.952 171.011 63.216 173.187 61.744C175.363 60.272 176.963 58.256 177.987 55.696H186.531C185.699 58.576 184.323 61.2 182.403 63.568C180.483 65.936 178.051 67.792 175.107 69.136C172.227 70.48 168.931 71.152 165.219 71.152ZM197.729 70V22.384H206.369V30.256C207.905 27.44 210.081 25.232 212.897 23.632C215.713 22.032 218.913 21.232 222.497 21.232C228.129 21.232 232.609 22.96 235.937 26.416C239.265 29.872 240.929 35.184 240.929 42.352V70H232.289V43.216C232.289 38.352 231.265 34.704 229.217 32.272C227.233 29.84 224.257 28.624 220.289 28.624C216.257 28.624 212.929 30.096 210.305 33.04C207.681 35.92 206.369 40.016 206.369 45.328V70H197.729ZM266.915 70C264.227 70 261.955 69.68 260.099 69.04C258.243 68.336 256.835 67.056 255.875 65.2C254.979 63.344 254.531 60.72 254.531 57.328V29.68H246.275V22.384H254.531V10.768H263.171V22.384H276.611V29.68H263.171V55.984C263.171 58.032 263.331 59.536 263.651 60.496C263.971 61.456 264.643 62.064 265.667 62.32C266.691 62.512 268.163 62.608 270.083 62.608H275.939V70H266.915ZM285.296 70V22.384H293.936V70H285.296ZM284.336 13.264V2.704H294.8V13.264H284.336ZM335.88 62.512C333.896 65.904 331.528 68.24 328.776 69.52C326.088 70.736 323.24 71.344 320.232 71.344C317.672 71.344 315.368 70.896 313.32 70C311.272 69.04 309.544 67.728 308.136 66.064C306.728 64.4 305.64 62.416 304.872 60.112C304.104 57.744 303.72 55.152 303.72 52.336C303.72 48.304 304.296 44.4 305.448 40.624C306.6 36.848 308.264 33.52 310.44 30.64C312.68 27.76 315.432 25.456 318.696 23.728C321.96 21.936 325.736 21.04 330.024 21.04C333.288 21.04 336.072 21.808 338.376 23.344C340.68 24.816 342.184 26.992 342.888 29.872H344.04L345.576 22.384H353.064L344.616 61.936C344.488 62.512 344.552 62.96 344.808 63.28C345.064 63.536 345.416 63.664 345.864 63.664C346.312 63.664 346.76 63.504 347.208 63.184L350.664 60.688L354.696 66.352L350.376 69.616C349.672 70.128 348.776 70.544 347.688 70.864C346.664 71.184 345.608 71.344 344.52 71.344C343.56 71.344 342.632 71.216 341.736 70.96C340.84 70.704 340.008 70.32 339.24 69.808C338.536 69.232 337.96 68.528 337.512 67.696C337.064 66.8 336.84 65.712 336.84 64.432C336.84 64.112 336.84 63.792 336.84 63.472C336.904 63.152 336.968 62.832 337.032 62.512H335.88ZM322.536 64.24C325.096 64.24 327.496 63.664 329.736 62.512C332.04 61.296 334.024 59.664 335.688 57.616C337.416 55.568 338.76 53.168 339.72 50.416C340.68 47.6 341.16 44.56 341.16 41.296C341.16 37.328 340.264 34.16 338.472 31.792C336.68 29.36 333.896 28.144 330.12 28.144C327.112 28.144 324.456 28.784 322.152 30.064C319.912 31.344 317.992 33.072 316.392 35.248C314.792 37.36 313.576 39.824 312.744 42.64C311.976 45.456 311.592 48.368 311.592 51.376C311.592 55.6 312.52 58.8 314.376 60.976C316.232 63.152 318.952 64.24 322.536 64.24ZM363.365 70V0.879997H372.005V70H363.365ZM379.773 70L402.237 0.879997H416.685L439.149 70H428.733L408.045 6.928H410.637L390.189 70H379.773ZM391.437 54.4V44.992H427.533V54.4H391.437ZM444.88 70V0.879997H472.816C473.488 0.879997 474.32 0.911997 475.312 0.975996C476.304 1.008 477.248 1.104 478.144 1.264C481.984 1.872 485.184 3.184 487.744 5.2C490.336 7.216 492.272 9.76 493.552 12.832C494.832 15.904 495.472 19.296 495.472 23.008C495.472 26.752 494.832 30.16 493.552 33.232C492.272 36.304 490.336 38.848 487.744 40.864C485.184 42.88 481.984 44.192 478.144 44.8C477.248 44.928 476.288 45.024 475.264 45.088C474.272 45.152 473.456 45.184 472.816 45.184H454.912V70H444.88ZM454.912 35.68H472.432C473.072 35.68 473.776 35.648 474.544 35.584C475.344 35.52 476.096 35.408 476.8 35.248C478.848 34.768 480.496 33.888 481.744 32.608C482.992 31.296 483.888 29.792 484.432 28.096C484.976 26.4 485.248 24.704 485.248 23.008C485.248 21.312 484.976 19.632 484.432 17.968C483.888 16.272 482.992 14.784 481.744 13.504C480.496 12.192 478.848 11.296 476.8 10.816C476.096 10.624 475.344 10.496 474.544 10.432C473.776 10.368 473.072 10.336 472.432 10.336H454.912V35.68ZM502.187 70V0.879997H530.124C530.796 0.879997 531.628 0.911997 532.62 0.975996C533.612 1.008 534.556 1.104 535.452 1.264C539.292 1.872 542.492 3.184 545.051 5.2C547.644 7.216 549.58 9.76 550.86 12.832C552.139 15.904 552.779 19.296 552.779 23.008C552.779 26.752 552.139 30.16 550.86 33.232C549.58 36.304 547.644 38.848 545.051 40.864C542.492 42.88 539.292 44.192 535.452 44.8C534.556 44.928 533.596 45.024 532.572 45.088C531.58 45.152 530.764 45.184 530.124 45.184H512.219V70H502.187ZM512.219 35.68H529.74C530.38 35.68 531.083 35.648 531.851 35.584C532.652 35.52 533.404 35.408 534.108 35.248C536.156 34.768 537.804 33.888 539.052 32.608C540.3 31.296 541.196 29.792 541.74 28.096C542.284 26.4 542.556 24.704 542.556 23.008C542.556 21.312 542.284 19.632 541.74 17.968C541.196 16.272 540.3 14.784 539.052 13.504C537.804 12.192 536.156 11.296 534.108 10.816C533.404 10.624 532.652 10.496 531.851 10.432C531.083 10.368 530.38 10.336 529.74 10.336H512.219V35.68Z"
                     fill="white" />
@@ -86,12 +62,16 @@
                             d="M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z" />
                     </svg><span id="CurrentLinksText">All Apps</span></a></li>
             <div id="EssentialappLinks">
-                <!-- <li><a href="javascript:void(0)" onclick="setupCanvasTab()">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                            fill="currentColor">
-                            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-                        </svg>Create New Workspace</a>
-                </li> -->
+                <!-- App selection will be dynamically added here -->
+                <!-- <ul id="app-selection-list">
+                    <li><a href="javascript:void(0)" onclick="showApp('Todolist', event)">Todolist</a></li>
+                    <li><a href="javascript:void(0)" onclick="showApp('Clock', event)">Clock</a></li>
+                    <li><a href="javascript:void(0)" onclick="showApp('Calculator', event)">Calculator</a></li>
+                    <li><a href="javascript:void(0)" onclick="showApp('Note', event)">Notes</a></li>
+                    <li><a href="javascript:void(0)" onclick="showApp('Paint', event)">Paint</a></li>
+                </ul>
+                <hr> -->
+                <!-- Open app tabs will be dynamically added here -->
                 <li><a href="javascript:void(0)" id="NewWindow_Mintputs">
                         <svg width="20" height="20" viewBox="0 0 384 383" fill="none" xmlns="http://www.w3.org/2000/svg"
                             style="translate: 2.25px -1px;">
@@ -122,6 +102,7 @@
                         </svg>
                         Try Mintputs</a>
                 </li>
+                <!-- <ul id="open-apps-tabs"></ul> -->
                 <div id="appStatus">
                     <!-- Todolist Controls -->
                     <div class="app-controls" data-app-controls="Todolist" style="display: none;">
@@ -155,9 +136,8 @@
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                                 fill="currentColor">
                                 <path
-                                    d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h480q33 0 56.5 23.5T800-800v640q0 33-23.5 56.5T720-80H240Zm0-80h480v-640H240v640Z" />
-                            </svg>
-                            <span id="todolist-status-text">0 Tasks</span>
+                                    d="M435.33-227 678-469.67 621.67-526 436-340.33l-99-99-57 57L435.33-227ZM224-58.67q-33.73 0-58.86-25.13Q140-108.94 140-142.67v-674.66q0-33.73 25.14-58.87 25.13-25.13 58.86-25.13h342l254 253v505.66q0 33.73-25.14 58.87Q769.73-58.67 736-58.67H224ZM524.67-608v-209.33H224v674.66h512V-608H524.67ZM224-817.33V-608v-209.33 674.66-674.66Z" />
+                            </svg><span id="todolist-status-text">0 Remaining tasks left</span>
                         </a>
                     </div>
                     <!-- Note Controls -->
@@ -278,6 +258,20 @@
 
     <div class="content">
 
+        <div id="home-content">
+            <div class="welcome-message">
+                <h2>Welcome to Essential App</h2>
+                <p>Select an application from the sidebar to get started.</p>
+                <div class="app-grid">
+                    <a href="javascript:void(0)" onclick="showApp('Todolist', event)">Todolist</a>
+                    <a href="javascript:void(0)" onclick="showApp('Clock', event)">Clock</a>
+                    <a href="javascript:void(0)" onclick="showApp('Calculator', event)">Calculator</a>
+                    <a href="javascript:void(0)" onclick="showApp('Note', event)">Notes</a>
+                    <a href="javascript:void(0)" onclick="showApp('Paint', event)">Paint</a>
+                </div>
+            </div>
+        </div>
+
         <div class="electron-only">
 
             <!-- <div class="canvas-container" id="canvasContainer">
@@ -333,8 +327,6 @@
                     <div class="loading-spinner"></div>
                     <div>Loading...</div>
                 </div>
-
-                <!-- iframes will be created dynamically -->
             </div>
 
         </div>
@@ -343,279 +335,6 @@
         <div id="app"></div>
 
     </div>
-
-    <script>
-        // This function will be called by iframes to communicate with the main window.
-        window.iframeAction = function (appId, action, data) {
-            console.log(`Action from ${appId}: ${action}`, data);
-
-            if (action === 'updateStatus') {
-                // Handle Todolist status updates
-                if (appId === 'Todolist') {
-                    const statusTextElement = document.getElementById('todolist-status-text');
-                    const controlBlock = document.querySelector(`[data-app-controls="Todolist"]`);
-                    if (!statusTextElement || !controlBlock) return;
-
-                    const count = data.count !== undefined ? data.count : 0;
-                    statusTextElement.textContent = `${count} Task${count !== 1 ? 's' : ''}`;
-                    controlBlock.style.display = 'block';
-                    updateAppControls(currentActiveApp);
-                }
-            } else if (appId === 'Note' && action === 'addToTodo' && data.text) {
-                showApp('Todolist');
-                setTimeout(() => {
-                    sendCommandToIframe('Todolist', 'addTask', { text: data.text });
-                }, 250);
-            }
-        };
-    </script>
-
-    <script>
-        // App configuration with lazy loading
-        const appConfig = {
-            'Todolist': { src: 'Todolist.html', loaded: false },
-            'Clock': { src: 'Time.html', loaded: false },
-            'Calculator': { src: 'calc.html', loaded: false },
-            'Note': { src: 'Notes.html', loaded: false },
-            'Paint': { src: 'Paint.html', loaded: false }
-        };
-
-        let currentActiveApp = null;
-        const cachedApps = new Set();
-
-        const appIcons = {
-            'Todolist': 'M360-200v-80h480v80H360Zm0-240v-80h480v80H360Zm0-240v-80h480v80H360ZM200-160q-33 0-56.5-23.5T120-240q0-33 23.5-56.5T200-320q33 0 56.5 23.5T280-240q0 33-23.5 56.5T200-160Zm0-240q-33 0-56.5-23.5T120-480q0-33 23.5-56.5T200-560q33 0 56.5 23.5T280-480q0 33-23.5 56.5T200-400Zm0-240q-33 0-56.5-23.5T120-720q0-33 23.5-56.5T200-800q33 0 56.5 23.5T280-720q0 33-23.5 56.5T200-640Z', // list
-            'Clock': 'M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm-20-320v-160h80v128l108 108-56 56-132-132Z', // schedule
-            'Calculator': 'M400-240v-80h62l105-120-105-120h-66l-64 344q-8 45-37 70.5T221-120q-45 0-73-24t-28-64q0-32 17-51.5t43-19.5q25 0 42.5 17t17.5 41q0 5-.5 9t-1.5 9q5-1 8.5-5.5T252-221l62-339H200v-80h129l21-114q7-38 37.5-62t72.5-24q44 0 72 26t28 65q0 30-17 49.5T500-680q-25 0-42.5-17T440-739q0-5 .5-9t1.5-9q-6 2-9 6t-5 12l-17 99h189v80h-32l52 59 52-59h-32v-80h200v80h-62L673-440l105 120h62v80H640v-80h32l-52-60-52 60h32v80H400Z', // calculate
-            'Note': 'M280-160v-441q0-33 24-56t57-23h439q33 0 56.5 23.5T880-600v320L680-80H360q-33 0-56.5-23.5T280-160ZM81-710q-6-33 13-59.5t52-32.5l434-77q33-6 59.5 13t32.5 52l10 54h-82l-7-40-433 77 40 226v279q-16-9-27.5-24T158-276L81-710Zm279 110v440h280v-160h160v-280H360Zm220 220Z', // note
-            'Paint': 'M360-80q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35Zm179-139q-6-55-41-97t-87-57l106-107H236q-32 0-54-22t-22-54q0-20 10.5-37.5T198-622l486-291q18-11 38-5.5t31 23.5q11 18 5.5 37.5T736-827L360-600h364q32 0 54 22t22 54q0 18-4.5 35.5T778-458L539-219Z ', // brush
-            'All Apps': 'M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z' // apps
-        };
-
-        function updateSidebarStatus(appName) {
-            const statusTextElement = document.getElementById('CurrentLinksText');
-            const statusSvgElement = document.getElementById('CurrentLinksSvg');
-
-            if (statusTextElement) {
-                statusTextElement.textContent = appName;
-            }
-
-            if (statusSvgElement && appIcons[appName]) {
-                const svgPath = statusSvgElement.querySelector('path');
-                if (svgPath) {
-                    svgPath.setAttribute('d', appIcons[appName]);
-                }
-            }
-        }
-
-        function updateAppControls(activeAppId) {
-            const allControlBlocks = document.querySelectorAll('#appStatus .app-controls');
-            allControlBlocks.forEach(block => {
-                const blockAppId = block.dataset.appControls;
-                const actionButtons = block.querySelectorAll('.app-action-button');
-
-                // Determine if the action buttons for this block should be shown
-                const shouldShowButtons = (blockAppId === activeAppId);
-
-                actionButtons.forEach(button => {
-                    button.style.display = shouldShowButtons ? 'flex' : 'none';
-                });
-            });
-        }
-
-        function sendCommandToIframe(appId, action, data = {}) {
-            const iframe = document.getElementById(appId);
-            if (iframe && iframe.contentWindow) {
-                console.log(`Sending command to ${appId}:`, { action, data });
-                // ใช้ postMessage เพื่อการสื่อสารที่ปลอดภัย
-                iframe.contentWindow.postMessage({ action, data }, '*'); // ใน Production ควรระบุ Origin ที่เฉพาะเจาะจง
-            } else {
-                console.error(`Could not find active iframe for ${appId}`);
-            }
-        }
-
-        // Function to show loading overlay
-        function showLoading() {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.style.display = 'block';
-        }
-
-        // Function to hide loading overlay
-        function hideLoading() {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.style.display = 'none';
-        }
-
-        // Function to create iframe if not exists
-        function createIframe(appId) {
-            let iframe = document.getElementById(appId);
-
-            if (!iframe) {
-                iframe = document.createElement('iframe');
-                iframe.id = appId;
-                iframe.frameBorder = '0';
-                iframe.src = appConfig[appId].src;
-
-                // Add loading event listeners
-                iframe.addEventListener('load', function () {
-                    appConfig[appId].loaded = true;
-                    cachedApps.add(appId);
-                    hideLoading();
-                });
-
-                iframe.addEventListener('error', function () {
-                    hideLoading();
-                    console.error(`Failed to load ${appId}`);
-                });
-
-                document.querySelector('.appiclationDrawer').appendChild(iframe);
-            }
-
-            return iframe;
-        }
-
-        // Function to hide all iframes
-        function hideAllIframes() {
-            const iframes = document.querySelectorAll('.appiclationDrawer iframe');
-            iframes.forEach(iframe => {
-                if (iframe.id !== 'loadingOverlay') {
-                    iframe.classList.remove('active');
-                    if (cachedApps.has(iframe.id)) {
-                        iframe.classList.add('cached');
-                    }
-                }
-            });
-
-            // Remove active class from all navigation links
-            const navLinks = document.querySelectorAll('#MainLINKS a');
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-            });
-        }
-
-        // Function to show specific app iframe with lazy loading and caching
-        function showApp(appId, event) {
-            const focusableApps = ['Todolist', 'Note'];
-
-            // If same app is already active, just re-focus it.
-            if (currentActiveApp === appId) {
-                const iframe = document.getElementById(appId);
-                if (iframe && iframe.contentWindow) {
-                    setTimeout(() => {
-                        iframe.contentWindow.focus();
-                        if (focusableApps.includes(appId)) {
-                            sendCommandToIframe(appId, 'focusInput');
-                        }
-                    }, 50);
-                }
-                return;
-            }
-
-            localStorage.setItem('EssentialApp.lastActiveApp', appId);
-
-            hideAllIframes();
-
-            let iframe = document.getElementById(appId);
-
-            // If iframe doesn't exist or hasn't been loaded, create/load it
-            if (!iframe || !appConfig[appId].loaded) {
-                showLoading();
-                iframe = createIframe(appId);
-            } else {
-                // App is cached, show immediately
-                hideLoading();
-            }
-
-            // Show the iframe
-            if (iframe) {
-                iframe.classList.remove('cached');
-                iframe.classList.add('active');
-                currentActiveApp = appId;
-                updateSidebarStatus(appId);
-                updateAppControls(appId);
-
-                // Use a small timeout to ensure the iframe is fully visible and ready for focus.
-                setTimeout(() => {
-                    if (iframe.contentWindow) {
-                        iframe.contentWindow.focus();
-                        if (focusableApps.includes(appId)) {
-                            sendCommandToIframe(appId, 'focusInput');
-                        }
-                    }
-                }, 50);
-            }
-
-            // Add active class to clicked link
-            if (event && event.target) {
-                const clickedLink = event.target.closest('a');
-                if (clickedLink) {
-                    clickedLink.classList.add('active');
-                }
-            } else {
-                const link = document.querySelector(`#MainLINKS a[onclick*="showApp('${appId}'"]`);
-                if (link) {
-                    link.classList.add('active');
-                }
-            }
-        }
-
-        // Function to show home/all apps view
-        function showHome() {
-            hideAllIframes();
-            hideLoading();
-            currentActiveApp = null;
-            updateSidebarStatus('All Apps');
-            updateAppControls(null);
-            localStorage.removeItem('EssentialApp.lastActiveApp');
-        }
-
-        function showAllApps() {
-            hideAllIframes();
-            hideLoading();
-            currentActiveApp = null;
-            updateSidebarStatus('All Apps');
-            updateAppControls(null);
-            localStorage.removeItem('EssentialApp.lastActiveApp');
-        }
-
-        // Preload function for better performance (optional)
-        function preloadApp(appId) {
-            if (!appConfig[appId].loaded && !document.getElementById(appId)) {
-                createIframe(appId);
-            }
-        }
-
-        // Initialize - hide all iframes on load
-        document.addEventListener('DOMContentLoaded', function () {
-            hideAllIframes();
-            hideLoading();
-            updateAppControls(null);
-
-            const lastApp = localStorage.getItem('EssentialApp.lastActiveApp');
-            if (lastApp && appConfig[lastApp]) {
-                // Use a small timeout to ensure the rest of the UI is ready
-                setTimeout(() => showApp(lastApp), 100);
-            } else {
-                // Optional: Preload the first app after a delay if no last app is set
-                setTimeout(() => {
-                    preloadApp('Todolist');
-                }, 1000);
-            }
-        });
-
-        // Optional: Preload apps on hover for even faster loading
-        document.querySelectorAll('#MainLINKS a').forEach(link => {
-            link.addEventListener('mouseenter', function () {
-                const onclick = this.getAttribute('onclick');
-                if (onclick && onclick.includes('showApp')) {
-                    const appId = onclick.match(/showApp\('(.+?)'\)/)?.[1];
-                    if (appId && !appConfig[appId].loaded) {
-                        setTimeout(() => preloadApp(appId), 200);
-                    }
-                }
-            });
-        });
-    </script>
 
     <script src="./frontendJS/PUBLICscripts.js" type="module" defer></script>
     <script src="renderer.js" defer></script>
