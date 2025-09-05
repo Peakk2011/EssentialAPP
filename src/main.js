@@ -940,7 +940,7 @@ app.whenReady().then(async () => {
       default: {
         ...BASE_WINDOW_CONFIG,
         ...(PLATFORM_CONFIG[process.platform]?.window || PLATFORM_CONFIG.win32.window),
-        width: 1320,
+        width: 1024,
         height: 860
       },
       alwaysOnTop: { width: 340, height: 570 }
@@ -1074,6 +1074,9 @@ const createMainWindow = async () => {
       await handleError(null, err, 'window-creation');
       throw err;
     });
+
+    // Automatically open DevTools on startup for development
+    mainWindow.webContents.openDevTools();
 
     // Start load from localstroage
     mainWindow.webContents.on('dom-ready', () => {

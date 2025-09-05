@@ -482,17 +482,73 @@ document.addEventListener('mouseup', handleMouseUp);
 
 // Keyboard Shortcuts
 document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && ['=', '-', '0'].includes(e.key)) e.preventDefault();
+    // Prevent zoom shortcuts, etc.
+    if ((e.ctrlKey || e.metaKey) && ['=', '-', '0'].includes(e.key)) {
+        e.preventDefault();
+        return;
+    }
+    // Don't interfere with tab name editing
     if (state.editingTabIndex !== -1) return;
 
-    const shortcuts = {
-        't': () => { e.preventDefault(); createNewCanvas(); },
-        'w': () => { if (state.canvases.length > 1) { e.preventDefault(); closeCanvas(state.activeCanvasIndex); } },
-        'n': () => { e.preventDefault(); showNewAreaModal(); }
-    };
+    // Handle shortcuts with Ctrl/Cmd modifier
+    if (e.ctrlKey || e.metaKey) {
+        const key = e.key.toLowerCase();
+        let handled = false;
 
-    if ((e.ctrlKey || e.metaKey) && shortcuts[e.key]) shortcuts[e.key]();
-    if (e.key === 'Delete' && state.selectedAreaId) { e.preventDefault(); closeArea(state.selectedAreaId, e); }
+        switch (key) {
+            case 't':
+                createNewCanvas();
+                handled = true;
+                break;
+            case 'w':
+                if (state.canvases.length > 1) {
+                    closeCanvas(state.activeCanvasIndex);
+                }
+                handled = true;
+                break;
+            case 'n':
+                showNewAreaModal();
+                handled = true;
+                break;
+            case 'tab':
+                const direction = e.shiftKey ? -1 : 1;
+                const nextIndex = (state.activeCanvasIndex + direction + state.canvases.length) % state.canvases.length;
+                switchToCanvas(nextIndex);
+                handled = true;
+                break;
+        }
+
+        if (handled) {
+            e.preventDefault();
+            return;
+        }
+    }
+
+    // Handle shortcuts without modifiers (if not typing in an input)
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        let handled = false;
+        switch (e.key) {
+            case 'ArrowRight':
+                const nextIndex = (state.activeCanvasIndex + 1) % state.canvases.length;
+                switchToCanvas(nextIndex);
+                handled = true;
+                break;
+            case 'ArrowLeft':
+                const prevIndex = (state.activeCanvasIndex - 1 + state.canvases.length) % state.canvases.length;
+                switchToCanvas(prevIndex);
+                handled = true;
+                break;
+            case 'Delete':
+                if (state.selectedAreaId) {
+                    closeArea(state.selectedAreaId, e);
+                    handled = true;
+                }
+                break;
+        }
+        if (handled) {
+            e.preventDefault();
+        }
+    }
 });
 
 // Modal Event Listeners
@@ -692,17 +748,18 @@ function closeApp(appId, event) {
         event.preventDefault();
     }
 
-    openApps.delete(appId);
-    localStorage.setItem('EssentialApp.openApps', JSON.stringify(Array.from(openApps)));
-
     const iframe = document.getElementById(appId);
     if (iframe) {
         iframe.classList.remove('active');
         iframe.classList.add('cached');
     }
 
+    const wasActive = currentActiveApp === appId;
+    openApps.delete(appId);
+    localStorage.setItem('EssentialApp.openApps', JSON.stringify(Array.from(openApps)));
+
     // If the closed app was the active one, decide which app to show next
-    if (currentActiveApp === appId) {
+    if (wasActive) {
         const remainingApps = Array.from(openApps);
         if (remainingApps.length > 0) {
             showApp(remainingApps[remainingApps.length - 1]);
@@ -719,8 +776,8 @@ function updateUIForActiveApp(activeAppId) {
     updateAppControls(activeAppId);    
     updateNavbarLinks(activeAppId);
 
+    const recentFilesLink = document.getElementById('recentFilesLink');
     const homeContent = document.getElementById('home-content');
-    homeContent.style.display = activeAppId ? 'none' : 'flex';
 }
 
 function updateNavbarLinks(activeAppId) {
@@ -771,16 +828,22 @@ function updateNavbarLinks(activeAppId) {
 function showHome() {
     hideAllIframes();
     hideLoading();
-    // Don't clear openApps here, just set the active app to null
     currentActiveApp = null;
-    updateUIForActiveApp(null);
-    localStorage.setItem('EssentialApp.lastActiveApp', 'home'); // Save 'home' as last state
+    updateUIForActiveApp(currentActiveApp);
+    localStorage.setItem('EssentialApp.lastActiveApp', 'home');
 }
 
 function showAllApps() {
     hideAllIframes();
     hideLoading();
     showHome();
+}
+
+function openRecentFile() {
+    const lastApp = localStorage.getItem('EssentialApp.lastActiveApp');
+    if (lastApp && lastApp !== 'home' && appConfig[lastApp]) {
+        showApp(lastApp);
+    }
 }
 
 // Preload function for better performance
@@ -836,12 +899,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (lastApp && lastApp !== 'home' && appConfig[lastApp]) {
         setTimeout(() => showApp(lastApp), 100);
     } else {
-        // If no specific app was active, or it was the home screen,
-        // just update the UI to show the restored tabs without activating any app.
-        updateUIForActiveApp(null);
-        showHome(); // Show home screen by default
+        // If no specific app was active, just show home and update UI
+        showHome();
+
+        // Preload the last used app (if any) to make "Open Recent" faster
+        const lastAppToPreload = localStorage.getItem('EssentialApp.lastActiveApp');
+        if (lastAppToPreload && lastAppToPreload !== 'home' && appConfig[lastAppToPreload]) {
+            setTimeout(() => preloadApp(lastAppToPreload), 500);
+        }
         setTimeout(() => {
-            // Preload the most common app to make it faster on first click
             preloadApp('Todolist');
         }, 1000);
     }
@@ -856,7 +922,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Preload apps on hover for even faster loading
 document.querySelectorAll('#app-selection-list a').forEach(link => {
     link.addEventListener('mouseenter', function () {
         const onclick = this.getAttribute('onclick');
