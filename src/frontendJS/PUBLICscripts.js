@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = url;
     });
   } else {
-    console.error('API Not Available');
+    return
   }
 
   const menu = document.querySelector('.menu');

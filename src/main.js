@@ -345,7 +345,7 @@ const preWarmApp = async () => {
   const criticalAssets = [
     Essential_links.home,
     'preload.js',
-    'CSS/DefaultComp.css'
+    'css/defaultComp.css'
   ];
 
   const loadWithConcurrency = async (assets, concurrency) => {
@@ -901,7 +901,7 @@ app.whenReady().then(async () => {
 
   // Pre-load like CSS to avoid sync I/O later
   try {
-    const cssPath = path.join(__dirname, 'CSS', 'CSS_Essential_Pages', 'Titlebar.css');
+    const cssPath = path.join(__dirname, 'CSS', 'cssEssentialPage', 'titlebar.css');
     titlebarCssContent = await fs.promises.readFile(cssPath, 'utf8');
   } catch (err) {
     console.error('Failed to pre-load titlebar CSS:', err);
@@ -918,6 +918,21 @@ app.whenReady().then(async () => {
     await Promise.all([
       ses.clearCodeCaches({ urls: [] })
     ]);
+
+  ses.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self';",
+          "script-src 'self';",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com;", 
+          "font-src 'self' https://fonts.gstatic.com https://api.fontshare.com;",
+          "img-src 'self' data:;"
+        ].join(' ')
+      }
+    });
+  });
 
     const preWarmPromise = preWarmApp();
     setupCachePermissions();
@@ -1683,13 +1698,14 @@ const updateAllWindowsTheme = (theme) => {
     if (!win.isDestroyed()) {
       try {
         const titlebarColor = theme === 'dark' ? '#0f0f0f' : '#f6f5f3';
-        const symbolColor = theme === 'dark' ? '#f3f2f0' : '#000000';
-
-        win.setTitleBarOverlay({
-          color: titlebarColor,
-          symbolColor: symbolColor,
-          height: 39
-        });
+        if (process.platform === 'win32') {
+          const symbolColor = theme === 'dark' ? '#f3f2f0' : '#000000';
+          win.setTitleBarOverlay({
+            color: titlebarColor,
+            symbolColor: symbolColor,
+            height: 39
+          });
+        }
 
         win.setBackgroundColor(titlebarColor);
 

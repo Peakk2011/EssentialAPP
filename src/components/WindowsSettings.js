@@ -18,7 +18,7 @@ class SettingsWindowsComponent {
     async injectCustomTitle() {
         if (!this.window?.webContents) return;
         const fs = require('fs');
-        const cssPath = path.join(__dirname, '../CSS/CSS_Essential_Pages/Titlebar.css');
+        const cssPath = path.join(__dirname, '../css/cssEssentialPage/titlebar.css');
         const css = fs.readFileSync(cssPath, 'utf8');
         await this.window.webContents.executeJavaScript(`
             (function() {
