@@ -3,6 +3,9 @@ const container = document.getElementById('home-content');
 const canvasAreas = document.getElementById('canvasAreas');
 const tabsContainer = document.getElementById('tabs');
 const zoomInfo = document.getElementById('zoomInfo');
+const homeContent = document.getElementById('home-content');
+const sidebar = document.querySelector('.menu');
+const sidebarHomePage = document.getElementById('GotoHomePage');
 
 const appConfig = {
     'Todolist': { src: 'Todolist.html', loaded: false },
@@ -12,7 +15,7 @@ const appConfig = {
     'Paint': { src: 'Paint.html', loaded: false }
 };
 
-let openApps = new Set(); 
+let openApps = new Set();
 let currentActiveApp = null;
 const cachedApps = new Set();
 
@@ -558,7 +561,6 @@ function sendCommandToIframe(appId, action, data = {}) {
     const iframe = document.getElementById(appId);
     if (iframe && iframe.contentWindow) {
         console.log(`Sending command to ${appId}:`, { action, data });
-        // ใช้ postMessage เพื่อการสื่อสารที่ปลอดภัย
         iframe.contentWindow.postMessage({ action, data }, '*');
     } else {
         console.error(`Could not find active iframe for ${appId}`);
@@ -709,20 +711,36 @@ function closeApp(appId, event) {
 
 function updateUIForActiveApp(activeAppId) {
     updateSidebarStatus(activeAppId || 'All Apps');
-    updateAppControls(activeAppId);    
+    updateAppControls(activeAppId);
     updateNavbarLinks(activeAppId);
 
-    const homeContent = document.getElementById('home-content');
-    homeContent.style.display = activeAppId ? 'none' : 'flex';
+    const isAppActive = !!activeAppId;
+
+    if (homeContent) {
+        homeContent.style.display = isAppActive ? 'none' : 'block';
+    }
+    if (sidebar) {
+        sidebar.classList.toggle('hidden', isAppActive);
+    }
 }
 
 function updateNavbarLinks(activeAppId) {
     const navbarLinksContainer = document.getElementById('MainLINKS');
     navbarLinksContainer.innerHTML = '';
 
+    const content = document.querySelector('.content');
+    const createBtnLi = document.createElement('li');
+    createBtnLi.className = 'create-new-btn-container';
+
+    if (content) {
+        content.style.marginLeft = activeAppId ? '0' : 'var(--sidebar-width)';
+        content.style.width = activeAppId ? '100%' : 'calc(100vw - var(--sidebar-width))';
+        if (sidebarHomePage) sidebarHomePage.style.backgroundColor = activeAppId ? 'var(--theme-bg)' : 'var(--theme-primary)';
+        if (sidebarHomePage) sidebarHomePage.style.borderBottom = activeAppId ? 'var(--TitlebarColorBorder)' : '';
+    }
     openApps.forEach(appId => {
         const li = document.createElement('li');
-        li.className = `app-tab app-tab-${appId}`; // Add unique class for targeting
+        li.className = `app-tab app-tab-${appId}`;
 
         const a = document.createElement('a');
         if (appId === activeAppId) {
@@ -742,8 +760,8 @@ function updateNavbarLinks(activeAppId) {
                 tabElement.addEventListener('animationend', () => {
                     closeApp(appId, e);
                 }, { once: true });
-            } else { // Fallback if animation fails
-                closeApp(appId, e); // Fallback if animation fails
+            } else { 
+                closeApp(appId, e);
             }
         };
 
@@ -758,6 +776,22 @@ function updateNavbarLinks(activeAppId) {
         li.appendChild(a);
         navbarLinksContainer.appendChild(li);
     });
+
+    const createBtnA = document.createElement('a');
+    createBtnA.href = 'javascript:void(0)';
+    createBtnA.className = 'create-new-btn';
+    createBtnA.title = 'New Tab'; // New workspace
+    // createBtnA.onclick = createNewCanvas; for workspace featured
+    createBtnA.onclick = () => {
+
+    };
+    createBtnA.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
+        </svg>`;
+
+    createBtnLi.appendChild(createBtnA);
+    navbarLinksContainer.appendChild(createBtnLi);
 }
 
 // Show home/all apps view
@@ -839,7 +873,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (window.electronAPI?.onTabAction) {
         window.electronAPI.onTabAction(({ action, appId }) => {
             if (tabActionHandlers[action]) {
-                tabActionHandlers[action](appId); 
+                tabActionHandlers[action](appId);
             }
         });
     }
