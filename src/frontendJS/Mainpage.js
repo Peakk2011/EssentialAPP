@@ -769,6 +769,16 @@ function updateNavbarLinks(activeAppId) {
             a.classList.add('active');
         }
 
+        if (appIcons[appId]) {
+            const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            iconSvg.setAttribute('height', '20px');
+            iconSvg.setAttribute('viewBox', '0 -960 960 960');
+            iconSvg.setAttribute('width', '20px');
+            iconSvg.setAttribute('fill', 'currentColor');
+            iconSvg.innerHTML = `<path d="${appIcons[appId]}"/>`;
+            a.appendChild(iconSvg);
+        }
+
         const textSpan = document.createElement('span');
         textSpan.textContent = appId;
         textSpan.style.marginRight = '8px';

@@ -71,6 +71,11 @@ nav ul li a:active {
     background-color: var(--nav-hover);
 }
 
+nav ul li svg {
+    margin-right: 0.5rem;
+    transform: translateY(4.5px) scale(85%);
+}
+
 #MainLINKS {
     display: flex;
     justify-content: start;
