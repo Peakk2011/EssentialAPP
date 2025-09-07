@@ -1,7 +1,7 @@
 // Initialize elements
 const container = document.getElementById('home-content');
 const canvasAreas = document.getElementById('canvasAreas');
-const tabsContainer = document.getElementById('tabs');
+const tabsContainer = document.getElementById('tabs'); // This will be null if 'tabs' doesn't exist in HTML
 const zoomInfo = document.getElementById('zoomInfo');
 const homeContent = document.getElementById('home-content');
 const sidebar = document.querySelector('.menu');
@@ -202,7 +202,7 @@ const handleAreaDoubleClick = (areaId, e) => {
     if (e.target.closest('.canvas-area-titlebar')) {
         const area = state.canvases[state.activeCanvasIndex].areas.find(a => a.id === areaId);
         if (area) {
-            const newName = prompt('ชื่อ Area ใหม่:', area.name);
+            const newName = prompt('New area name:', area.name);
             if (newName?.trim()) {
                 area.name = newName.trim();
                 renderCanvasAreas();
@@ -277,8 +277,8 @@ const renderCanvasAreas = () => {
 
 // Canvas Management Functions
 const updateTransform = () => {
-    canvasAreas.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
-    zoomInfo.textContent = `${Math.round(state.scale * 100)}%`;
+    if (canvasAreas) canvasAreas.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
+    if (zoomInfo) zoomInfo.textContent = `${Math.round(state.scale * 100)}%`;
     updateResizeHandles();
     saveCurrentCanvasState();
 };
@@ -361,6 +361,7 @@ const finishTabEdit = (index, newName) => {
 };
 
 const updateTabs = () => {
+    if (!tabsContainer) return;
     tabsContainer.innerHTML = '';
     state.canvases.forEach((canvas, index) => {
         const tab = document.createElement('div');
@@ -560,7 +561,6 @@ function updateAppControls(activeAppId) {
 function sendCommandToIframe(appId, action, data = {}) {
     const iframe = document.getElementById(appId);
     if (iframe && iframe.contentWindow) {
-        console.log(`Sending command to ${appId}:`, { action, data });
         iframe.contentWindow.postMessage({ action, data }, '*');
     } else {
         console.error(`Could not find active iframe for ${appId}`);
@@ -626,7 +626,6 @@ function showApp(appId, event) {
 
     const focusableApps = ['Todolist', 'Note'];
 
-    // If app is already open, just switch to it
     if (openApps.has(appId)) {
         if (currentActiveApp === appId) {
             const iframe = document.getElementById(appId);
@@ -640,7 +639,6 @@ function showApp(appId, event) {
             }
             return;
         }
-        // if thare not just make it the active one
         hideAllIframes();
         const iframe = document.getElementById(appId);
         iframe.classList.add('active');
@@ -696,7 +694,6 @@ function closeApp(appId, event) {
         iframe.classList.add('cached');
     }
 
-    // If the closed app was the active one, decide which app to show next
     if (currentActiveApp === appId) {
         const remainingApps = Array.from(openApps);
         if (remainingApps.length > 0) {
@@ -706,12 +703,13 @@ function closeApp(appId, event) {
         }
     }
 
-    updateUIForActiveApp(currentActiveApp); // Update tabs and navbar
+    updateUIForActiveApp(currentActiveApp);
 }
 
 function updateUIForActiveApp(activeAppId) {
     updateSidebarStatus(activeAppId || 'All Apps');
     updateAppControls(activeAppId);
+    
     updateNavbarLinks(activeAppId);
 
     const isAppActive = !!activeAppId;
@@ -722,31 +720,58 @@ function updateUIForActiveApp(activeAppId) {
     if (sidebar) {
         sidebar.classList.toggle('hidden', isAppActive);
     }
+    
+    setTimeout(() => {
+        ensureCreateButtonExists();
+    }, 50);
 }
+
+function ensureCreateButtonExists() {
+    const existingBtn = document.getElementById('create-new-tab-btn');
+    const mainLinks = document.getElementById('MainLINKS');
+    
+    if (mainLinks && !existingBtn) {
+        createNewTabButton();
+    }
+}
+
 
 function updateNavbarLinks(activeAppId) {
     const navbarLinksContainer = document.getElementById('MainLINKS');
+    
+    if (!navbarLinksContainer) {
+        return;
+    }
+    
     navbarLinksContainer.innerHTML = '';
 
     const content = document.querySelector('.content');
-    const createBtnLi = document.createElement('li');
-    createBtnLi.className = 'create-new-btn-container';
-
+    
     if (content) {
         content.style.marginLeft = activeAppId ? '0' : 'var(--sidebar-width)';
         content.style.width = activeAppId ? '100%' : 'calc(100vw - var(--sidebar-width))';
-        if (sidebarHomePage) sidebarHomePage.style.backgroundColor = activeAppId ? 'var(--theme-bg)' : 'var(--theme-primary)';
-        if (sidebarHomePage) sidebarHomePage.style.borderBottom = activeAppId ? 'var(--TitlebarColorBorder)' : '';
+        if (sidebarHomePage) {
+            sidebarHomePage.style.backgroundColor = activeAppId ? 'var(--theme-bg)' : 'var(--theme-primary)';
+            sidebarHomePage.style.borderBottom = activeAppId ? 'var(--TitlebarColorBorder)' : '';
+        }
     }
-    openApps.forEach(appId => {
+    
+    Array.from(openApps).forEach(appId => {
         const li = document.createElement('li');
         li.className = `app-tab app-tab-${appId}`;
 
         const a = document.createElement('a');
+        a.href = 'javascript:void(0)';
+        a.onclick = () => showApp(appId);
+        
         if (appId === activeAppId) {
             li.classList.add('active');
             a.classList.add('active');
         }
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = appId;
+        textSpan.style.marginRight = '8px';
 
         const closeBtn = document.createElement('button');
         closeBtn.className = 'navbar-tab-close-btn';
@@ -754,37 +779,41 @@ function updateNavbarLinks(activeAppId) {
         closeBtn.title = `Close ${appId}`;
         closeBtn.onclick = (e) => {
             e.stopPropagation();
-            const tabElement = e.target.closest('.app-tab');
-            if (tabElement) {
-                tabElement.classList.add('closing');
-                tabElement.addEventListener('animationend', () => {
-                    closeApp(appId, e);
-                }, { once: true });
-            } else { 
-                closeApp(appId, e);
-            }
+            e.preventDefault();
+            closeApp(appId, e);
         };
 
-        const textSpan = document.createElement('span');
-        textSpan.textContent = appId;
-
-        a.href = 'javascript:void(0)';
-        a.onclick = () => showApp(appId);
-        a.oncontextmenu = (e) => { e.preventDefault(); window.electronAPI.showTabContextMenu(appId); };
         a.appendChild(textSpan);
         a.appendChild(closeBtn);
         li.appendChild(a);
         navbarLinksContainer.appendChild(li);
     });
 
+    createNewTabButton();
+}
+
+function createNewTabButton() {
+    const navbarLinksContainer = document.getElementById('MainLINKS');
+    
+    if (!navbarLinksContainer) {
+        return;
+    }
+
+    const existingBtn = document.getElementById('create-new-tab-btn');
+    if (existingBtn) {
+        existingBtn.remove();
+    }
+
+    const createBtnLi = document.createElement('li');
+    createBtnLi.className = 'create-new-btn-container';
+    createBtnLi.id = 'create-new-tab-btn';
+    
     const createBtnA = document.createElement('a');
     createBtnA.href = 'javascript:void(0)';
     createBtnA.className = 'create-new-btn';
-    createBtnA.title = 'New Tab'; // New workspace
-    // createBtnA.onclick = createNewCanvas; for workspace featured
-    createBtnA.onclick = () => {
+    createBtnA.title = 'New Tab';
+    createBtnA.onclick = () => showAppSelection();
 
-    };
     createBtnA.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
             <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
@@ -794,14 +823,31 @@ function updateNavbarLinks(activeAppId) {
     navbarLinksContainer.appendChild(createBtnLi);
 }
 
+const showAppSelection = () => {
+    const popover = document.getElementById('app-popover');
+    const isVisible = popover.style.display === 'block';
+
+    if (isVisible) {
+        popover.style.display = 'none';
+    } else {
+        popover.style.display = 'block';
+        const closeOnClickOutside = (event) => {
+            if (!popover.contains(event.target) && event.target.closest('.create-new-btn') === null) {
+                popover.style.display = 'none';
+                document.removeEventListener('click', closeOnClickOutside, true);
+            }
+        };
+        document.addEventListener('click', closeOnClickOutside, true);
+    }
+}
+
 // Show home/all apps view
 function showHome() {
     hideAllIframes();
     hideLoading();
-    // Don't clear openApps here, just set the active app to null
     currentActiveApp = null;
     updateUIForActiveApp(null);
-    localStorage.setItem('EssentialApp.lastActiveApp', 'home'); // Save 'home' as last state
+    localStorage.setItem('EssentialApp.lastActiveApp', 'home');
 }
 
 function showAllApps() {
@@ -854,21 +900,26 @@ const tabActionHandlers = {
 document.addEventListener('DOMContentLoaded', function () {
     hideAllIframes();
 
-    // Restore open tabs from localStorage
     const savedOpenApps = JSON.parse(localStorage.getItem('EssentialApp.openApps') || '[]');
     openApps = new Set(savedOpenApps);
 
     const lastApp = localStorage.getItem('EssentialApp.lastActiveApp');
 
     if (lastApp && lastApp !== 'home' && appConfig[lastApp]) {
-        setTimeout(() => showApp(lastApp), 100);
+        setTimeout(() => {
+            showApp(lastApp);
+            setTimeout(ensureCreateButtonExists, 200);
+        }, 100);
     } else {
         updateUIForActiveApp(null);
         showHome();
         setTimeout(() => {
             preloadApp('Todolist');
-        }, 1000);
+            ensureCreateButtonExists();
+        }, 500);
     }
+
+    setInterval(ensureCreateButtonExists, 5000);
 
     if (window.electronAPI?.onTabAction) {
         window.electronAPI.onTabAction(({ action, appId }) => {
@@ -879,7 +930,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Preload apps on hover for even faster loading
 document.querySelectorAll('#app-selection-list a').forEach(link => {
     link.addEventListener('mouseenter', function () {
         const onclick = this.getAttribute('onclick');

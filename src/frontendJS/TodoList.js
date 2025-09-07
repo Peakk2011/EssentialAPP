@@ -11,7 +11,7 @@ const dateConfig = {
     locale: 'en-EN'
 };
 
-function updateDate() {
+const updateDate = () => {
     const now = new Date();
     const shortDate = now.toLocaleDateString(dateConfig.locale, dateConfig.options);
     dateElement.innerText = shortDate;
@@ -26,7 +26,7 @@ dateElement.addEventListener('click', (e) => {
 });
 
 // Close dropdown when clicking outside
-function closeDropdown() {
+const closeDropdown = () => {
     if (langDropdown.classList.contains('show')) {
         // Wait ripple effect to done
         setTimeout(() => {
@@ -34,7 +34,7 @@ function closeDropdown() {
         }, 300);
     }
 }
-
+;
 document.addEventListener('click', closeDropdown);
 
 // Handle language selection
@@ -58,14 +58,14 @@ updateDate();
 document.querySelectorAll('.lang-option').forEach(card => {
     let ripple = null;
     let isPressed = false;
-    card.addEventListener('mouseleave', function () {
+    card.addEventListener('mouseleave', () => {
         if (ripple) {
             isPressed = false;
             ripple.remove();
         }
     });
 
-    card.addEventListener('mousedown', function (e) {
+    card.addEventListener('mousedown', (e) => {
         isPressed = true;
         ripple = document.createElement('div');
         ripple.className = 'ripple ripple-quick';
@@ -74,7 +74,7 @@ document.querySelectorAll('.lang-option').forEach(card => {
         this.appendChild(ripple);
     });
 
-    card.addEventListener('mouseup', function () {
+    card.addEventListener('mouseup', () => {
         if (ripple) {
             isPressed = false;
             const href = this.getAttribute('data-href');
@@ -90,14 +90,14 @@ document.querySelectorAll('.lang-option').forEach(card => {
 document.querySelectorAll('.AllmenuLinks li').forEach(card => {
     let ripple = null;
     let isPressed = false;
-    card.addEventListener('mouseleave', function () {
+    card.addEventListener('mouseleave', () => {
         if (ripple) {
             isPressed = false;
             ripple.remove();
         }
     });
 
-    card.addEventListener('mousedown', function (e) {
+    card.addEventListener('mousedown', (e) => {
         isPressed = true;
         ripple = document.createElement('div');
         ripple.className = 'rippleSidebar';
@@ -106,7 +106,7 @@ document.querySelectorAll('.AllmenuLinks li').forEach(card => {
         this.appendChild(ripple);
     });
 
-    card.addEventListener('mouseup', function () {
+    card.addEventListener('mouseup', () => {
         if (ripple) {
             isPressed = false;
             const href = this.getAttribute('data-href');
@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const defaultColors = ['#5DADE2', '#58D68D', '#F5B041', '#EC7063', '#AF7AC5', '#AAB7B8', '#48C9B0', '#FAD7A0'];
 
-    function migrateAndLoadCategories() {
+    const migrateAndLoadCategories = () => {
         let storedCategories = JSON.parse(localStorage.getItem('categories_v2'));
 
         // If new format exists, use it
@@ -333,28 +333,28 @@ document.addEventListener('DOMContentLoaded', () => {
             color: defaultColors[index % defaultColors.length]
         }));
         saveCategories(); // Save in the new format
-    }
+    };
 
-    function saveTodos() {
+    const saveTodos = () => {
         localStorage.setItem('todos_v2', JSON.stringify(todos));
-    }
-    function saveCategories() {
+    };
+    const saveCategories = () => {
         localStorage.setItem('categories_v2', JSON.stringify(categories));
-    }
+    };
 
     // --- Drag and Drop Handlers ---
-    function handleDragStart(e) {
+    const handleDragStart = (e) => {
         e.target.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', e.target.dataset.index);
-    }
+    };
 
-    function handleDragOver(e) {
+    const handleDragOver = (e) => {
         e.preventDefault(); // Necessary to allow dropping
         e.dataTransfer.dropEffect = 'move';
-    }
+    };
 
-    function handleDrop(e) {
+    const handleDrop = (e) => {
         e.preventDefault();
         const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
         const targetLi = e.target.closest('li');
@@ -368,15 +368,15 @@ document.addEventListener('DOMContentLoaded', () => {
             saveTodos();
             render();
         }
-    }
+    };
 
-    function handleDragEnd(e) {
+    const handleDragEnd = (e) => {
         e.target.classList.remove('dragging');
-    }
+    };
 
     migrateAndLoadCategories();
 
-    function renderCategoryUI() {
+    const renderCategoryUI = () => {
         // Populate filter buttons
         categoryFiltersContainer.innerHTML = '';
         const allButton = document.createElement('button');
@@ -438,9 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         categoryFiltersContainer.appendChild(addCategoryBtn);
 
-    }
+    };
 
-    function createContextMenu(e, todo) {
+    const createContextMenu = (e, todo) => {
         e.preventDefault();
         removeContextMenu(); // Remove any existing menu
 
@@ -462,14 +462,14 @@ document.addEventListener('DOMContentLoaded', () => {
             menu.appendChild(item);
         });
         document.body.appendChild(menu);
-    }
+    };
 
-    function removeContextMenu() {
+    const removeContextMenu = () => {
         const existingMenu = document.querySelector('.context-menu');
         if (existingMenu) {
             existingMenu.remove();
         }
-    }
+    };
 
     categoryFiltersContainer.addEventListener('click', (e) => {
         const filterButton = e.target.closest('.filter-btn');
@@ -481,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('click', removeContextMenu);
 
-    function handleEdit(todoId, liElement) {
+    const handleEdit = (todoId, liElement) => {
         // Prevent re-triggering edit on an item that is already being edited.
         if (liElement.classList.contains('editing')) {
             return;
@@ -523,9 +523,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Enter') finishEditing();
             else if (e.key === 'Escape') render(); // Cancel edit
         });
-    }
+    };
 
-    function render() {
+    const render = () => {
         list.innerHTML = '';
 
         renderCategoryUI(); // Update filters and dropdown
@@ -633,7 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.parent && typeof window.parent.iframeAction === 'function') {
             window.parent.iframeAction('Todolist', 'updateStatus', { count: todos.length });
         }
-    }
+    };
 
     addBtn.addEventListener('click', () => {
         const text = input.value.trim();

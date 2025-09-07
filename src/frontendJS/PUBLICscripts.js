@@ -13,17 +13,18 @@ document.getElementById('KeepONtop')?.addEventListener('click', () => {
   }
 });
 
-window.reload = async () => {
+const reloadApp = async () => {
   // Clear localStorage
   localStorage.clear();
 
   // Sync with main process if available
   if (window.electronAPI?.syncClearStorage) {
-    await window.electronAPI.syncClearStorage();
+      await window.electronAPI.syncClearStorage();
   }
   // Force reload
   window.location.reload(true);
 };
+window.reload = reloadApp;
 
 // Rightclick ipc send to main process
 

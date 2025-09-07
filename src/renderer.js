@@ -38,13 +38,11 @@ const detectEnvironment = () => {
     if (isElectron) {
         const osInfo = window.electronAPI.getOSInfo();
         os = osInfo.platform;
-        console.log('[Electron Runtime]', osInfo);
     } else {
         os = navigator.platform.toLowerCase();
         if (os.includes('win')) os = 'win32';
         else if (os.includes('mac')) os = 'darwin';
         else if (os.includes('linux')) os = 'linux';
-        console.log('[Web Runtime] Platform:', os);
     }
 
     // Apply to document
@@ -64,10 +62,6 @@ const setupElectronFeatures = () => {
     document.getElementById('KeepONtop')?.addEventListener('click', () => {
         window.electronAPI.keepOnTop();
     });
-
-    window.electronAPI.onOSInfo((info) => {
-        console.log('[Electron] OS Info:', info);
-    });
 };
 
 const setupWebFeatures = () => {
@@ -81,12 +75,6 @@ const setupWebFeatures = () => {
 
 // System info handler
 window.electronAPI.onSystemInfo((info) => {
-    console.group('System Information');
-    console.log('Runtime:', info.runtime.name);
-    console.log('Platform:', info.platform.name);
-    console.log('Details:', info.details);
-    console.groupEnd();
-
     // Apply system-specific classes
     document.documentElement.setAttribute('data-runtime', info.runtime.type);
     document.documentElement.setAttribute('data-os', info.platform.type);

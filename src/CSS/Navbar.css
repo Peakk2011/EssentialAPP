@@ -26,6 +26,7 @@ nav {
     z-index: 999;
     pointer-events: auto;
     position: fixed;
+    webkkt-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
 }
 
@@ -209,7 +210,6 @@ nav ul li a:hover {
     background-color: var(--HoverColor);
 }
 
-
 /* Navbar Responsive */
 
 @media (max-width: 768px) {
@@ -241,10 +241,21 @@ nav ul li a:hover {
     margin-left: 5.5rem;
     border-left: var(--border);
     border-bottom: var(--border);
+    height: 38px;
+    width: 48px;
 }
 
 [data-os="darwin"] #KeepONtop {
     right: 0;
+}
+
+[data-os="darwin"] #MainLINKS li a {
+    height: 38px;
+    border-bottom: var(--TitlebarColorBorder);
+}
+
+[data-os="darwin"] .create-new-btn svg {
+    transform: translateY(1.5px) scale(90%);
 }
 
 /* Window Controls Width for different OS */

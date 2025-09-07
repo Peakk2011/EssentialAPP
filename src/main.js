@@ -385,7 +385,7 @@ const PLATFORM_CONFIG = {
   darwin: {
     window: {
       titleBarStyle: 'hiddenInset',
-      trafficLightPosition: { x: 12, y: 12 },
+      trafficLightPosition: { x: 12, y: 11.25 },
     }
   },
   win32: {
@@ -430,7 +430,7 @@ const FIRST_TIME_CONFIG = {
     //   color: "0F0F0F",
     //   symbolColor: "FFF",
     // },
-    trafficLightPosition: { x: 12, y: 12 },
+    trafficLightPosition: { x: 12, y: 11.25 },
     // resizable: false,
     // maximizable: false,
     // minimizable: false,
@@ -1413,7 +1413,7 @@ ipcMain.handle('open-mintputs-window', async (event, url) => {
         color: '#0f0f0f',
         symbolColor: '#f3f2f0',
       },
-      trafficLightPosition: { x: 17.5, y: 12 },
+      trafficLightPosition: { x: 17.5, y: 11.25 },
       show: false,
       backgroundColor: '#0f0f0f',
       title: 'Mintputs',
@@ -1487,7 +1487,7 @@ const DialogWindows_Config = {
   title: Essential.name,
   frame: false,
   titleBarStyle: 'hidden',
-  trafficLightPosition: { x: 12, y: 12 },
+  trafficLightPosition: { x: 12, y: 11.25 },
   titleBarOverlay: {
     color: "0F0F0F",
     symbolColor: "FFF",
@@ -1618,7 +1618,7 @@ ipcMain.handle('open-settings-window', async () => {
     if (!SettingsWindows || SettingsWindows.isDestroyed()) {
       SettingsWindows = await createWindowWithPromise({
         ...DialogWindows_Config,
-        trafficLightPosition: { x: 18.5, y: 12 },
+        trafficLightPosition: { x: 18.5, y: 11.25 },
         webPreferences: { ...BASE_WEB_PREFERENCES }
       });
 
