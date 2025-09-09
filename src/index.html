@@ -27,7 +27,7 @@
 <body>
     <nav id="MainNavbar">
         <div class="contentTEXT">
-            <h1>Essential app</h1>
+            <h1>EssentialAPP</h1>
         </div>
         <ul>
             <li id="GotoHomePage"><a href="javascript:void(0)" onclick="showHome()">
@@ -60,7 +60,7 @@
                         fill="#e3e3e3" id="CurrentLinksSvg">
                         <path
                             d="M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z" />
-                    </svg><span id="CurrentLinksText">All Apps</span></a></li>
+                    </svg><span id="CurrentLinksText">All Applications</span></a></li>
             <div id="EssentialappLinks">
                 <!-- App selection will be dynamically added here -->
                 <!-- <ul id="app-selection-list">
@@ -259,14 +259,23 @@
 
         <div id="home-content">
             <div class="welcome-message">
-                <h2>Welcome to Essential App</h2>
-                <p>Select an application from the sidebar to get started.</p>
+                <div class="welcome-texts">
+                    <span>All Applications</span>
+                    <h4 id="app-instruction">Select an app from the menu<br>Below to get started.</h4>
+                </div>
                 <div class="app-grid">
+                    <a href="javascript:void(0)" onclick="showApp('Paint', event)" id="app-recommend">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                            fill="currentColor">
+                            <path
+                                d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z" />
+                        </svg>
+                        <span id="app-recommend-texts">Paint</span>
+                    </a>
                     <a href="javascript:void(0)" onclick="showApp('Todolist', event)">Todolist</a>
                     <a href="javascript:void(0)" onclick="showApp('Clock', event)">Clock</a>
                     <a href="javascript:void(0)" onclick="showApp('Calculator', event)">Calculator</a>
                     <a href="javascript:void(0)" onclick="showApp('Note', event)">Notes</a>
-                    <a href="javascript:void(0)" onclick="showApp('Paint', event)">Paint</a>
                 </div>
             </div>
         </div>
@@ -276,7 +285,6 @@
             <!-- <div class="canvas-container" id="canvasContainer">
                 <div class="canvas-areas" id="canvasAreas"></div>
             </div>   -->
-
 
             <!-- <div class="modal" id="newAreaModal">
                 <div class="modal-content">

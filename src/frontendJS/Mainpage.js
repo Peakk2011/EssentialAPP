@@ -1,12 +1,4 @@
-// Initialize elements
-const container = document.getElementById('home-content');
-const canvasAreas = document.getElementById('canvasAreas');
-const tabsContainer = document.getElementById('tabs'); // This will be null if 'tabs' doesn't exist in HTML
-const zoomInfo = document.getElementById('zoomInfo');
-const homeContent = document.getElementById('home-content');
-const sidebar = document.querySelector('.menu');
-const sidebarHomePage = document.getElementById('GotoHomePage');
-
+// Global configurations
 const appConfig = {
     'Todolist': { src: 'Todolist.html', loaded: false },
     'Clock': { src: 'Time.html', loaded: false },
@@ -27,6 +19,9 @@ const appIcons = {
     'Paint': 'M360-80q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35Zm179-139q-6-55-41-97t-87-57l106-107H236q-32 0-54-22t-22-54q0-20 10.5-37.5T198-622l486-291q18-11 38-5.5t31 23.5q11 18 5.5 37.5T736-827L360-600h364q32 0 54 22t22 54q0 18-4.5 35.5T778-458L539-219Z ', // brush
     'All Apps': 'M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z' // apps
 };
+
+// DOM Elements (will be initialized on DOMContentLoaded)
+let container, canvasAreas, tabsContainer, zoomInfo, homeContent, sidebar, sidebarHomePage;
 
 // Global State
 const state = {
@@ -83,7 +78,6 @@ const handleMouseDown = (e) => {
             lastMouseY: e.clientY,
             selectedAreaId: null
         });
-        container.style.cursor = 'grabbing';
         document.querySelectorAll('.canvas-area').forEach(area => area.classList.remove('selected'));
     }
 };
@@ -248,7 +242,17 @@ const createArea = (name, width, height, url) => {
 };
 
 const renderCanvasAreas = () => {
+    if (!canvasAreas) {
+        console.warn('canvasAreas element not found');
+        return;
+    }
+
     const canvas = state.canvases[state.activeCanvasIndex];
+    if (!canvas) {
+        console.warn('No active canvas found');
+        return;
+    }
+
     canvasAreas.innerHTML = '';
     const sortedAreas = [...canvas.areas].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
 
@@ -275,10 +279,15 @@ const renderCanvasAreas = () => {
     updateResizeHandles();
 };
 
+
 // Canvas Management Functions
 const updateTransform = () => {
-    if (canvasAreas) canvasAreas.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
-    if (zoomInfo) zoomInfo.textContent = `${Math.round(state.scale * 100)}%`;
+    if (canvasAreas) {
+        canvasAreas.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
+    }
+    if (zoomInfo) {
+        zoomInfo.textContent = `${Math.round(state.scale * 100)}%`;
+    }
     updateResizeHandles();
     saveCurrentCanvasState();
 };
@@ -321,13 +330,26 @@ const closeCanvas = (index) => {
 
 const switchToCanvas = (index) => {
     saveCurrentCanvasState();
+
+    if (index < 0 || index >= state.canvases.length) {
+        console.warn('Invalid canvas index:', index);
+        return;
+    }
+
     state.activeCanvasIndex = index;
     const canvas = state.canvases[index];
+
+    if (!canvas) {
+        console.warn('Canvas not found at index:', index);
+        return;
+    }
+
     Object.assign(state, {
-        scale: canvas.scale,
-        translateX: canvas.translateX,
-        translateY: canvas.translateY
+        scale: canvas.scale || 1,
+        translateX: canvas.translateX || 0,
+        translateY: canvas.translateY || 0
     });
+
     renderCanvasAreas();
     updateTransform();
     updateTabs();
@@ -444,69 +466,157 @@ const createNewArea = () => {
 // Data Persistence Functions
 const saveToMemory = () => {
     saveCurrentCanvasState();
-    if (!window.canvasAppData) window.canvasAppData = {};
-    window.canvasAppData.savedState = {
+    const dataToSave = {
         canvases: state.canvases,
         activeCanvasIndex: state.activeCanvasIndex,
         highestZIndex: state.highestZIndex
     };
+    localStorage.setItem('EssentialApp.canvasState', JSON.stringify(dataToSave));
 };
 
 const loadFromMemory = () => {
     try {
-        const data = window.canvasAppData?.savedState;
-        if (data?.canvases?.length > 0) {
+        const savedData = localStorage.getItem('EssentialApp.canvasState');
+        if (savedData) {
+            const data = JSON.parse(savedData);
             Object.assign(state, {
-                canvases: data.canvases,
-                activeCanvasIndex: Math.max(0, Math.min(data.activeCanvasIndex || 0, data.canvases.length - 1)),
+                canvases: data.canvases || [],
+                activeCanvasIndex: Math.max(0, Math.min(data.activeCanvasIndex || 0, (data.canvases || []).length - 1)),
                 highestZIndex: data.highestZIndex || 10
             });
-            updateTabs();
-            switchToCanvas(state.activeCanvasIndex);
+            if (state.canvases.length > 0) {
+                updateTabs();
+                switchToCanvas(state.activeCanvasIndex);
+            }
         }
     } catch (e) {
         console.warn('Could not load saved data:', e);
+        if (state.canvases.length === 0) {
+            createCanvas('New Workspace');
+        }
     }
 };
 
 // Event Listeners Setup
 
 // Canvas Interaction Event Listeners
-container.addEventListener('wheel', handleWheel, { passive: false });
-container.addEventListener('mousedown', handleMouseDown);
-document.addEventListener('mousemove', handleMouseMove);
-document.addEventListener('mouseup', handleMouseUp);
+// container.addEventListener('wheel', handleWheel, { passive: false });
+// container.addEventListener('mousedown', handleMouseDown);
+// document.addEventListener('mousemove', handleMouseMove);
+// document.addEventListener('mouseup', handleMouseUp);
 
 // Keyboard Shortcuts
 document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && ['=', '-', '0'].includes(e.key)) e.preventDefault();
-    if (state.editingTabIndex !== -1) return;
+    // console.log(`Keydown Event: key='${e.key}', ctrl/meta=${e.ctrlKey || e.metaKey}, target=${e.target.tagName}`);
 
-    const shortcuts = {
-        't': () => { e.preventDefault(); createNewCanvas(); },
-        'w': () => { if (state.canvases.length > 1) { e.preventDefault(); closeCanvas(state.activeCanvasIndex); } },
-        'n': () => { e.preventDefault(); showNewAreaModal(); }
-    };
+    if ((e.ctrlKey || e.metaKey) && ['=', '-', '0'].includes(e.key)) {
+        e.preventDefault();
+    }
 
-    if ((e.ctrlKey || e.metaKey) && shortcuts[e.key]) shortcuts[e.key]();
-    if (e.key === 'Delete' && state.selectedAreaId) { e.preventDefault(); closeArea(state.selectedAreaId, e); }
+    if (state.editingTabIndex !== -1 || (
+        e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('.canvas-area-iframe'))
+    )) {
+        // console.log('Shortcut ignored. Reason:', {
+        //     editingTab: state.editingTabIndex !== -1,
+        //     isInput: e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA',
+        //     inIframe: !!e.target.closest('.canvas-area-iframe')
+        // });
+        return;
+    }
+
+    if (e.ctrlKey || e.metaKey) {
+        switch (e.key.toLowerCase()) {
+            case 't':
+                e.preventDefault();
+                showAppSelection();
+                break;
+            case 'w':
+                e.preventDefault();
+                if (currentActiveApp) {
+                    closeApp(currentActiveApp);
+                } else if (state.canvases.length > 1) {
+                    closeCanvas(state.activeCanvasIndex);
+                }
+                break;
+
+            case 'n':
+                e.preventDefault();
+                showNewAreaModal();
+                break;
+
+            default:
+                break;
+        }
+        return;
+    }
+
+    switch (e.key) {
+        case 'Delete':
+            if (state.selectedAreaId) {
+                e.preventDefault();
+                console.log('Deleting selected area...');
+                closeArea(state.selectedAreaId, e);
+            }
+            break;
+
+        // Clear prevent actions
+        case 'Escape':
+            if (state.selectedAreaId) {
+                document.querySelectorAll('.canvas-area').forEach(area => area.classList.remove('selected'));
+                state.selectedAreaId = null;
+            }
+            const popover = document.getElementById('app-popover');
+            if (popover && popover.style.display === 'block') {
+                popover.style.display = 'none';
+            }
+            break;
+
+        default:
+            break;
+    }
 });
 
-// Modal Event Listeners
-document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) hideNewAreaModal();
-    });
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'Tab' || e.key === 'PageDown')) {
+        e.preventDefault();
+        const openAppsArray = Array.from(openApps);
+        if (openAppsArray.length > 1) {
+            const currentIndex = openAppsArray.indexOf(currentActiveApp);
+            const nextIndex = (currentIndex + 1) % openAppsArray.length;
+            showApp(openAppsArray[nextIndex]);
+        }
+    }
+
+    // Ctrl+Shift+Tab or Ctrl+PageUp Previous tab
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'Tab' || e.key === 'PageUp')) {
+        e.preventDefault();
+        const openAppsArray = Array.from(openApps);
+        if (openAppsArray.length > 1) {
+            const currentIndex = openAppsArray.indexOf(currentActiveApp);
+            const prevIndex = currentIndex === 0 ? openAppsArray.length - 1 : currentIndex - 1;
+            showApp(openAppsArray[prevIndex]);
+        }
+    }
+
+    // Ctrl+1-9 - Switch to specific tab
+    if ((e.ctrlKey || e.metaKey) && /^[1-9]$/.test(e.key)) {
+        e.preventDefault();
+        const tabIndex = parseInt(e.key) - 1;
+        const openAppsArray = Array.from(openApps);
+        if (tabIndex < openAppsArray.length) {
+            showApp(openAppsArray[tabIndex]);
+        }
+    }
 });
 
 // Auto-save
-window.addEventListener('beforeunload', saveToMemory);
-setInterval(saveToMemory, 5000);
+// window.addEventListener('beforeunload', saveToMemory);
+// setInterval(saveToMemory, 5000);
 
-loadFromMemory();
-if (state.canvases.length === 0) {
-    createCanvas('New Workspace');
-}
+// loadFromMemory();
+// if (state.canvases.length === 0) {
+//     createCanvas('New Workspace');
+// }
 
 window.addEventListener('message', (event) => {
     const { appId, action, data } = event.data;
@@ -520,6 +630,16 @@ window.addEventListener('message', (event) => {
     } else if (appId === 'Note' && action === 'addToTodo' && data.text) {
         showApp('Todolist');
         setTimeout(() => sendCommandToIframe('Todolist', 'addTask', { text: data.text }), 250);
+    } else if (action === 'forwardKeydown') {
+        // Create a new KeyboardEvent object from the plain object sent from the iframe
+        const keyboardEvent = new KeyboardEvent('keydown', {
+            key: data.key,
+            code: data.code,
+            ctrlKey: data.ctrlKey,
+            metaKey: data.metaKey,
+            shiftKey: data.shiftKey
+        });
+        document.dispatchEvent(keyboardEvent);
     }
 });
 
@@ -641,7 +761,10 @@ function showApp(appId, event) {
         }
         hideAllIframes();
         const iframe = document.getElementById(appId);
-        iframe.classList.add('active');
+        // เพิ่ม null check
+        if (iframe) {
+            iframe.classList.add('active');
+        }
         currentActiveApp = appId;
         updateUIForActiveApp(appId);
         return;
@@ -653,12 +776,13 @@ function showApp(appId, event) {
 
     hideAllIframes();
 
-    let iframe = document.getElementById(appId);
+    // Always ensure the iframe exists before trying to use it
+    let iframe = createIframe(appId);
 
-    if (!iframe || !appConfig[appId].loaded) {
+    if (!appConfig[appId].loaded) {
         showLoading();
-        iframe = createIframe(appId);
     } else {
+        // If it was already loaded and cached, we don't need the loading screen
         hideLoading();
     }
 
@@ -676,6 +800,8 @@ function showApp(appId, event) {
                 }
             }
         }, 50);
+    } else {
+        console.error(`Failed to create iframe for ${appId}`);
     }
 }
 
@@ -709,7 +835,7 @@ function closeApp(appId, event) {
 function updateUIForActiveApp(activeAppId) {
     updateSidebarStatus(activeAppId || 'All Apps');
     updateAppControls(activeAppId);
-    
+
     updateNavbarLinks(activeAppId);
 
     const isAppActive = !!activeAppId;
@@ -720,7 +846,7 @@ function updateUIForActiveApp(activeAppId) {
     if (sidebar) {
         sidebar.classList.toggle('hidden', isAppActive);
     }
-    
+
     setTimeout(() => {
         ensureCreateButtonExists();
     }, 50);
@@ -729,7 +855,7 @@ function updateUIForActiveApp(activeAppId) {
 function ensureCreateButtonExists() {
     const existingBtn = document.getElementById('create-new-tab-btn');
     const mainLinks = document.getElementById('MainLINKS');
-    
+
     if (mainLinks && !existingBtn) {
         createNewTabButton();
     }
@@ -738,15 +864,15 @@ function ensureCreateButtonExists() {
 
 function updateNavbarLinks(activeAppId) {
     const navbarLinksContainer = document.getElementById('MainLINKS');
-    
+
     if (!navbarLinksContainer) {
         return;
     }
-    
+
     navbarLinksContainer.innerHTML = '';
 
     const content = document.querySelector('.content');
-    
+
     if (content) {
         content.style.marginLeft = activeAppId ? '0' : 'var(--sidebar-width)';
         content.style.width = activeAppId ? '100%' : 'calc(100vw - var(--sidebar-width))';
@@ -755,7 +881,7 @@ function updateNavbarLinks(activeAppId) {
             sidebarHomePage.style.borderBottom = activeAppId ? 'var(--TitlebarColorBorder)' : '';
         }
     }
-    
+
     Array.from(openApps).forEach(appId => {
         const li = document.createElement('li');
         li.className = `app-tab app-tab-${appId}`;
@@ -763,7 +889,7 @@ function updateNavbarLinks(activeAppId) {
         const a = document.createElement('a');
         a.href = 'javascript:void(0)';
         a.onclick = () => showApp(appId);
-        
+
         if (appId === activeAppId) {
             li.classList.add('active');
             a.classList.add('active');
@@ -804,7 +930,7 @@ function updateNavbarLinks(activeAppId) {
 
 function createNewTabButton() {
     const navbarLinksContainer = document.getElementById('MainLINKS');
-    
+
     if (!navbarLinksContainer) {
         return;
     }
@@ -817,7 +943,7 @@ function createNewTabButton() {
     const createBtnLi = document.createElement('li');
     createBtnLi.className = 'create-new-btn-container';
     createBtnLi.id = 'create-new-tab-btn';
-    
+
     const createBtnA = document.createElement('a');
     createBtnA.href = 'javascript:void(0)';
     createBtnA.className = 'create-new-btn';
@@ -907,7 +1033,33 @@ const tabActionHandlers = {
     'close': closeApp
 };
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
+    container = document.getElementById('home-content');
+    canvasAreas = document.getElementById('canvasAreas');
+    tabsContainer = document.getElementById('tabs');
+    zoomInfo = document.getElementById('zoomInfo');
+    homeContent = document.getElementById('home-content');
+    sidebar = document.querySelector('.menu');
+    sidebarHomePage = document.getElementById('GotoHomePage');
+
+    if (!container) {
+        console.error('home-content element not found');
+    }
+    if (!canvasAreas) {
+        console.error('canvasAreas element not found');
+    }
+
+    if (container) {
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        container.addEventListener('mousedown', handleMouseDown);
+    }
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    // Auto-save
+    window.addEventListener('beforeunload', saveToMemory);
+    setInterval(saveToMemory, 5000);
+
     hideAllIframes();
 
     const savedOpenApps = JSON.parse(localStorage.getItem('EssentialApp.openApps') || '[]');
@@ -915,10 +1067,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const lastApp = localStorage.getItem('EssentialApp.lastActiveApp');
 
+    // Load saved state
+    loadFromMemory();
+    if (state.canvases.length === 0) {
+        createCanvas('New Workspace');
+    }
+
     if (lastApp && lastApp !== 'home' && appConfig[lastApp]) {
         setTimeout(() => {
-            showApp(lastApp);
-            setTimeout(ensureCreateButtonExists, 200);
         }, 100);
     } else {
         updateUIForActiveApp(null);
@@ -929,8 +1085,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 500);
     }
 
-    setInterval(ensureCreateButtonExists, 5000);
-
     if (window.electronAPI?.onTabAction) {
         window.electronAPI.onTabAction(({ action, appId }) => {
             if (tabActionHandlers[action]) {
@@ -938,32 +1092,47 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-});
 
-document.querySelectorAll('#app-selection-list a').forEach(link => {
-    link.addEventListener('mouseenter', function () {
-        const onclick = this.getAttribute('onclick');
-        if (onclick && onclick.includes('showApp')) {
-            const appId = onclick.match(/showApp\('(.+?)'\)/)?.[1];
-            if (appId && !appConfig[appId].loaded) {
-                setTimeout(() => preloadApp(appId), 200);
+    document.querySelectorAll('#app-selection-list a').forEach(link => {
+        link.addEventListener('mouseenter', function () {
+            const onclick = this.getAttribute('onclick');
+            if (onclick && onclick.includes('showApp')) {
+                const appId = onclick.match(/showApp\('(.+?)'\)/)?.[1];
+                if (appId && !appConfig[appId].loaded) {
+                    setTimeout(() => preloadApp(appId), 200);
+                }
             }
+        });
+    });
+
+    // Lazy load elements with IntersectionObserver
+    const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const element = entry.target;
+                element.style.visibility = 'visible';
+                observer.unobserve(element);
+            }
+        });
+    });
+
+    document.querySelectorAll('.lazy-load').forEach(el => {
+        el.style.visibility = 'hidden';
+        lazyLoadObserver.observe(el);
+    });
+
+    // Forward keydown events from iframes to the main window
+    window.addEventListener('message', (event) => {
+        if (event.data.action === 'forwardKeydown') {
+            const fakeEvent = new KeyboardEvent('keydown', {
+                key: event.data.key,
+                code: event.data.code,
+                ctrlKey: event.data.ctrlKey,
+                metaKey: event.data.metaKey,
+                shiftKey: event.data.shiftKey,
+                bubbles: true
+            });
+            document.dispatchEvent(fakeEvent);
         }
     });
-});
-
-// Lazy load elements with IntersectionObserver
-const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const element = entry.target;
-            element.style.visibility = 'visible';
-            observer.unobserve(element);
-        }
-    });
-});
-
-document.querySelectorAll('.lazy-load').forEach(el => {
-    el.style.visibility = 'hidden';
-    lazyLoadObserver.observe(el);
 });

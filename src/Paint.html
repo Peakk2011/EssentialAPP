@@ -185,6 +185,23 @@
                     if (clearButton) clearButton.click();
                 }
             });
+
+            // Forward keyboard shortcuts to parent
+            document.addEventListener('keydown', (e) => {
+                // Only forward shortcuts, not regular typing in some potential future input
+                if (e.ctrlKey || e.metaKey) {
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            action: 'forwardKeydown',
+                            key: e.key,
+                            code: e.code,
+                            ctrlKey: e.ctrlKey,
+                            metaKey: e.metaKey,
+                            shiftKey: e.shiftKey
+                        }, '*');
+                    }
+                }
+            });
         });
     </script>
 </body>

@@ -522,8 +522,8 @@ html {
     height: 100vh;
     color: var(--theme-fg);
     margin: 0;
-    inset: unset; 
-    top: 45px; 
+    inset: unset;
+    top: 45px;
     right: 10px;
     position: fixed;
 }
@@ -549,11 +549,82 @@ html {
     text-align: center;
     transition: background-color 0.2s;
 }
+
 .app-grid-popover a:hover {
     background-color: var(--theme-accent);
     color: white;
 }
 
+.welcome-message {
+    width: fit-content;
+    max-width: fit-content;
+    min-width: fit-content;
+    margin: auto;
+    
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    z-index: 5;
+}
+
+#app-instruction {
+    font-family: 'General Sans', 'system-ui', sans-serif;
+    font-weight: 550;
+    letter-spacing: -0.75px;
+    line-height: 1.3;
+    font-size: 28px;
+    margin-top: 1.75rem;
+}
+
+.welcome-texts span {
+    padding: 0.45rem 0.8rem;
+    background-color: var(--SoftHoverColor);
+}
+
+.app-grid {
+    display: flex;
+    gap: 5px;
+    margin-top: 1.5rem;
+}
+
+.app-grid a {
+    padding: 0.35rem 1rem;
+    border-radius: 100vmax;
+    background-color: var(--PrimaryButtonsColors);
+    color: currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -0.2px;
+    transition: cubic-bezier(0.19, 1, 0.22, 1) 400ms;
+}
+
+.app-grid a:hover {
+    filter: brightness(1.5);
+}
+
+.app-grid a svg {
+    width: 18px;
+    height: fit-content;
+    margin-right: 0.25rem;
+    transform: translateY(0.5px);
+}
+
+#app-recommend {
+    background-color: var(--HoverColor);
+}
+
+#app-recommend-texts {
+    color: var(--ColorHighlight);
+    font-weight: 550;
+    filter: brightness(1.3);
+}
+
+#app-recommend svg {
+    filter: brightness(1.3);
+    fill: var(--ColorHighlight);
+}
 
 /* Test to define platform */
 

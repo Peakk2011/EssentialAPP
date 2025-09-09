@@ -721,5 +721,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Forward keyboard shortcuts to parent
+    document.addEventListener('keydown', (e) => {
+        // Only forward shortcuts, not regular typing
+        if (e.ctrlKey || e.metaKey) {
+            if (window.parent) {
+                window.parent.postMessage({
+                    action: 'forwardKeydown',
+                    key: e.key,
+                    code: e.code,
+                    ctrlKey: e.ctrlKey,
+                    metaKey: e.metaKey,
+                    shiftKey: e.shiftKey
+                }, '*');
+            }
+        }
+    });
+
     render();
 });

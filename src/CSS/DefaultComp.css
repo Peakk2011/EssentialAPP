@@ -33,7 +33,7 @@
     --theme-fg: hsl(0, 0%, 100%);         /* #ffffff */
     --theme-primary: hsl(0, 0%, 3%);      /* #080808 */
     --theme-accent: hsl(0, 15%, 75%);     
-    --theme-border: hsl(0, 0%, 18%);      /* #2e2e2e */
+    --theme-border: hsl(0, 0%, 20%);      
     --theme-card: hsl(0, 0%, 8%);         /* #141414 */
     --theme-titlebar: hsl(0, 0%, 6%);     /* #0f0f0f */
     --theme-links: hsl(0, 0%, 77%);       /* #C4C4C4 */
@@ -75,7 +75,7 @@
     --RippleEffectColor: hsla(0, 0%, 100%, 0.27); /* rgba(255, 255, 255, 0.270) */
 
     /* Titlebar */
-    --TitlebarColor: hsl(0, 0%, 6%);              /* #0f0f0f */
+    --TitlebarColor: hsl(0, 0%, 6%);      
     --TitlebarColorButton: hsl(0, 0%, 100%);      /* #fff */
     --TitlebarColorBorder: solid 1px var(--theme-border);
     --TitlebarColorHover: var(--SoftHoverColor);
@@ -111,7 +111,7 @@
     --theme-fg: hsl(0, 0%, 100%);
     --theme-primary: hsl(0, 0%, 3%);
     --theme-accent: hsl(0, 15%, 75%);
-    --theme-border: hsl(0, 0%, 25%);              /* #3f3f3f */
+    --theme-border: hsl(0, 0%, 20%);
     --theme-card: hsl(0, 0%, 8%);
     --theme-titlebar: hsl(0, 0%, 6%);
     --theme-links: hsl(0, 0%, 77%);
@@ -122,7 +122,7 @@
     --RippleEffectColor: hsla(0, 0%, 100%, 0.27);
     --TitlebarColor: hsl(0, 0%, 6%);
     --TitlebarColorButton: hsl(0, 0%, 100%);
-    --TitlebarColorBorder: solid 1px hsl(0, 0%, 25%);
+    --TitlebarColorBorder: solid 1px var(--theme-border);
     --TitlebarColorHover: hsl(0, 0%, 12%);
     --ctx-menu-bg: hsl(0, 0%, 10%);
     --ctx-menu-hover: hsl(0, 0%, 19%);

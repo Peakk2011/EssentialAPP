@@ -955,8 +955,9 @@ app.whenReady().then(async () => {
       default: {
         ...BASE_WINDOW_CONFIG,
         ...(PLATFORM_CONFIG[process.platform]?.window || PLATFORM_CONFIG.win32.window),
-        width: 1024,
-        height: 860
+        width: 800,
+        height: 768,
+        center: true,
       },
       alwaysOnTop: { width: 340, height: 570 }
     };
