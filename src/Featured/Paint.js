@@ -78,27 +78,25 @@ let isDraggingSticky = false;
 
 // Initialize SVG overlay
 const initSVG = () => {
-    if (svg) {
-        const existingPaths = svg.querySelectorAll('.drawing-path');
-        drawingPaths = Array.from(existingPaths).map(path => path.cloneNode(true));
-        svg.remove();
+    if (svg && svg.parentNode) {
+        svg.parentNode.removeChild(svg);
     }
 
     svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
     svg.style.position = 'absolute';
     svg.style.top = '0';
     svg.style.left = '0';
-    svg.style.width = '100%';
-    svg.style.height = '100%';
     svg.style.pointerEvents = 'none';
     svg.style.zIndex = '10';
+    svg.style.cursor = 'crosshair';
 
     svgGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     svg.appendChild(svgGroup);
 
     canvasContainer.appendChild(svg);
 
-    // Add filter for smooth paper texture
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
     filter.setAttribute('id', 'paperTexture');
@@ -107,7 +105,6 @@ const initSVG = () => {
     turbulence.setAttribute('baseFrequency', '0.04');
     turbulence.setAttribute('numOctaves', '5');
     turbulence.setAttribute('result', 'noise');
-    turbulence.setAttribute('seed', '1');
 
     const displacementMap = document.createElementNS('http://www.w3.org/2000/svg', 'feDisplacementMap');
     displacementMap.setAttribute('in', 'SourceGraphic');
@@ -119,9 +116,12 @@ const initSVG = () => {
     defs.appendChild(filter);
     svg.appendChild(defs);
 
+    // Restore existing paths
     drawingPaths.forEach(path => {
-        svgGroup.appendChild(path);
+        svgGroup.appendChild(path.cloneNode(true));
     });
+
+    console.log('SVG initialized successfully');
 };
 
 const rasterizeSVG = () => {
@@ -172,6 +172,9 @@ const setupCanvas = () => {
         isInitialized = true;
     }
 
+    canvasContainer.style.cursor = 'crosshair';
+    canvas.style.cursor = 'crosshair';
+
     updateTransform();
     initSVG();
 };
@@ -190,18 +193,22 @@ const updateTransform = () => {
     } else if (scale >= rasterizeThreshold && isRasterized) {
         deRasterizeSVG();
     }
-    
+
     // if zoom out = compress
     if (scale < 0.5) {
         simplifyPathsOnZoom();
     }
 };
 
-// Get coordinates relative to canvas
 const getCanvasCoords = (e) => {
-    const rect = canvasContainer.getBoundingClientRect();
-    const x = (e.clientX - rect.left - panX) / scale;
-    const y = (e.clientY - rect.top - panY) / scale;
+    const containerRect = canvasContainer.getBoundingClientRect();
+
+    const mouseXInContainer = e.clientX - containerRect.left;
+    const mouseYInContainer = e.clientY - containerRect.top;
+
+    const x = (mouseXInContainer - panX) / scale;
+    const y = (mouseYInContainer - panY) / scale;
+
     return { x, y };
 };
 
@@ -361,9 +368,10 @@ class StickyNote {
 
 const createSmoothTexture = (x1, y1, x2, y2, color, size) => {
     const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-    
-    const steps = Math.max(1, Math.ceil(distance / Math.max(1, size / 3)));
-    
+    const steps = Math.max(1, Math.ceil(distance / Math.max(1, size / 4)));
+
+    const fragment = document.createDocumentFragment();
+
     for (let i = 0; i <= steps; i++) {
         const t = i / steps;
         const x = x1 + (x2 - x1) * t;
@@ -371,18 +379,22 @@ const createSmoothTexture = (x1, y1, x2, y2, color, size) => {
 
         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         const radius = size * (0.4 + Math.random() * 0.2);
-        
+
         circle.setAttribute('cx', x);
         circle.setAttribute('cy', y);
         circle.setAttribute('r', radius);
         circle.setAttribute('fill', color);
         circle.setAttribute('opacity', 0.3 + Math.random() * 0.2);
-        
+
         if (scale > 0.7) {
             circle.setAttribute('filter', 'url(#paperTexture)');
         }
-        
-        currentPath.appendChild(circle);
+
+        fragment.appendChild(circle);
+    }
+
+    if (currentPath) {
+        currentPath.appendChild(fragment);
     }
 };
 
@@ -393,7 +405,7 @@ const simplifyPathsOnZoom = () => {
         // if zoom out make it simple and clear vector
         const paths = svgGroup.querySelectorAll('.drawing-path');
         paths.forEach(path => {
-            if (!path.classList.contains('simplified') && 
+            if (!path.classList.contains('simplified') &&
                 path.querySelectorAll('circle').length > 10) {
                 convertCirclesToPath(path);
                 path.classList.add('simplified');
@@ -405,43 +417,49 @@ const simplifyPathsOnZoom = () => {
 const convertCirclesToPath = (circleGroup) => {
     const circles = circleGroup.querySelectorAll('circle');
     if (circles.length < 2) return;
-    
+
     // Create new path from circle
     const newPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     let pathData = '';
-    
+
     circles.forEach((circle, index) => {
         const cx = parseFloat(circle.getAttribute('cx'));
         const cy = parseFloat(circle.getAttribute('cy'));
-        
+
         if (index === 0) {
             pathData = `M ${cx} ${cy} `;
         } else {
             pathData += `L ${cx} ${cy} `;
         }
     });
-    
+
     newPath.setAttribute('d', pathData);
     newPath.setAttribute('stroke', circles[0].getAttribute('fill'));
     newPath.setAttribute('stroke-width', parseFloat(circles[0].getAttribute('r')) * 2);
     newPath.setAttribute('stroke-linecap', 'round');
     newPath.setAttribute('fill', 'none');
     newPath.setAttribute('class', 'simplified-path');
-    
+
     circleGroup.parentNode.replaceChild(newPath, circleGroup);
 };
 
 // Start drawing
 const startDrawing = (e) => {
+    console.log('Start drawing triggered:', e.type);
+
+    // Only handle left mouse button
     if (e.button && e.button !== 0) return;
     if (isDraggingSticky) return;
 
+    // Don't interfere with sticky notes
     if (e.target && e.target.tagName && (e.target.tagName === 'rect' || e.target.tagName === 'text')) {
         return;
     }
 
     e.preventDefault();
     e.stopPropagation();
+
+    // Handle triple click for sticky notes
     handleTripleClick(e);
 
     isDrawing = true;
@@ -449,27 +467,43 @@ const startDrawing = (e) => {
     lastX = coords.x;
     lastY = coords.y;
 
-    // Create SVG path element
+    console.log('Drawing coordinates:', coords);
+
+    if (!svg || !svgGroup) {
+        console.log('Reinitializing SVG');
+        initSVG();
+    }
+
     currentPath = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     currentPath.setAttribute('class', 'drawing-path');
     currentPath.style.pointerEvents = 'none';
     svgGroup.appendChild(currentPath);
 
     if (brushType && brushType.value === 'smooth') {
+        // Smooth line
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('d', `M ${lastX} ${lastY}`);
         path.setAttribute('stroke', brushColor);
-        path.setAttribute('stroke-width', sizePicker.value);
+        path.setAttribute('stroke-width', sizePicker ? sizePicker.value : '2');
         path.setAttribute('stroke-linecap', 'round');
         path.setAttribute('stroke-linejoin', 'round');
         path.setAttribute('fill', 'none');
-        path.setAttribute('vector-effect', 'non-scaling-stroke');
         currentPath.appendChild(path);
         currentPath.pathElement = path;
         currentPath.pathData = `M ${lastX} ${lastY}`;
     } else {
-        createSmoothTexture(lastX, lastY, lastX, lastY, brushColor, parseFloat(sizePicker.value));
+        // Texture brush - create initial dot
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        const size = sizePicker ? parseFloat(sizePicker.value) : 5;
+        circle.setAttribute('cx', lastX);
+        circle.setAttribute('cy', lastY);
+        circle.setAttribute('r', size * 0.5);
+        circle.setAttribute('fill', brushColor);
+        circle.setAttribute('opacity', '0.7');
+        currentPath.appendChild(circle);
     }
+
+    console.log('Drawing started successfully');
 };
 
 // Draw
@@ -478,13 +512,30 @@ const draw = (e) => {
 
     const coords = getCanvasCoords(e);
 
+    const dist = Math.sqrt((coords.x - lastX) ** 2 + (coords.y - lastY) ** 2);
+    if (dist < 1) return;
+
     if (brushType && brushType.value === 'smooth' && currentPath.pathElement) {
-        // Update smooth path
+        // Smooth path
         currentPath.pathData += ` L ${coords.x} ${coords.y}`;
         currentPath.pathElement.setAttribute('d', currentPath.pathData);
     } else {
-        // Default texture mode
-        createSmoothTexture(lastX, lastY, coords.x, coords.y, brushColor, parseFloat(sizePicker.value));
+        // Texture brush
+        const steps = Math.ceil(dist / 3);
+        for (let i = 1; i <= steps; i++) {
+            const t = i / steps;
+            const x = lastX + (coords.x - lastX) * t;
+            const y = lastY + (coords.y - lastY) * t;
+
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            const size = sizePicker ? parseFloat(sizePicker.value) : 5;
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', size * (0.3 + Math.random() * 0.3));
+            circle.setAttribute('fill', brushColor);
+            circle.setAttribute('opacity', 0.4 + Math.random() * 0.3);
+            currentPath.appendChild(circle);
+        }
     }
 
     lastX = coords.x;
@@ -492,12 +543,15 @@ const draw = (e) => {
 };
 
 // Stop drawing
-const stopDrawing = () => {
+const stopDrawing = (e) => {
     if (isDrawing) {
-        if (isRasterized) {
-            deRasterizeSVG(); 
-        }
+        // console.log('Stop drawing');
         isDrawing = false;
+
+        if (currentPath) {
+            drawingPaths.push(currentPath.cloneNode(true));
+        }
+
         currentPath = null;
     }
 };
@@ -518,7 +572,7 @@ const handleWheel = (e) => {
             const scaleDiff = newScale - scale;
             panX = panX - (mouseX - panX) * scaleDiff / scale;
             panY = panY - (mouseY - panY) * scaleDiff / scale;
-            
+
             scale = newScale;
             updateTransform();
         }

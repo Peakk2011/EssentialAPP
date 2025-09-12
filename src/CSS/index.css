@@ -426,16 +426,16 @@ html {
 
 .appiclationDrawer iframe {
     display: none;
-    width: 100%;
-    height: calc(100vh - 40px);
-    position: absolute;
-    bottom: 0;
-    left: 0;
     border: none;
 }
 
 .appiclationDrawer iframe.active {
     display: block;
+    width: 100%;
+    height: calc(100vh - 40px);
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .appiclationDrawer iframe.cached {

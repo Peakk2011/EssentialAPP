@@ -81,6 +81,15 @@ nav ul li svg {
     justify-content: start;
     align-items: center;
     height: var(--nav-height);
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+#MainLINKS::-webkit-scrollbar {
+    display: none;
 }
 
 nav ul li a:hover {
@@ -210,9 +219,55 @@ nav ul li a:hover {
     top: 5px;
 }
 
-.navbar-tab-close-btn:hover {
-    opacity: 100%;
-    background-color: var(--HoverColor);
+@media (max-width: 1000px) {
+    .navbar-tab-close-btn:hover {
+        opacity: 100%;
+        background-color: var(--HoverColor);
+    }
+
+    #MainLINKS:has(.app-tab:nth-child(4)) .app-tab a {
+        padding-left: 0.8rem;
+        padding-right: 0.6rem;
+        justify-content: center;
+    }
+
+    #MainLINKS:has(.app-tab:nth-child(4)) .app-tab a svg {
+        display: none;
+    }
+}
+
+@media (max-width: 780px) {
+    #MainLINKS:has(.app-tab:nth-child(4)) .app-tab a {
+        padding-left: 0.65rem;
+        padding-right: 0.4rem;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 760px) {
+    #MainLINKS:has(.app-tab:nth-child(5)) .app-tab a span {
+        display: none;
+    }
+
+    #MainLINKS:has(.app-tab:nth-child(5)) .app-tab a svg {
+        display: block;
+        transform: translate(0px) scale(100%);
+    }
+
+    #MainLINKS:has(.app-tab:nth-child(5)) .app-tab a {
+        width: fit-content;
+        min-width: fit-content;
+        display: flex;
+        align-items: center;
+        padding-left: 0.8rem;
+        padding-right: 0.6rem;
+    }
+
+    #MainLINKS:has(.app-tab:nth-child(5)) .navbar-tab-close-btn {
+        top: 0;
+        margin-left: 0px;
+    }
+
 }
 
 /* Navbar Responsive */

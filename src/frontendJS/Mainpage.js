@@ -699,7 +699,6 @@ function hideLoading() {
     loadingOverlay.style.display = 'none';
 }
 
-// Function to create iframe if not exists
 function createIframe(appId) {
     let iframe = document.getElementById(appId);
 
@@ -726,6 +725,23 @@ function createIframe(appId) {
     return iframe;
 }
 
+function ensureIframeReady(appId) {
+    let iframe = document.getElementById(appId);
+
+    if (!iframe) {
+        iframe = createIframe(appId);
+        return iframe;
+    }
+
+    if (!iframe.src || iframe.src === 'about:blank') {
+        iframe.src = appConfig[appId].src;
+        appConfig[appId].loaded = false; // Reset loaded state
+    }
+
+    return iframe;
+}
+
+
 // Function to hide all iframes
 function hideAllIframes() {
     const iframes = document.querySelectorAll('.appiclationDrawer iframe');
@@ -744,45 +760,41 @@ function hideAllIframes() {
 function showApp(appId, event) {
     if (event) event.preventDefault();
 
+    const popover = document.getElementById('app-popover');
+    if (popover && popover.style.display === 'block') {
+        popover.style.display = 'none';
+    }
+
     const focusableApps = ['Todolist', 'Note'];
 
-    if (openApps.has(appId)) {
-        if (currentActiveApp === appId) {
-            const iframe = document.getElementById(appId);
-            if (iframe && iframe.contentWindow) {
-                setTimeout(() => {
-                    iframe.contentWindow.focus();
-                    if (focusableApps.includes(appId)) {
-                        sendCommandToIframe(appId, 'focusInput');
-                    }
-                }, 50);
-            }
-            return;
-        }
-        hideAllIframes();
+    // If app is already open and active, just focus
+    if (openApps.has(appId) && currentActiveApp === appId) {
         const iframe = document.getElementById(appId);
-        // เพิ่ม null check
-        if (iframe) {
-            iframe.classList.add('active');
+        if (iframe && iframe.contentWindow) {
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                if (focusableApps.includes(appId)) {
+                    sendCommandToIframe(appId, 'focusInput');
+                }
+            }, 50);
         }
-        currentActiveApp = appId;
-        updateUIForActiveApp(appId);
         return;
     }
 
-    openApps.add(appId);
-    localStorage.setItem('EssentialApp.openApps', JSON.stringify(Array.from(openApps)));
+    if (!openApps.has(appId)) {
+        openApps.add(appId);
+        localStorage.setItem('EssentialApp.openApps', JSON.stringify(Array.from(openApps)));
+    }
+
     localStorage.setItem('EssentialApp.lastActiveApp', appId);
 
     hideAllIframes();
 
-    // Always ensure the iframe exists before trying to use it
-    let iframe = createIframe(appId);
+    let iframe = ensureIframeReady(appId);
 
     if (!appConfig[appId].loaded) {
         showLoading();
     } else {
-        // If it was already loaded and cached, we don't need the loading screen
         hideLoading();
     }
 
@@ -799,7 +811,7 @@ function showApp(appId, event) {
                     sendCommandToIframe(appId, 'focusInput');
                 }
             }
-        }, 50);
+        }, appConfig[appId].loaded ? 50 : 500); // Longer delay if still loading
     } else {
         console.error(`Failed to create iframe for ${appId}`);
     }
@@ -818,6 +830,10 @@ function closeApp(appId, event) {
     if (iframe) {
         iframe.classList.remove('active');
         iframe.classList.add('cached');
+        // Don't remove the iframe, just hide it to maintain state
+        // But clear the src to free memory if needed
+        // iframe.src = 'about:blank';
+        // appConfig[appId].loaded = false;
     }
 
     if (currentActiveApp === appId) {
@@ -845,6 +861,11 @@ function updateUIForActiveApp(activeAppId) {
     }
     if (sidebar) {
         sidebar.classList.toggle('hidden', isAppActive);
+    }
+
+    const contentTextH1 = document.querySelector('.contentTEXT h1');
+    if (contentTextH1) {
+        contentTextH1.textContent = activeAppId || 'EssentialAPP';
     }
 
     setTimeout(() => {
@@ -907,7 +928,7 @@ function updateNavbarLinks(activeAppId) {
 
         const textSpan = document.createElement('span');
         textSpan.textContent = appId;
-        textSpan.style.marginRight = '8px';
+        // textSpan.style.marginRight = '8px';
 
         const closeBtn = document.createElement('button');
         closeBtn.className = 'navbar-tab-close-btn';
@@ -1002,7 +1023,12 @@ function preloadApp(appId) {
 function reloadApp(appId) {
     const iframe = document.getElementById(appId);
     if (iframe) {
+        appConfig[appId].loaded = false;
+        cachedApps.delete(appId);
         iframe.src = iframe.src;
+        if (currentActiveApp === appId) {
+            showLoading();
+        }
     }
 }
 
@@ -1062,27 +1088,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     hideAllIframes();
 
+    // Load saved open apps and ensure they're properly initialized
     const savedOpenApps = JSON.parse(localStorage.getItem('EssentialApp.openApps') || '[]');
     openApps = new Set(savedOpenApps);
 
+    savedOpenApps.forEach(appId => {
+        if (appConfig[appId]) {
+            ensureIframeReady(appId);
+        }
+    });
+
     const lastApp = localStorage.getItem('EssentialApp.lastActiveApp');
 
-    // Load saved state
     loadFromMemory();
     if (state.canvases.length === 0) {
         createCanvas('New Workspace');
     }
 
-    if (lastApp && lastApp !== 'home' && appConfig[lastApp]) {
-        setTimeout(() => {
-        }, 100);
+    if (lastApp && lastApp !== 'home' && appConfig[lastApp] && openApps.has(lastApp)) {
+        setTimeout(() => showApp(lastApp), 100);
     } else {
-        updateUIForActiveApp(null);
         showHome();
-        setTimeout(() => {
-            preloadApp('Todolist');
-            ensureCreateButtonExists();
-        }, 500);
     }
 
     if (window.electronAPI?.onTabAction) {
@@ -1105,7 +1131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Lazy load elements with IntersectionObserver
     const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -1121,7 +1146,6 @@ document.addEventListener('DOMContentLoaded', () => {
         lazyLoadObserver.observe(el);
     });
 
-    // Forward keydown events from iframes to the main window
     window.addEventListener('message', (event) => {
         if (event.data.action === 'forwardKeydown') {
             const fakeEvent = new KeyboardEvent('keydown', {
