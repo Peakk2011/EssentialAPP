@@ -1,4 +1,4 @@
-# Essential App - Made by Mint teams
+# EssentialAPP - Made by Mint teams
 
 [![Made with Electron](https://img.shields.io/badge/Built%20with-Electron-47848F?logo=electron)](https://www.electronjs.org/)  
 [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/Peakk2011/Basic-requirement-app)  
@@ -14,10 +14,10 @@
 
 ## ✨ Overview  
 
-**Essential App** is a minimalist yet versatile Electron-powered desktop application.  
+**EssentialAPP** is a minimalist yet versatile Electron-powered desktop application.  
 Designed with simplicity and efficiency in mind, it harnesses modern web technologies like **HTML, CSS**, and **JavaScript** to deliver essential features without consuming excessive system resources.
 
-Essential App is your **all-in-one utility app**, combining the core tools you need into one compact, easy-to-use interface. It’s not just free — it's **built for everyone**.
+EssentialAPP is your **all-in-one utility app**, combining the core tools you need into one compact, easy-to-use interface. It’s not just free — it's **built for everyone**.
 
 Whether you're using an old iMac from 2011, a budget Windows machine, or anything in between, **this app just works**. It’s lightweight, fast, and made to deliver a smooth experience across the board.
 
@@ -86,7 +86,7 @@ Whether you're using an old iMac from 2011, a budget Windows machine, or anythin
    ```
 
 ### 📦 Download the ZIP
-1. Download the ZIP file from the [Essential App Repository](https://github.com/Peakk2011/Basic-requirement-app).
+1. Download the ZIP file from the [EssentialAPP Repository](https://github.com/Peakk2011/Basic-requirement-app).
 2. Extract the ZIP file to your desired location.
 
 ---

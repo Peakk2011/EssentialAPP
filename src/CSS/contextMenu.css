@@ -5,10 +5,11 @@
   --ctx-menu-blur: 8px;
 
   --ctx-menu-radius: 6px;
+  --ctx-sub-menu-radius: 8px;
   --ctx-menu-padding: 8px;
-  --ctx-menu-min-width: 200px;
-  --ctx-menu-icon-size: 18px;
-  --ctx-menu-font-size: 14px;
+  --ctx-menu-min-width: 190px;
+  --ctx-menu-icon-size: 16px;
+  --ctx-menu-font-size: 13px;
   --ctx-menu-transition: 800ms cubic-bezier(0.2, 0.0, 0, 1.0);
 }
 
@@ -31,26 +32,28 @@
   }
 }
 
-.custom-context-menu {
+.context-menu {
   position: fixed;
   background: var(--ctx-menu-bg);
   backdrop-filter: blur(var(--ctx-menu-blur));
   border-radius: var(--ctx-menu-radius);
-  padding: var(--ctx-menu-padding) 0;
+  padding: 0.5rem;
   min-width: var(--ctx-menu-min-width);
   box-shadow: var(--ctx-menu-shadow);
   z-index: 1000;
   opacity: 0;
   animation: none;
   will-change: transform, opacity, filter, max-height;
-  font-family: 'Inter Tight', 'IBM Plex Sans Thai', sans-serif;
+  /* font-family: 'Inter Tight', 'IBM Plex Sans Thai', sans-serif; */
+  font-family: 'Inter Tight', 'Leelawadee UI', sans-serif;
   overflow: hidden;
   transition: var(--ctx-menu-transition),
     max-height 1400ms ease-in-out;
   max-height: 0;
+  border: var(--theme-border) solid 1px;
 }
 
-.custom-context-menu.show {
+.context-menu.show {
   opacity: 1;
   max-height: 500px;
   animation: menuAppear var(--ctx-menu-transition) forwards;
@@ -59,7 +62,7 @@
 .menu-item {
   display: flex;
   align-items: center;
-  padding: var(--ctx-menu-padding) calc(var(--ctx-menu-padding) * 2);
+  padding: 0.4rem calc(var(--ctx-menu-padding) * 1.15);
   color: var(--ctx-menu-text);
   cursor: pointer;
   transition: opacity var(--ctx-menu-transition);
@@ -67,6 +70,7 @@
   font-family: inherit;
   position: relative;
   overflow: hidden;
+  border-radius: var(--ctx-sub-menu-radius);
 }
 
 .menu-item:hover {

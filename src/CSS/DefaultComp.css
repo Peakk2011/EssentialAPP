@@ -81,8 +81,8 @@
     --TitlebarColorHover: var(--SoftHoverColor);
 
     /* Context Menu */
-    --ctx-menu-bg: hsl(0, 0%, 10%);               /* #1A1A1A */
-    --ctx-menu-hover: hsl(0, 0%, 19%);            /* #313131 */
+    --ctx-menu-bg: hsla(0, 0%, 8.5%, 0.820);               
+    --ctx-menu-hover: hsl(0, 0%, 17.5%);           
     --ctx-menu-active: hsl(0, 0%, 5%);            /* #0c0c0c */
     --ctx-menu-text: hsl(0, 0%, 89%);             /* #e3e3e3 */
     --ctx-menu-text-hover: hsl(0, 0%, 100%);      /* #ffffff */
@@ -124,15 +124,15 @@
     --TitlebarColorButton: hsl(0, 0%, 100%);
     --TitlebarColorBorder: solid 1px var(--theme-border);
     --TitlebarColorHover: hsl(0, 0%, 12%);
-    --ctx-menu-bg: hsl(0, 0%, 10%);
-    --ctx-menu-hover: hsl(0, 0%, 19%);
+    --ctx-menu-bg: hsla(0, 0%, 8.5%, 0.820);
+    --ctx-menu-hover: hsl(0, 0%, 17.5%);
     --ctx-menu-active: hsl(0, 0%, 5%);
     --ctx-menu-text: hsl(0, 0%, 89%);
     --ctx-menu-text-hover: hsl(0, 0%, 100%);
     --ctx-menu-shadow: 
-        0px 24px 38px hsla(0, 0%, 0%, 0.14),
-        0px 9px 46px hsla(0, 0%, 0%, 0.12),
-        0px 11px 15px hsla(0, 0%, 0%, 0.20);
+        0px 32px 48px hsla(0, 0%, 0%, 0.25),
+        0px 16px 56px hsla(0, 0%, 0%, 0.20),
+        0px 20px 24px hsla(0, 0%, 0%, 0.30);
     --PrimaryButtonsColors: hsl(0, 0%, 13%);
     --LightmodeToggleButtons: none;
     --DarkmodeToggleButtons: block;
@@ -167,9 +167,9 @@
     --ctx-menu-text: hsl(0, 0%, 0%);             /* #000 */
     --ctx-menu-text-hover: hsl(0, 0%, 0%);       /* #000000 */
     --ctx-menu-shadow: 
-        0px 24px 38px hsla(0, 0%, 0%, 0.10),
-        0px 9px 46px hsla(0, 0%, 0%, 0.08),
-        0px 11px 15px hsla(0, 0%, 0%, 0.12);
+        0px 32px 48px hsla(0, 0%, 0%, 0.25),
+        0px 16px 56px hsla(0, 0%, 0%, 0.20),
+        0px 20px 24px hsla(0, 0%, 0%, 0.30);
     --PrimaryButtonsColors: hsl(45, 8%, 81%);    /* #cecdc6 */
     --LightmodeToggleButtons: block;
     --DarkmodeToggleButtons: none;

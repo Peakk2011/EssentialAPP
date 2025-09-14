@@ -74,6 +74,17 @@ contextBridge.exposeInMainWorld('dev', {
     mem: () => ipcRenderer.invoke('debug:get-memory-info')
 });
 
+contextBridge.exposeInMainWorld('tabAPI', {
+    showContextMenu: (args) => ipcRenderer.invoke('show-tab-context-menu', args),
+    onTabAction: (callback) => {
+        ipcRenderer.on('tab-action', (_, args) => callback(args));
+    },
+    onDisplayMenu: (callback) => {
+        const subscription = (event, ...args) => callback(...args);
+        ipcRenderer.on('display-custom-menu', subscription);
+    }
+});
+
 // await dev.reset();
 // await dev.cache(); 
 // await dev.relaunch();

@@ -318,21 +318,9 @@ nav ul li a:hover {
     transform: translateY(1.5px) scale(90%);
 }
 
-/* Window Controls Width for different OS */
-.os-mac {
-    --window-controls-width: 72px;
-    --titlebar-height: 28px;
-}
-
-.os-windows {
-    --window-controls-width: 138px;
-    --titlebar-height: 32px;
-}
-
-.os-linux {
-    --window-controls-width: 105px;
-    --titlebar-height: 32px;
-}
+/* .os-mac {}
+.os-windows {}
+.os-linux {} */
 
 [data-os="win32"] .titlebar {
     padding-right: var(--window-controls-width);

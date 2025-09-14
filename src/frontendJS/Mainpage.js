@@ -507,59 +507,77 @@ const loadFromMemory = () => {
 
 // Keyboard Shortcuts
 document.addEventListener('keydown', (e) => {
-    // console.log(`Keydown Event: key='${e.key}', ctrl/meta=${e.ctrlKey || e.metaKey}, target=${e.target.tagName}`);
+    if (e.repeat) return;
 
-    if ((e.ctrlKey || e.metaKey) && ['=', '-', '0'].includes(e.key)) {
-        e.preventDefault();
-    }
+    if (e.isComposing) return;
 
-    if (state.editingTabIndex !== -1 || (
-        e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('.canvas-area-iframe'))
-    )) {
-        // console.log('Shortcut ignored. Reason:', {
-        //     editingTab: state.editingTabIndex !== -1,
-        //     isInput: e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA',
-        //     inIframe: !!e.target.closest('.canvas-area-iframe')
-        // });
+    const isTyping = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+    const isInIframe = e.target && typeof e.target.closest === 'function' && e.target.closest('.canvas-area-iframe');
+
+    if (state.editingTabIndex !== -1 || isTyping || isInIframe) {
         return;
     }
 
-    if (e.ctrlKey || e.metaKey) {
-        switch (e.key.toLowerCase()) {
-            case 't':
+    const ctrlOrMeta = e.ctrlKey || e.metaKey;
+
+    // Shortcuts (Ctrl/Cmd) ---
+    if (ctrlOrMeta) {
+        switch (e.code) {
+            // Tab/App Management
+            case 'KeyT': // Ctrl+T
                 e.preventDefault();
                 showAppSelection();
                 break;
-            case 'w':
+            case 'KeyW': // Ctrl+W
                 e.preventDefault();
-                if (currentActiveApp) {
-                    closeApp(currentActiveApp);
-                } else if (state.canvases.length > 1) {
-                    closeCanvas(state.activeCanvasIndex);
+                if (currentActiveApp) closeApp(currentActiveApp);
+                else if (state.canvases.length > 1) closeCanvas(state.activeCanvasIndex);
+                break;
+            case 'Tab': // Ctrl+Tab & Ctrl+Shift+Tab
+                e.preventDefault();
+                const openAppsArray = Array.from(openApps);
+                if (openAppsArray.length > 1) {
+                    const currentIndex = openAppsArray.indexOf(currentActiveApp);
+                    if (e.shiftKey) { // Previous tab
+                        const prevIndex = currentIndex <= 0 ? openAppsArray.length - 1 : currentIndex - 1;
+                        showApp(openAppsArray[prevIndex]);
+                    } else { // Next tab
+                        const nextIndex = (currentIndex + 1) % openAppsArray.length;
+                        showApp(openAppsArray[nextIndex]);
+                    }
+                }
+                break;
+            // (1-9)
+            case 'Digit1': case 'Digit2': case 'Digit3': case 'Digit4': case 'Digit5': case 'Digit6': case 'Digit7': case 'Digit8': case 'Digit9':
+                e.preventDefault();
+                const tabIndex = parseInt(e.key) - 1;
+                const apps = Array.from(openApps);
+                if (tabIndex < apps.length) {
+                    showApp(apps[tabIndex]);
                 }
                 break;
 
-            case 'n':
+            // Canvas/Area Management
+            case 'KeyN': // Ctrl+N
                 e.preventDefault();
                 showNewAreaModal();
                 break;
 
-            default:
+            case 'Equal': case 'NumpadAdd': case 'Minus': case 'NumpadSubtract': case 'Digit0': case 'Numpad0':
+                e.preventDefault(); // Prevent browser zoom
                 break;
         }
-        return;
     }
 
-    switch (e.key) {
+    switch (e.code) {
         case 'Delete':
+        case 'NumpadDecimal': // Delete on numpad
             if (state.selectedAreaId) {
                 e.preventDefault();
-                console.log('Deleting selected area...');
                 closeArea(state.selectedAreaId, e);
             }
             break;
 
-        // Clear prevent actions
         case 'Escape':
             if (state.selectedAreaId) {
                 document.querySelectorAll('.canvas-area').forEach(area => area.classList.remove('selected'));
@@ -572,40 +590,6 @@ document.addEventListener('keydown', (e) => {
             break;
 
         default:
-            break;
-    }
-});
-
-document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'Tab' || e.key === 'PageDown')) {
-        e.preventDefault();
-        const openAppsArray = Array.from(openApps);
-        if (openAppsArray.length > 1) {
-            const currentIndex = openAppsArray.indexOf(currentActiveApp);
-            const nextIndex = (currentIndex + 1) % openAppsArray.length;
-            showApp(openAppsArray[nextIndex]);
-        }
-    }
-
-    // Ctrl+Shift+Tab or Ctrl+PageUp Previous tab
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'Tab' || e.key === 'PageUp')) {
-        e.preventDefault();
-        const openAppsArray = Array.from(openApps);
-        if (openAppsArray.length > 1) {
-            const currentIndex = openAppsArray.indexOf(currentActiveApp);
-            const prevIndex = currentIndex === 0 ? openAppsArray.length - 1 : currentIndex - 1;
-            showApp(openAppsArray[prevIndex]);
-        }
-    }
-
-    // Ctrl+1-9 - Switch to specific tab
-    if ((e.ctrlKey || e.metaKey) && /^[1-9]$/.test(e.key)) {
-        e.preventDefault();
-        const tabIndex = parseInt(e.key) - 1;
-        const openAppsArray = Array.from(openApps);
-        if (tabIndex < openAppsArray.length) {
-            showApp(openAppsArray[tabIndex]);
-        }
     }
 });
 
@@ -631,7 +615,6 @@ window.addEventListener('message', (event) => {
         showApp('Todolist');
         setTimeout(() => sendCommandToIframe('Todolist', 'addTask', { text: data.text }), 250);
     } else if (action === 'forwardKeydown') {
-        // Create a new KeyboardEvent object from the plain object sent from the iframe
         const keyboardEvent = new KeyboardEvent('keydown', {
             key: data.key,
             code: data.code,
@@ -760,6 +743,8 @@ function hideAllIframes() {
 function showApp(appId, event) {
     if (event) event.preventDefault();
 
+    state.editingTabIndex = -1; // Reset editing state when switching apps
+
     const popover = document.getElementById('app-popover');
     if (popover && popover.style.display === 'block') {
         popover.style.display = 'none';
@@ -823,6 +808,8 @@ function closeApp(appId, event) {
         event.preventDefault();
     }
 
+    state.editingTabIndex = -1; // Reset editing state when closing an app
+
     openApps.delete(appId);
     localStorage.setItem('EssentialApp.openApps', JSON.stringify(Array.from(openApps)));
 
@@ -838,8 +825,11 @@ function closeApp(appId, event) {
 
     if (currentActiveApp === appId) {
         const remainingApps = Array.from(openApps);
-        if (remainingApps.length > 0) {
-            showApp(remainingApps[remainingApps.length - 1]);
+        const openAppsArray = Array.from(openApps);
+        const currentIndex = openAppsArray.indexOf(appId);
+        if (openAppsArray.length > 0) {
+            const nextIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+            showApp(openAppsArray[nextIndex]);
         } else {
             showHome();
         }
@@ -943,6 +933,12 @@ function updateNavbarLinks(activeAppId) {
         a.appendChild(textSpan);
         a.appendChild(closeBtn);
         li.appendChild(a);
+
+        li.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            window.tabAPI.showContextMenu({ appId, pos: { x: e.clientX, y: e.clientY } });
+        });
+
         navbarLinksContainer.appendChild(li);
     });
 
@@ -989,7 +985,11 @@ const showAppSelection = () => {
     } else {
         popover.style.display = 'block';
         const closeOnClickOutside = (event) => {
-            if (!popover.contains(event.target) && event.target.closest('.create-new-btn') === null) {
+            // Ensure event.target is a valid element before calling closest()
+            if (!event || !event.target || !(event.target instanceof Element)) {
+                return;
+            }
+            if (!popover.contains(event.target) && !event.target.closest('.create-new-btn')) {
                 popover.style.display = 'none';
                 document.removeEventListener('click', closeOnClickOutside, true);
             }
@@ -1001,6 +1001,8 @@ const showAppSelection = () => {
 // Show home/all apps view
 function showHome() {
     hideAllIframes();
+    hideLoading();
+    state.editingTabIndex = -1; // Reset editing state when going home
     hideLoading();
     currentActiveApp = null;
     updateUIForActiveApp(null);
@@ -1069,22 +1071,22 @@ document.addEventListener('DOMContentLoaded', () => {
     sidebarHomePage = document.getElementById('GotoHomePage');
 
     if (!container) {
-        console.error('home-content element not found');
+        // console.error('home-content element not found');
     }
     if (!canvasAreas) {
-        console.error('canvasAreas element not found');
+        // console.error('canvasAreas element not found');
     }
 
-    if (container) {
-        container.addEventListener('wheel', handleWheel, { passive: false });
-        container.addEventListener('mousedown', handleMouseDown);
-    }
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    // if (container) {
+    //     container.addEventListener('wheel', handleWheel, { passive: false });
+    //     container.addEventListener('mousedown', handleMouseDown);
+    // }
+    // document.addEventListener('mousemove', handleMouseMove);
+    // document.addEventListener('mouseup', handleMouseUp);
 
     // Auto-save
-    window.addEventListener('beforeunload', saveToMemory);
-    setInterval(saveToMemory, 5000);
+    // window.addEventListener('beforeunload', saveToMemory);
+    // setInterval(saveToMemory, 5000);
 
     hideAllIframes();
 
@@ -1100,10 +1102,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const lastApp = localStorage.getItem('EssentialApp.lastActiveApp');
 
-    loadFromMemory();
-    if (state.canvases.length === 0) {
-        createCanvas('New Workspace');
-    }
+    // loadFromMemory();
+    // if (state.canvases.length === 0) {
+    //     createCanvas('New Workspace');
+    // }
 
     if (lastApp && lastApp !== 'home' && appConfig[lastApp] && openApps.has(lastApp)) {
         setTimeout(() => showApp(lastApp), 100);
@@ -1111,11 +1113,56 @@ document.addEventListener('DOMContentLoaded', () => {
         showHome();
     }
 
-    if (window.electronAPI?.onTabAction) {
-        window.electronAPI.onTabAction(({ action, appId }) => {
-            if (tabActionHandlers[action]) {
-                tabActionHandlers[action](appId);
+    // Toggle contextmenu while in titlbar (only tabs bar)
+
+    if (window.tabAPI?.onTabAction) {
+        window.tabAPI.onTabAction(({ action, appId }) => {
+            if (tabActionHandlers[action]) tabActionHandlers[action](appId);
+        })
+    }
+
+    if (window.tabAPI?.onDisplayMenu) {
+        window.tabAPI.onDisplayMenu(({ menuHTML, cssContent, menuId }) => {
+            // Remove any other custom menus to prevent overlap
+            document.querySelectorAll('.context-menu, .custom-context-menu').forEach(m => {
+                if (m.id !== menuId) m.remove();
+            });
+            // Inject CSS
+            if (!document.getElementById('contextMenuStyles')) {
+                const style = document.createElement('style');
+                style.id = 'contextMenuStyles';
+                style.textContent = cssContent;
+                document.head.appendChild(style);
             }
+
+            // Add menu to body
+            document.body.insertAdjacentHTML('beforeend', menuHTML);
+            const menu = document.getElementById(menuId);
+            if (!menu) return;
+
+            // Show with animation
+            requestAnimationFrame(() => menu.classList.add('show'));
+
+            // Add click listeners to items
+            menu.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('mousedown', function (e) {
+                    const action = this.getAttribute('data-action');
+                    const appId = this.getAttribute('data-appid');
+                    if (action && appId && tabActionHandlers[action]) {
+                        tabActionHandlers[action](appId);
+                    }
+                    menu.remove();
+                });
+            });
+
+            // Close menu when clicking outside
+            const closeMenu = (e) => {
+                if (!menu.contains(e.target)) {
+                    menu.remove();
+                    document.removeEventListener('click', closeMenu, { capture: true });
+                }
+            };
+            document.addEventListener('click', closeMenu, { capture: true });
         });
     }
 

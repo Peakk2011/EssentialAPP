@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Essential app | Paint app</title>
+    <title>EssentialAPP | Paint app</title>
     <link rel="stylesheet" href="./css/paint.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="./css/defaultComp.css" crossorigin="anonymous" />
     <!-- Material icons -->
@@ -13,12 +13,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     <script>
         // Runtime detection
-        (function () {
+        document.addEventListener('DOMContentLoaded', () => {
             const runtime = window.electronAPI ? 'electron' : 'web';
             document.documentElement.setAttribute('data-runtime', runtime);
-        })();
-        document.documentElement.setAttribute('data-os', window.runtimeInfo.os);
-        document.body.classList.add(`os-${window.runtimeInfo.os === 'darwin' ? 'mac' : window.runtimeInfo.os === 'win32' ? 'windows' : 'linux'}`);
+            document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
+            document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
+        });
     </script>
     <style>
         .tabs-container .tab input[type="text"] {

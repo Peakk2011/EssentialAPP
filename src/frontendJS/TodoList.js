@@ -662,7 +662,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // กด Enter ใน input ก็เพิ่มรายการได้
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             addBtn.click();
@@ -676,11 +675,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Listen for commands from the parent window
     window.addEventListener('message', (event) => {
-        // เพื่อความปลอดภัย ควรตรวจสอบ origin ของ message
         // if (event.origin !== 'YOUR_EXPECTED_ORIGIN') return;
 
         const { action, data } = event.data;
-        console.log('Todolist iframe received command:', { action, data });
+        // console.log('Todolist iframe received command:', { action, data });
 
         // สั่งการตาม action ที่ได้รับ
         if (action === 'focusInput') {

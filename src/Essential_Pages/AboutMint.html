@@ -6,23 +6,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mint - Essential app developer teams</title> 
+    <title>Mint - EssentialAPP developer teams</title> 
     <link rel="stylesheet" href="../css/defaultComp.css" rel="noopener">
     <link rel="stylesheet" href="./MintStyle_Config/aboutMint.css" rel="noopener">
 
     <link href="https://api.fontshare.com/v2/css?f[]=general-sans@1,2&f[]=satoshi@1,2&display=swap" rel="stylesheet">
     <script>
         // Runtime detection
-        (function () {
+        document.addEventListener('DOMContentLoaded', () => {
             const runtime = window.electronAPI ? 'electron' : 'web';
             document.documentElement.setAttribute('data-runtime', runtime);
-
-            // Check if runtimeInfo exists before using it
-            if (window.runtimeInfo && window.runtimeInfo.os) {
-                document.documentElement.setAttribute('data-os', window.runtimeInfo.os);
-                document.body.classList.add(`os-${window.runtimeInfo.os === 'darwin' ? 'mac' : window.runtimeInfo.os === 'win32' ? 'windows' : 'linux'}`);
-            }
-        })();
+            document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
+            document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
+        });
     </script>
 </head>
 
@@ -71,7 +67,7 @@
             </div>
             <h2><span id="web-codename"></span> <span id="web-version" style="font-family: var(--font-text);"></span>
             </h2>
-            <p>Essential app made with<br>Mint teams version <span id="Text-web-version"
+            <p>EssentialAPP made with<br>Mint teams version <span id="Text-web-version"
                     style="font-family: var(--font-text);"></span></p>
         </div>
         <div class="webFooter">
@@ -153,7 +149,7 @@
             <!-- <p id="Version">Version Lavender</p> -->
         </div>
         <!-- Display text after double click logo -->
-        <h1 id="Typing_Effect">Essential app<br>Made by Mint teams</h1>
+        <h1 id="Typing_Effect">EssentialAPP<br>Made by Mint teams</h1>
         <h1 id="ForMint">From Mint teams</h1>
     </div>
 
@@ -236,7 +232,7 @@
                 overlay.classList.add('active');
                 textEffect.classList.add('active');
 
-                scrambleText('Essential app\nMade by Mint teams', textEffect, () => {
+                scrambleText('EssentialAPP\nMade by Mint teams', textEffect, () => {
                     scrambleText('We made this app\nespecially for you ❤️', textEffect);
                 });
                 setTimeout(() => {
@@ -267,7 +263,6 @@
             document.getElementById('ForMint').style.opacity = "0";
         }
     </script>
-    <script src="../renderer.js"></script>
 </body>
 
 </html>

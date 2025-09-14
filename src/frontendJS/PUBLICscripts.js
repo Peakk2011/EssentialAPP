@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // For error heading
     document.addEventListener('contextmenu', async (e) => {
       e.preventDefault();
+      document.querySelectorAll('.context-menu, .custom-context-menu').forEach(menu => menu.remove());
+
       try {
         await window.electronAPI.showContextMenu({ x: e.x, y: e.y });
       } catch (err) {
@@ -189,7 +191,7 @@ if (createWindows.Aboutus.AboutEssential) {
 if (createWindows.Settings.SettingsEssential) {
   createWindows.Settings.SettingsEssential.addEventListener('click', async (eventToggleNewwindows_Settings) => {
     eventToggleNewwindows_Settings.preventDefault();
-    await window.electronAPI.openSettingsWindow('settings.html');
+    await window.electronAPI.openSettingsWindow();
   });
 }
 if (createWindows.Aboutus.Mintputs) {

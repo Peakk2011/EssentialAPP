@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Essential app</title>
+    <title>EssentialAPP</title>
     <link rel="stylesheet" href="./css/defaultComp.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="./css/navbar.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="./css/index.css" crossorigin="anonymous" />
@@ -16,11 +16,13 @@
     <script>
         // Runtime detection
         (function () {
-            const runtime = window.electronAPI ? 'electron' : 'web';
-            document.documentElement.setAttribute('data-runtime', runtime);
+            document.addEventListener('DOMContentLoaded', () => {
+                const runtime = window.electronAPI ? 'electron' : 'web';
+                document.documentElement.setAttribute('data-runtime', runtime);
+                document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
+                document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
+            });
         })();
-        document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
-        document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
     </script>
 </head>
 
@@ -356,7 +358,6 @@
     </div>
 
     <script src="./frontendJS/PUBLICscripts.js" type="module" defer></script>
-    <script src="renderer.js" defer></script>
     <script src="./frontendJS/Mainpage.js" defer></script>
     <script type="module">
         import { initTheme, listenThemeSync } from './Essential_Pages/Settings_Config/theme.js';

@@ -11,12 +11,12 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script>
     // Runtime detection
-    (function () {
-      const runtime = window.electronAPI ? 'electron' : 'web';
-      document.documentElement.setAttribute('data-runtime', runtime);
-    })();
-    document.documentElement.setAttribute('data-os', window.runtimeInfo.os);
-    document.body.classList.add(`os-${window.runtimeInfo.os === 'darwin' ? 'mac' : window.runtimeInfo.os === 'win32' ? 'windows' : 'linux'}`);
+    document.addEventListener('DOMContentLoaded', () => {
+        const runtime = window.electronAPI ? 'electron' : 'web';
+        document.documentElement.setAttribute('data-runtime', runtime);
+        document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
+        document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
+    });
   </script>
 
   <link href="https://api.fontshare.com/v2/css?f[]=general-sans@1,2&f[]=satoshi@1,2&display=swap" rel="stylesheet">
@@ -129,7 +129,6 @@
   <!-- BottomNavbar -->
   <div id="app"></div>
 
-  <script src="renderer.js" defer></script>
   <script src="./frontendJS/TodoList.js" defer></script>
   <script src="./frontendJS/PUBLICscripts.js" defer></script>
   <script type="module">
