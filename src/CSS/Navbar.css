@@ -114,6 +114,10 @@ nav ul li a:hover {
     line-height: 40px;
 }
 
+#GotoHomePage.while-open-anotherapp {
+    border-bottom: var(--TitlebarColorBorder);
+}
+
 #GotoHomePage a:hover {
     background-color: var(--color-primary) !important;
 }
@@ -284,15 +288,21 @@ nav ul li a:hover {
     }
 }
 
-@media (max-width: 340px) {
+@media (max-width: 350px) {
     #KeepONtop {
         right: 45px;
-        background-color: var(--TitlebarColor);
+        background-color: var(--TitlebarColor) !important;
+        border-right: solid 1px transparent;
+        border-left: solid 1px transparent;
     }
 
     #GotoHomePage {
-        border-bottom: var(--TitlebarColorBorder);
+        border: none;
         background-color: var(--TitlebarColor);
+    }
+
+    #GotoHomePage.while-open-anotherapp {
+        border-bottom: 0px solid transparent;
     }
 }
 

@@ -13,12 +13,6 @@
     font-family: "Host Grotesk", "Segoe UI", sans-serif;
 }
 
-#GotoHomePage {
-    border-bottom: var(--TitlebarColorBorder);
-    background-color: var(--TitlebarColor) !important;
-    border-right: none !important;
-}
-
 .contentBTN {
     display: flex;
     gap: 10px;
@@ -47,22 +41,6 @@
     transition: ease 0.3s all;
 }
 
-.contentTEXT {
-    display: none;
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 5;
-}
-
-.contentTEXT h1 {
-    font-family: var(--font-text), sans-serif;
-    font-weight: 400;
-    font-size: 14.5px;
-    transform: translate(0px, 1.25px);
-}
-
 .lapsContent {
     height: 55px;
     width: 450px;
@@ -73,23 +51,4 @@
     left: 50%;
     transform: translateX(-50%);
     bottom: 80px;
-}
-
-@media screen and (max-width: 720px) {
-
-    .contentTEXT {
-        display: inline-block;
-    }
-
-}
-
-@media (max-width: 340px) {
-    .contentTEXT {
-        left: 17px;
-        transform: translateX(0px);
-    }
-
-    #GotoHomePage {
-        display: none;
-    }
 }

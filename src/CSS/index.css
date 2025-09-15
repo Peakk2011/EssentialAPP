@@ -207,6 +207,11 @@ html {
     overflow: hidden;
 }
 
+.content.full-width {
+    width: 100vw;
+    margin-left: 0;
+}
+
 .tabs-container {
     display: flex;
     flex: 1;
@@ -681,11 +686,27 @@ html {
     }
 
     .content {
-        width: 100vw;
+        width: 100vw !important;
+        margin-left: 0px !important;
+    }
+
+    .welcome-message {
+        left: 50%;
+        transform: translate(-50%, -50%);
+        min-width: 100%;
+        padding: 1.5rem;
+    }
+
+    #app-instruction {
+        font-size: 32px;
+    }
+
+    .app-grid {
+        flex-wrap: wrap;
     }
 }
 
-@media screen and (max-width: 340px) {
+@media screen and (max-width: 350px) {
     html {
         overflow-y: auto !important;
     }
@@ -705,8 +726,8 @@ html {
         top: 0;
     }
 
-    .contentTEXT {
-        display: none;
+    nav ul {
+        border-bottom: solid 1px transparent;
     }
 }
 

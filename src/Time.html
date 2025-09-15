@@ -21,31 +21,7 @@
 </head>
 
 <body>
-    <!-- <nav>
-        <div class="contentTEXT">
-            <h1>Clock</h1>
-        </div>
-        <ul>
-            <li id="GotoHomePage"><a href="index.html">
-                    <span class="material-symbols-outlined">home</span>
-                </a></li>
-            <li id="KeepONtop"><a href="javascript:void(0)">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                        fill="#e3e3e3">
-                        <path
-                            d="M204-129q-30.94 0-52.97-22.03Q129-173.06 129-204v-552q0-30.94 22.03-52.97Q173.06-831 204-831h273v75H204v552h552v-273h75v273q0 30.94-22.03 52.97Q786.94-129 756-129H204Zm185.5-208L337-389.5 703.5-756H552v-75h279v279h-75v-151.5L389.5-337Z" />
-                    </svg>
-                </a></li>
-            <div id="MainLINKS">
-                <li><a href="Todolist.html" class="requestShiftkeyHolder">Todo list</a></li>
-                <li id="CurrentPage"><a href="#" class="requestShiftkeyHolder" id="RequestTitletext">Clock</a></li>
-                <li><a href="calc.html" draggable="false">Calculator</a></li>
-                <li><a href="Notes.html" class="requestShiftkeyHolder">Notes</a></li>
-                <li><a href="Paint.html" class="requestShiftkeyHolder">Paint</a></li>
-            </div>
-        </ul>
-    </nav> -->
-
+    
     <div class="content">
         <div class="contentBTN">
             <button id="start">Start</button>
@@ -63,58 +39,7 @@
     </div>
 
     <script src="./frontendJS/PUBLICscripts.js" defer></script>
-    <script src="./Featured/clock.js"></script>
-    <script type="module">
-        import { initTheme, listenThemeSync } from './Essential_Pages/Settings_Config/theme.js';
-        initTheme();
-        listenThemeSync();
-
-        // Communicate with parent window
-        document.addEventListener('DOMContentLoaded', () => {
-            // Notify parent that the app has loaded
-            if (window.parent && typeof window.parent.iframeAction === 'function') {
-                window.parent.iframeAction('Clock', 'loaded', { timestamp: new Date() });
-            }
-
-            // Listen for commands from the parent window
-            window.addEventListener('message', (event) => {
-                const { action, data } = event.data;
-
-                // Trigger clicks on existing buttons based on the action
-                switch (action) {
-                    case 'start':
-                        document.getElementById('start')?.click();
-                        break;
-                    case 'stop':
-                        document.getElementById('stop')?.click();
-                        break;
-                    case 'reset':
-                        document.getElementById('reset')?.click();
-                        break;
-                    case 'lap':
-                        document.getElementById('lap')?.click();
-                        break;
-                }
-            });
-
-            // Forward keyboard shortcuts to parent
-            document.addEventListener('keydown', (e) => {
-                // Only forward shortcuts
-                if (e.ctrlKey || e.metaKey) {
-                    if (window.parent) {
-                        window.parent.postMessage({
-                            action: 'forwardKeydown',
-                            key: e.key,
-                            code: e.code,
-                            ctrlKey: e.ctrlKey,
-                            metaKey: e.metaKey,
-                            shiftKey: e.shiftKey
-                        }, '*');
-                    }
-                }
-            });
-        });
-    </script>
+    <script src="./Featured/clock.js" type="module"></script>
 </body>
 
 </html>

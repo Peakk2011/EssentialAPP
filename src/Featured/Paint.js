@@ -1,3 +1,8 @@
+import { initTheme, listenThemeSync, setTheme } from '../Essential_Pages/Settings_Config/theme.js';
+initTheme();
+listenThemeSync();
+
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const canvasContainer = document.getElementById('canvasContainer');
@@ -780,6 +785,54 @@ const handleResize = () => {
 // Initialize
 setupCanvas();
 adjustTheme();
+
+// API for Main Process, Main files (index.html)
+
+if (window.electronAPI?.onThemeChange) {
+    window.electronAPI.onThemeChange((event, theme) => {
+        setTheme(theme);
+    });
+} else {
+    window.addEventListener('theme-change', e => {
+        setTheme(e.detail);
+    });
+}
+
+// Communicate with parent window
+document.addEventListener('DOMContentLoaded', () => {
+    // Notify parent that the app has loaded
+    if (window.parent && typeof window.parent.iframeAction === 'function') {
+        window.parent.iframeAction('Paint', 'loaded', { timestamp: new Date() });
+    }
+
+    // Listen for commands from the parent window
+    window.addEventListener('message', (event) => {
+        const { action, data } = event.data;
+
+        if (action === 'clearCanvas') {
+            // Trigger the existing clear button's functionality
+            const clearButton = document.getElementById('clearBtn');
+            if (clearButton) clearButton.click();
+        }
+    });
+
+    // Forward keyboard shortcuts to parent
+    document.addEventListener('keydown', (e) => {
+        // Only forward shortcuts, not regular typing in some potential future input
+        if (e.ctrlKey || e.metaKey) {
+            if (window.parent) {
+                window.parent.postMessage({
+                    action: 'forwardKeydown',
+                    key: e.key,
+                    code: e.code,
+                    ctrlKey: e.ctrlKey,
+                    metaKey: e.metaKey,
+                    shiftKey: e.shiftKey
+                }, '*');
+            }
+        }
+    });
+});
 
 window.addEventListener('resize', handleResize);
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', adjustTheme);

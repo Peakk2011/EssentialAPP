@@ -20,87 +20,13 @@
             document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
         });
     </script>
-    <style>
-        .tabs-container .tab input[type="text"] {
-            width: 100%;
-            height: 100%;
-            padding: 0 5px;
-            margin: 0;
-            box-sizing: border-box;
-            border: 1px solid var(--theme-accent);
-            background-color: var(--theme-bg-secondary, #1c1c1c);
-            color: var(--theme-fg);
-            font-family: inherit;
-            font-size: inherit;
-        }
-
-        .tab {
-            position: relative;
-            padding-right: 28px !important;
-            /* Make space for the button */
-        }
-
-        .tab-close-btn {
-            position: absolute;
-            right: 4px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            line-height: 1;
-            color: #bbb;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s;
-        }
-
-        .tab-close-btn:hover {
-            background-color: rgba(255, 82, 82, 0.8);
-            color: white;
-        }
-
-    </style>
 </head>
 
 <body>
-
-    <!-- import Navbar as <nav> -->
-
-    <!-- <nav id="MainNavbar">
-        <div class="contentTEXT">
-            <h1>Paint app</h1>
-        </div>
-        <ul>
-            <li id="GotoHomePage"><a href="index.html">
-                    <span class="material-symbols-outlined">home</span>
-                </a></li>
-            <li id="KeepONtop"><a href="javascript:void(0)">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                        fill="var(--theme-links)">
-                        <path
-                            d="M204-129q-30.94 0-52.97-22.03Q129-173.06 129-204v-552q0-30.94 22.03-52.97Q173.06-831 204-831h273v75H204v552h552v-273h75v273q0 30.94-22.03 52.97Q786.94-129 756-129H204Zm185.5-208L337-389.5 703.5-756H552v-75h279v279h-75v-151.5L389.5-337Z" />
-                    </svg>
-                </a></li>
-            <div id="MainLINKS">
-                <li><a href="Todolist.html" class="requestShiftkeyHolder">Todo list</a></li>
-                <li><a href="Time.html" id="draggable" draggable="true" class="requestShiftkeyHolder">Clock</a></li>
-                <li><a href="calc.html" draggable="false" class="requestShiftkeyHolder">Calculator</a></li>
-                <li><a href="Notes.html" draggable="false" class="requestShiftkeyHolder">Notes</a></li>
-                <li id="CurrentPage"><a href="#" draggable="false" class="requestShiftkeyHolder">Paint</a></li>
-            </div>
-        </ul>
-    </nav> -->
-
     <!-- Content -->
 
     <div class="tabs-container" id="paint-tabs-container">
-        <div class="tabs" id="paint-tabs">
-            <!-- Tabs will be generated here -->
-        </div>
+        <div class="tabs" id="paint-tabs"></div>
         <button id="new-paint-tab-btn" title="New Drawing">+</button>
     </div>
     <div class="toolbar">
@@ -150,59 +76,8 @@
         <canvas id="canvas"></canvas>
     </div>
 
-    <script src="./Featured/paint.js" defer></script>
+    <script src="./Featured/paint.js" type="module"></script>
     <script src="./frontendJS/PUBLICscripts.js" defer></script>
-    <script type="module">
-        import { initTheme, listenThemeSync, setTheme } from './Essential_Pages/Settings_Config/theme.js';
-        initTheme();
-        listenThemeSync();
-
-        if (window.electronAPI?.onThemeChange) {
-            window.electronAPI.onThemeChange((event, theme) => {
-                setTheme(theme);
-            });
-        } else {
-            window.addEventListener('theme-change', e => {
-                setTheme(e.detail);
-            });
-        }
-
-        // Communicate with parent window
-        document.addEventListener('DOMContentLoaded', () => {
-            // Notify parent that the app has loaded
-            if (window.parent && typeof window.parent.iframeAction === 'function') {
-                window.parent.iframeAction('Paint', 'loaded', { timestamp: new Date() });
-            }
-
-            // Listen for commands from the parent window
-            window.addEventListener('message', (event) => {
-                const { action, data } = event.data;
-
-                if (action === 'clearCanvas') {
-                    // Trigger the existing clear button's functionality
-                    const clearButton = document.getElementById('clearBtn');
-                    if (clearButton) clearButton.click();
-                }
-            });
-
-            // Forward keyboard shortcuts to parent
-            document.addEventListener('keydown', (e) => {
-                // Only forward shortcuts, not regular typing in some potential future input
-                if (e.ctrlKey || e.metaKey) {
-                    if (window.parent) {
-                        window.parent.postMessage({
-                            action: 'forwardKeydown',
-                            key: e.key,
-                            code: e.code,
-                            ctrlKey: e.ctrlKey,
-                            metaKey: e.metaKey,
-                            shiftKey: e.shiftKey
-                        }, '*');
-                    }
-                }
-            });
-        });
-    </script>
 </body>
 
 </html>

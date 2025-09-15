@@ -853,6 +853,15 @@ function updateUIForActiveApp(activeAppId) {
         sidebar.classList.toggle('hidden', isAppActive);
     }
 
+    const contentElement = document.querySelector('.content');
+    if (contentElement) {
+        contentElement.classList.toggle('full-width', isAppActive);
+    }
+
+    if(sidebarHomePage) {
+        sidebarHomePage.classList.toggle('while-open-anotherapp', isAppActive)
+    }
+
     const contentTextH1 = document.querySelector('.contentTEXT h1');
     if (contentTextH1) {
         contentTextH1.textContent = activeAppId || 'EssentialAPP';
@@ -881,17 +890,6 @@ function updateNavbarLinks(activeAppId) {
     }
 
     navbarLinksContainer.innerHTML = '';
-
-    const content = document.querySelector('.content');
-
-    if (content) {
-        content.style.marginLeft = activeAppId ? '0' : 'var(--sidebar-width)';
-        content.style.width = activeAppId ? '100%' : 'calc(100vw - var(--sidebar-width))';
-        if (sidebarHomePage) {
-            sidebarHomePage.style.backgroundColor = activeAppId ? 'var(--theme-bg)' : 'var(--theme-primary)';
-            sidebarHomePage.style.borderBottom = activeAppId ? 'var(--TitlebarColorBorder)' : '';
-        }
-    }
 
     Array.from(openApps).forEach(appId => {
         const li = document.createElement('li');

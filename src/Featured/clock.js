@@ -1,3 +1,7 @@
+import { initTheme, listenThemeSync } from '../Essential_Pages/Settings_Config/theme.js';
+initTheme();
+listenThemeSync();
+
 // Ensure DOM is loaded before accessing elements
 document.addEventListener('DOMContentLoaded', () => {
     let wasm, exports;
@@ -92,4 +96,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadWasm();
+});
+
+// Communicate with parent window
+document.addEventListener('DOMContentLoaded', () => {
+    // Notify parent that the app has loaded
+    if (window.parent && typeof window.parent.iframeAction === 'function') {
+        window.parent.iframeAction('Clock', 'loaded', { timestamp: new Date() });
+    }
+
+    // Listen for commands from the parent window
+    window.addEventListener('message', (event) => {
+        const { action, data } = event.data;
+
+        // Trigger clicks on existing buttons based on the action
+        switch (action) {
+            case 'start':
+                document.getElementById('start')?.click();
+                break;
+            case 'stop':
+                document.getElementById('stop')?.click();
+                break;
+            case 'reset':
+                document.getElementById('reset')?.click();
+                break;
+            case 'lap':
+                document.getElementById('lap')?.click();
+                break;
+        }
+    });
+
+    // Forward keyboard shortcuts to parent
+    document.addEventListener('keydown', (e) => {
+        // Only forward shortcuts
+        if (e.ctrlKey || e.metaKey) {
+            if (window.parent) {
+                window.parent.postMessage({
+                    action: 'forwardKeydown',
+                    key: e.key,
+                    code: e.code,
+                    ctrlKey: e.ctrlKey,
+                    metaKey: e.metaKey,
+                    shiftKey: e.shiftKey
+                }, '*');
+            }
+        }
+    });
 });
