@@ -680,7 +680,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const { action, data } = event.data;
         // console.log('Todolist iframe received command:', { action, data });
 
-        // สั่งการตาม action ที่ได้รับ
         if (action === 'focusInput') {
             input.focus();
         } else if (action === 'addTask' && data && data.text) {

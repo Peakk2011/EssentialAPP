@@ -158,3 +158,6 @@ Don't forget to star the repo if you find it useful! <br>
 That if you want to develop with me now contribute <br>
 
 <a href="https://github.com/Peakk2011/Basic-requirement-app" style="text-decroation: none;">🌟 Star on GitHub</a>
+
+## License
+EssentialAPP is licensed under the GNU General Public License v3.0 — see the [LICENSE](./LICENSE) file for details.
