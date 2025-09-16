@@ -30,7 +30,7 @@
         <button id="new-paint-tab-btn" title="New Drawing">+</button>
     </div>
     <div class="toolbar">
-        <div class="control">
+        <div class="control paintapp-control">
             <label class="color-picker">
                 <span id="color-picker-trigger" class="color-preview" style="background-color: #000000;"></span>
             </label>
@@ -48,7 +48,7 @@
                 min-width: 310px;"></div>
         </div>
 
-        <div class="control" id="brushSizeControl">
+        <div class="control paintapp-control" id="brushSizeControl">
             <input type="range" id="brushSize" min="1" max="50" value="5">
             <span class="size-display" id="sizeDisplay">5px</span>
         </div>
@@ -60,7 +60,7 @@
             </select>
         </div>
         
-        <div class="control">
+        <div class="control paintapp-control">
             <select id="exportFormat">
                 <option value="png">PNG</option>
                 <option value="jpg">JPG</option>

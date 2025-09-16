@@ -1,13 +1,13 @@
 :root {
     --nav-height: 40px;
     --nav-btn-width: 45px;
-    --nav-font-size: 14.75px;
+    --nav-font-size: 14px;
     --nav-padding: 0.6rem;
     --nav-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --nav-hover: #3f3f3f;
     --nav-active: #0c0c0c;
     --nav-current: #121212;
-    --nav-icon-size: 22px;
+    --nav-icon-size: 20px;
     --nav-keepontop-width: 46px;
 }
 
@@ -116,6 +116,8 @@ nav ul li a:hover {
 
 #GotoHomePage.while-open-anotherapp {
     border-bottom: var(--TitlebarColorBorder);
+    border-right: solid 1px transparent;
+    
 }
 
 #GotoHomePage a:hover {
@@ -144,8 +146,8 @@ nav ul li a:hover {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(95%);
-    font-size: 1.5rem;
+    transform: translate(-50%, -50%) scale(87.5%);
+    font-size: 1.5rem;  
     fill: var(--theme-fg);
     width: 20px;
     height: auto;
@@ -156,7 +158,6 @@ nav ul li a:hover {
     right: 135px;
     width: var(--nav-keepontop-width);
     height: calc(var(--nav-height) - 1px);
-    border-left: var(--TitlebarColorBorder);
 }
 
 #KeepONtop:focus {

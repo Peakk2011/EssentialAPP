@@ -176,8 +176,22 @@ button {
 
 .clear-btn:hover {
     background-color: var(--PrimaryButtonsColors);
+    filter: brightness(80%);
 }
 
 .size-display {
     display: none;
+}
+
+@media (max-width: 350px) {
+
+    .paintapp-control {
+        display: none;
+    }
+
+    /* Sorry for my hardcode */
+    button {
+        padding: 0.5rem 0.8rem;
+    }
+    
 }

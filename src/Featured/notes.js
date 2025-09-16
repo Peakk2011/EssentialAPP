@@ -1,99 +1,151 @@
-let autoSaveTimeout;
-let currentFontSize = 16;
+import { initTheme, listenThemeSync } from '../Essential_Pages/Settings_Config/theme.js';
+initTheme();
+listenThemeSync();
 
-const textarea = document.getElementById('autoSaveTextarea');
-const saveIndicator = document.getElementById('saveIndicator');
-const statusText = document.getElementById('statusText');
+document.addEventListener('DOMContentLoaded', () => {
+    const NOTES_STORAGE_KEY = 'essential_app_note_content'; // Simple key for single note
+    const ZOOM_STORAGE_KEY = 'essential_app_note_zoom';
+    const textarea = document.getElementById('autoSaveTextarea');
+    const notesChannel = new BroadcastChannel('notes_sync_channel');
+    let isTyping = false;
 
-const loadSavedText = () => {
-    const savedText = localStorage.getItem('autoSaveText') || '';
-    const savedFontSize = parseInt(localStorage.getItem('fontSize'), 10) || 16;
+    let currentZoom = 16; // Default font size
 
-    textarea.value = savedText;
-    currentFontSize = savedFontSize;
-    textarea.style.fontSize = `${currentFontSize}px`;
-};
-
-const saveText = () => {
-    localStorage.setItem('autoSaveText', textarea.value);
-    localStorage.setItem('fontSize', currentFontSize);
-    saveIndicator.classList.remove('saving');
-    statusText.textContent = `Saved ${new Date().toLocaleTimeString('th-TH')}`;
-
-    setTimeout(() => {
-        statusText.textContent = 'Saved';
-    }, 1000);
-
-};
-
-const showSaving = () => {
-    saveIndicator.classList.add('saving');
-    statusText.textContent = 'Recording';
-};
-
-const zoomIn = () => {
-    if (currentFontSize < 48) {
-        currentFontSize += 2;
-        textarea.style.fontSize = `${currentFontSize}px`;
-        localStorage.setItem('fontSize', currentFontSize);
+    function applyZoom() {
+        textarea.style.fontSize = `${currentZoom}px`;
+        localStorage.setItem(ZOOM_STORAGE_KEY, currentZoom);
     }
-};
 
-const zoomOut = () => {
-    if (currentFontSize > 8) {
-        currentFontSize -= 2;
-        textarea.style.fontSize = `${currentFontSize}px`;
-        localStorage.setItem('fontSize', currentFontSize);
+    function zoomIn() {
+        currentZoom = Math.min(48, currentZoom + 2);
+        applyZoom();
+        // Broadcast zoom change
+        notesChannel.postMessage({ type: 'zoom', value: currentZoom });
     }
-};
 
-const resetZoom = () => {
-    currentFontSize = 14;
-    textarea.style.fontSize = `${currentFontSize}px`;
-    localStorage.setItem('fontSize', currentFontSize);
-};
+    function zoomOut() {
+        currentZoom = Math.max(8, currentZoom - 2);
+        applyZoom();
+        // Broadcast zoom change
+        notesChannel.postMessage({ type: 'zoom', value: currentZoom });
+    }
 
-const triggerAutoSave = () => {
-    clearTimeout(autoSaveTimeout);
-    showSaving();
-    autoSaveTimeout = setTimeout(() => {
-        saveText();
-    }, 1000); // 1s
-};
+    function resetZoom() {
+        currentZoom = 16;
+        applyZoom();
+        // Broadcast zoom change
+        notesChannel.postMessage({ type: 'zoom', value: currentZoom });
+    }
 
-textarea.addEventListener('input', triggerAutoSave);
+    // UI elements
+    const zoomInBtn = document.getElementById('zoom-in-btn');
+    const zoomOutBtn = document.getElementById('zoom-out-btn');
+    const resetZoomBtn = document.getElementById('reset-zoom');
+    if (zoomInBtn) zoomInBtn.addEventListener('click', zoomIn);
+    if (zoomOutBtn) zoomOutBtn.addEventListener('click', zoomOut);
+    if (resetZoomBtn) resetZoomBtn.addEventListener('click', resetZoom);
 
-document.addEventListener('keydown', e => {
-    if (e.ctrlKey || e.metaKey) {
-        if (e.key === '=' || e.key === '+') {
-            e.preventDefault();
-            zoomIn();
-        } else if (e.key === '-' || e.key === '_') {
-            e.preventDefault();
-            zoomOut();
-        } else if (e.key === '0') {
-            e.preventDefault();
-            resetZoom();
+    function forceSave() {
+        localStorage.setItem(NOTES_STORAGE_KEY, textarea.value);
+    }
+
+    // Realtime sync logic accoss window
+    textarea.addEventListener('input', () => {
+        notesChannel.postMessage({ type: 'text', value: textarea.value });
+
+        // Save to localStorage less frequently to avoid performance issues
+        if (!isTyping) {
+            isTyping = true;
+            setTimeout(() => {
+                forceSave();
+                isTyping = false;
+            }, 1000);
         }
-    }
-});
+    });
 
-// Mouse wheel zoom
-textarea.addEventListener('wheel', e => {
-    if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        if (e.deltaY < 0) {
-            zoomIn();
-        } else {
-            zoomOut();
+    textarea.value = localStorage.getItem(NOTES_STORAGE_KEY) || '';
+    const savedZoom = localStorage.getItem(ZOOM_STORAGE_KEY);
+    if (savedZoom) {
+        currentZoom = parseInt(savedZoom, 10);
+    }
+    applyZoom(); // Apply initial zoom on load
+    textarea.disabled = false;
+    textarea.placeholder = "Start writing your notes here...";
+
+    // Parent communication
+    function postToParent(action, data = {}) {
+        window.parent.postMessage({ appId: 'Note', action, data }, '*');
+    }
+
+    postToParent('loaded', { timestamp: new Date() });
+
+    window.addEventListener('message', (event) => {
+        const { action, data } = event.data;
+
+        if (action === 'save') { 
+            forceSave();
+        } else if (action === 'addSelectedToTodo') {
+            const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+            if (selectedText) {
+                postToParent('addToTodo', { text: selectedText });
+            } else {
+                alert('Please select some text in the note to add to your to-do list.');
+            }
+        } else if (action === 'focusInput') {
+            textarea.focus();
         }
-    }
-});
+    });
 
-loadSavedText();
+    document.addEventListener('keydown', (e) => {
+        const isCtrlOrMeta = e.ctrlKey || e.metaKey;
 
-window.addEventListener('beforeunload', () => {
-    if (textarea.value.trim()) {
-        saveText();
-    }
+        if (isCtrlOrMeta) {
+            if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+                e.preventDefault();
+                zoomIn();
+            } else if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+                e.preventDefault();
+                zoomOut();
+            } else if (e.code === 'Digit0' || e.code === 'Numpad0') {
+                e.preventDefault();
+                resetZoom();
+            }
+        }
+    });
+
+    textarea.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                zoomIn();
+            } else {
+                zoomOut();
+            }
+        }
+    }, { passive: false });
+
+    // Receive
+    notesChannel.onmessage = (event) => {
+        const { type, value } = event.data;
+        if (type === 'text' && textarea.value !== value) {
+            textarea.value = value;
+        } else if (type === 'zoom' && currentZoom !== value) {
+            currentZoom = value;
+            applyZoom();
+        }
+    };
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === NOTES_STORAGE_KEY) {
+            if (e.newValue !== textarea.value) {
+                textarea.value = e.newValue || '';
+            }
+        } else if (e.key === ZOOM_STORAGE_KEY) {
+            const newZoom = parseInt(e.newValue, 10);
+            if (newZoom && currentZoom !== newZoom) {
+                currentZoom = newZoom;
+                applyZoom();
+            }
+        }
+    });
 });

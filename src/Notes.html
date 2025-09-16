@@ -24,137 +24,35 @@
             document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
         });
     </script>
-    <!-- <style>
-        body {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            background-color: var(--theme-bg);
-        }
-
-        .notes-main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-        }
-
-        .textarea-container {
-            position: relative;
-            flex-grow: 1;
-            height: 100%;
-        }
-
-        #autoSaveTextarea {
-            height: 100%;
-        }
-    </style> -->
 </head>
 
 <body>
-    <div class="notes-main">
-        <div class="status">
-            <div class="dot" id="saveIndicator"></div>
-            <span id="statusText">Saved</span>
-        </div>
 
+    <div class="notes-main">
         <div class="textarea-container">
             <textarea id="autoSaveTextarea" placeholder="Select or create a note to start..." spellcheck="false"
                 disabled></textarea>
 
             <div class="zoom-controls">
-                <button class="zoom-btn" onclick="zoomOut()">
+                <button id="zoom-out-btn" class="zoom-btn" title="Zoom Out (Ctrl+-)">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                         fill="currentColor">
                         <path d="M200-440v-80h560v80H200Z" />
                     </svg>
                 </button>
-                <button class="zoom-btn" onclick="zoomIn()">
+                <button id="zoom-in-btn" class="zoom-btn" title="Zoom In (Ctrl++)">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                         fill="currentColor">
                         <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
                     </svg>
                 </button>
-                <button onclick="resetZoom()" title="Reset" id="reset-zoom"><span>Reset</span></button>
+                <button id="reset-zoom" title="Reset Zoom (Ctrl+0)"><span>Reset</span></button>
             </div>
         </div>
     </div>
 
     <script src="./frontendJS/PUBLICscripts.js" defer></script>
-    <script>
-        // Local zoom functions to fix "not defined" error
-        const textareaForZoom = document.getElementById('autoSaveTextarea');
-        let currentZoom = 16; // Default font size
-
-        function applyZoom() {
-            textareaForZoom.style.fontSize = `${currentZoom}px`;
-        }
-        function zoomIn() {
-            currentZoom = Math.min(48, currentZoom + 2);
-            applyZoom();
-        }
-        function zoomOut() {
-            currentZoom = Math.max(8, currentZoom - 2);
-            applyZoom();
-        }
-        function resetZoom() {
-            currentZoom = 16;
-            applyZoom();
-        }
-    </script>
-    <script type="module">
-        import { initTheme, listenThemeSync } from './Essential_Pages/Settings_Config/theme.js';
-        initTheme();
-        listenThemeSync();
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const NOTES_STORAGE_KEY = 'essential_app_note_content'; // Simple key for single note
-            const textarea = document.getElementById('autoSaveTextarea');
-            let saveTimeout;
-
-            function forceSave() {
-                localStorage.setItem(NOTES_STORAGE_KEY, textarea.value);
-            }
-
-            textarea.addEventListener('input', () => {
-                clearTimeout(saveTimeout);
-                saveTimeout = setTimeout(() => {
-                    forceSave();
-                }, 500);
-            });
-
-            // Initial load
-            textarea.value = localStorage.getItem(NOTES_STORAGE_KEY) || '';
-            textarea.disabled = false;
-            textarea.placeholder = "Start writing your notes here...";
-
-            // Parent communication
-            function postToParent(action, data = {}) {
-                window.parent.postMessage({ appId: 'Note', action, data }, '*'); 
-            }
-
-            postToParent('loaded', { timestamp: new Date() });
-            
-            window.addEventListener('message', (event) => {
-                const { action, data } = event.data;
-
-                if (action === 'save') {
-                    clearTimeout(saveTimeout);
-                    forceSave();
-                } else if (action === 'addSelectedToTodo') {
-                    const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
-                    if (selectedText) {
-                        postToParent('addToTodo', { text: selectedText });
-                    }  else {
-                        alert('Please select some text in the note to add to your to-do list.');
-                    }
-                } else if (action === 'focusInput') {
-                    textarea.focus();
-                }
-            });
-        });
-    </script>
+    <script type="module" src="./Featured/notes.js"></script>
 </body>
 
 </html>

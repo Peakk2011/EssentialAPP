@@ -79,6 +79,8 @@
     --TitlebarColorButton: hsl(0, 0%, 100%);      /* #fff */
     --TitlebarColorBorder: solid 1px var(--theme-border);
     --TitlebarColorHover: var(--SoftHoverColor);
+    /* Toolbar */
+    --toolbar-bg: hsl(0, 0%, 3%);
 
     /* Context Menu */
     --ctx-menu-bg: hsla(0, 0%, 8.5%, 0.820);               
@@ -140,6 +142,7 @@
     color-scheme: dark;
     background: var(--theme-bg);
     color: var(--theme-fg);
+    --toolbar-bg: hsl(0, 0%, 3%);
 }
 
 /* Light Theme */
@@ -177,6 +180,7 @@
     color-scheme: light;
     background: var(--theme-bg);
     color: var(--theme-fg);
+    --toolbar-bg: #ffffff;
 }
 
 .hsl-variations {
