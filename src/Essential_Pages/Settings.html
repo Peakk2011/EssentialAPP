@@ -14,8 +14,6 @@
             const runtime = window.electronAPI ? 'electron' : 'web';
             document.documentElement.setAttribute('data-runtime', runtime);
         })();
-        document.documentElement.setAttribute('data-os', window.runtimeInfo.os);
-        document.body.classList.add(`os-${window.runtimeInfo.os === 'darwin' ? 'mac' : window.runtimeInfo.os === 'win32' ? 'windows' : 'linux'}`);
     </script>
 </head>
 
@@ -207,7 +205,7 @@
         </div>
     </div>
 
-    <script src="./Settings_Config/Settings.js"></script>
+    <script src="./Settings_Config/Settings.js" type="module"></script>
     <script type="module">
         import { initTheme, setTheme } from './Settings_Config/theme.js';
 
@@ -228,6 +226,11 @@
             } else {
                 window.dispatchEvent(new CustomEvent('theme-change', { detail: 'dark' }));
             }
+        }
+
+        if (window.runtimeInfo?.os) {
+            document.documentElement.setAttribute('data-os', window.runtimeInfo.os);
+            document.body.classList.add(`os-${window.runtimeInfo.os === 'darwin' ? 'mac' : window.runtimeInfo.os === 'win32' ? 'windows' : 'linux'}`);
         }
     </script>
 </body>

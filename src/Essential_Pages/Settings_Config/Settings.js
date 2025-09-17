@@ -89,41 +89,18 @@ document.querySelectorAll('.NavContent').forEach(SettingsLinks => {
     createRippleEffect(SettingsLinks);
 });
 
-// colors
-const themeColorSets = {
-    dark: [
-        '#F6EACC', '#D1BBA7', '#CDBBA7', '#D7B996', '#d2a47d',
-        '#c1e3b9', '#aeccab', '#bbdac1', '#b7d7b3', '#cadcbc',
-        '#A6C5DA', '#9BB8CD', '#90ABC0', '#859EB3', '#7A91A7',
-        '#FFC0C0', '#FFA0A0', '#F68484', '#EB6F6F', '#E05A5A',
-        '#feeaeb', '#FFD6D6', '#f0c8c8', '#d4b6b6', '#fcceca',
-    ],
-    light: [
-        '#A68E5F', '#8C6E4A', '#886E4A', '#8F6C3A', '#8A5A2F',
-        '#5F9C6F', '#4C7F5F', '#5A8F6F', '#578C5F', '#6A8F6A',
-        '#5A7A8C', '#4F6D7F', '#446072', '#3A5365', '#2F4658',
-        '#B24F4F', '#A03F3F', '#8F2F2F', '#7F1F1F', '#6F0F0F',
-        '#B29A9A', '#A08080', '#8F7070', '#7F6060', '#9F7878'
-    ]
-};
+import { themeColorSets, updateAccentColor } from './themeColors.js';
 
-const picker = document.getElementById('picker');
-
-// Update color
-function updateAccentColor(color) {
-    const root = document.documentElement;
-    root.style.setProperty('--theme-accent', color);
-    root.style.setProperty('--accent', color);
-    root.style.setProperty('--ColorHighlight', color);
-    localStorage.setItem('theme-accent', color);
-}
+// export
+export { themeColorSets };
+const picker = document.getElementById('picker'); // This element only exists on the Settings page
 
 // Update color picker based on theme
 function updateColorPicker() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
     // Switcher color
     const colors = themeColorSets[currentTheme];
-    picker.innerHTML = ''; // Clear existing swatches
+    if (picker) picker.innerHTML = ''; // Clear existing swatches
     colors.forEach(color => {
         const swatch = document.createElement('div');
         swatch.classList.add('color');
@@ -133,61 +110,70 @@ function updateColorPicker() {
             updateAccentColor(color);
             swatch.focus();
         });
-        picker.appendChild(swatch);
+        if (picker) picker.appendChild(swatch);
     });
 }
 
-// Realtime sync
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'data-theme') {
-            updateColorPicker();
+// Only run settings-specific code if the picker element exists
+if (picker) {
+    // Realtime sync
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'data-theme') {
+                updateColorPicker();
+            }
+        });
+    });
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+    });
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        updateColorPicker();
+    });
+
+    // Listen for theme changes
+    window.electron?.theme.onChange(theme => {
+        updateColorPicker();
+    });
+
+    // Initial setup
+    updateColorPicker();
+
+    // Color loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedAccent = localStorage.getItem('theme-accent');
+        if (savedAccent) {
+            updateAccentColor(savedAccent);
+        } else {
+            // Fallback to the default value from CSS if nothing is in localStorage
+            const rootStyles = getComputedStyle(document.documentElement);
+            const defaultAccent = rootStyles.getPropertyValue('--theme-accent').trim();
+            updateAccentColor(defaultAccent);
         }
     });
-});
 
-observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-theme']
-});
+    // define delay anim for NavContent
+    document.querySelectorAll('.NavContent').forEach((nav, index) => {
+        nav.style.setProperty('--delay', index);
+    });
 
-// Initial load
-document.addEventListener('DOMContentLoaded', () => {
-    updateColorPicker();
+    document.getElementById('ResetColor').addEventListener('click', () => {
+        localStorage.removeItem('theme-accent');
 
-});
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
 
-// Listen for theme changes
-window.electron?.theme.onChange(theme => {
-    updateColorPicker();
-});
+        // Special default colors for each theme
+        const specialDefaults = {
+            dark: 'hsl(0, 15%, 75%)',   // --theme-accent in :root[data-theme="dark"]
+            light: 'hsl(0, 15%, 80%)'   // --theme-accent in :root[data-theme="light"]
+        };
 
-// Initial setup
-updateColorPicker();
+        const defaultColor = specialDefaults[currentTheme];
 
-// Color loaded
-const savedAccent = localStorage.getItem('theme-accent');
-if (savedAccent) {
-    updateAccentColor(savedAccent);
+        updateAccentColor(defaultColor);
+    });
 }
-
-// define delay anim for NavContent
-document.querySelectorAll('.NavContent').forEach((nav, index) => {
-    nav.style.setProperty('--delay', index);
-});
-
-document.getElementById('ResetColor').addEventListener('click', () => {
-    localStorage.removeItem('theme-accent');
-
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-
-    // Special default colors for each theme
-    const specialDefaults = {
-        dark: 'hsl(0, 15%, 75%)',
-        light: 'hsl(0, 23%, 74%)'
-    };
-
-    const defaultColor = specialDefaults[currentTheme];
-
-    updateAccentColor(defaultColor);
-});

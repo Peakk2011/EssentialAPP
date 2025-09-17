@@ -20,10 +20,6 @@ async function loadWasm() {
 }
 loadWasm();
 
-function updateDisplay() {
-    display.textContent = currentNumber;
-}
-
 function appendNumber(number) {
     if (shouldResetScreen) {
         currentNumber = number.toString();

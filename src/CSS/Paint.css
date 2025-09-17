@@ -160,7 +160,7 @@ input[type="range"]::-webkit-slider-thumb {
 button {
     padding: 0.5rem 1rem;
     background: var(--theme-accent);
-    color: #000000;
+    color: var(--theme-accent-text);
     border: none;
     border-radius: 100vmax;
     cursor: pointer;

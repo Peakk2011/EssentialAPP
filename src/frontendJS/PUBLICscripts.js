@@ -2,6 +2,9 @@
 // ** Made by Mint teams **
 // Sync with main process
 
+import { initTheme, listenThemeSync } from '../Essential_Pages/Settings_Config/theme.js';
+import '../Essential_Pages/Settings_Config/themeColors.js'; // Import to activate color handling
+
 let isClickedAlwaysOnTop = false;
 
 document.getElementById('KeepONtop')?.addEventListener('click', () => {
@@ -19,7 +22,7 @@ const reloadApp = async () => {
 
   // Sync with main process if available
   if (window.electronAPI?.syncClearStorage) {
-      await window.electronAPI.syncClearStorage();
+    await window.electronAPI.syncClearStorage();
   }
   // Force reload
   window.location.reload(true);
@@ -29,6 +32,18 @@ window.reload = reloadApp;
 // Rightclick ipc send to main process
 
 document.addEventListener('DOMContentLoaded', () => {
+
+  // Runtime and OS detection
+  const runtime = window.electronAPI ? 'electron' : 'web';
+  const os = window.runtimeInfo?.os || 'unknown';
+  document.documentElement.setAttribute('data-runtime', runtime);
+  document.documentElement.setAttribute('data-os', os);
+  const osClass = os === 'darwin' ? 'mac' : os === 'win32' ? 'windows' : 'linux';
+  document.body.classList.add(`os-${osClass}`);
+
+  initTheme();
+  listenThemeSync();
+
   if (window.electronAPI) {
     // For error heading
     document.addEventListener('contextmenu', async (e) => {
@@ -109,11 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleMouseMove = (e) => {
-        if (!isResizing) return;
-        const diff = e.pageX - startX;
-        const newWidth = startWidth + diff;
-        updateWidth(newWidth);
-      };
+      if (!isResizing) return;
+      const diff = e.pageX - startX;
+      const newWidth = startWidth + diff;
+      updateWidth(newWidth);
+    };
 
     const stopResizing = () => {
       isResizing = false;
@@ -182,23 +197,31 @@ const createWindows = {
   }
 }
 
-if (createWindows.Aboutus.AboutEssential) {
-  createWindows.Aboutus.AboutEssential.addEventListener('click', async (eventToggleNewwindows_Aboutus) => {
-    eventToggleNewwindows_Aboutus.preventDefault();
-    await window.electronAPI.openAboutWindow();
-  });
-}
-if (createWindows.Settings.SettingsEssential) {
-  createWindows.Settings.SettingsEssential.addEventListener('click', async (eventToggleNewwindows_Settings) => {
-    eventToggleNewwindows_Settings.preventDefault();
-    await window.electronAPI.openSettingsWindow();
-  });
-}
-if (createWindows.Aboutus.Mintputs) {
-  createWindows.Aboutus.Mintputs.addEventListener('click', async (eventToggleNewwindows_Mintputs) => {
-    eventToggleNewwindows_Mintputs.preventDefault();
-    await window.electronAPI.openMintputsWindow('openMintputs.html');
-  });
+const setupWindowOpeners = () => {
+  const { Aboutus, Settings } = createWindows;
+
+  if (Aboutus.AboutEssential) {
+    Aboutus.AboutEssential.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await window.electronAPI.openAboutWindow();
+    });
+  }
+  if (Settings.SettingsEssential) {
+    Settings.SettingsEssential.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await window.electronAPI.openSettingsWindow();
+    });
+  }
+  if (Aboutus.Mintputs) {
+    Aboutus.Mintputs.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await window.electronAPI.openMintputsWindow('openMintputs.html');
+    });
+  }
+};
+
+if (window.electronAPI) {
+  setupWindowOpeners();
 }
 
 // Add event listeners

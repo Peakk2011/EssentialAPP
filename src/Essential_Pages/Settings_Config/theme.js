@@ -4,9 +4,8 @@ const THEME_KEY = 'app_theme';
 export async function applyTheme(theme) {
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
-    root.style.setProperty('--theme-bg', theme === 'light' ? '#faf8f0' : '#0f0f0f');
     
-    // ส่ง theme ไปยัง main process ทันทีที่มีการเปลี่ยนแปลง
+    // Send theme to main process
     if (window.titlebarAPI) {
         window.titlebarAPI.setTheme(theme);
     }

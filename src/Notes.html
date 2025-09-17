@@ -13,17 +13,6 @@
     <!-- Material icons -->
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script>
-        // Runtime detection
-        (function () {
-            const runtime = window.electronAPI ? 'electron' : 'web';
-            document.documentElement.setAttribute('data-runtime', runtime);
-        })();
-        document.addEventListener('DOMContentLoaded', () => {
-            document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
-            document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
-        });
-    </script>
 </head>
 
 <body>
@@ -51,7 +40,7 @@
         </div>
     </div>
 
-    <script src="./frontendJS/PUBLICscripts.js" defer></script>
+    <script src="./frontendJS/PUBLICscripts.js" type="module" defer></script>
     <script type="module" src="./Featured/notes.js"></script>
 </body>
 

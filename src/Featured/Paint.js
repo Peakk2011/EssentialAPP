@@ -125,8 +125,6 @@ const initSVG = () => {
     drawingPaths.forEach(path => {
         svgGroup.appendChild(path.cloneNode(true));
     });
-
-    console.log('SVG initialized successfully');
 };
 
 const rasterizeSVG = () => {
@@ -450,8 +448,6 @@ const convertCirclesToPath = (circleGroup) => {
 
 // Start drawing
 const startDrawing = (e) => {
-    console.log('Start drawing triggered:', e.type);
-
     // Only handle left mouse button
     if (e.button && e.button !== 0) return;
     if (isDraggingSticky) return;
@@ -471,8 +467,6 @@ const startDrawing = (e) => {
     const coords = getCanvasCoords(e);
     lastX = coords.x;
     lastY = coords.y;
-
-    console.log('Drawing coordinates:', coords);
 
     if (!svg || !svgGroup) {
         console.log('Reinitializing SVG');
@@ -507,8 +501,6 @@ const startDrawing = (e) => {
         circle.setAttribute('opacity', '0.7');
         currentPath.appendChild(circle);
     }
-
-    console.log('Drawing started successfully');
 };
 
 // Draw

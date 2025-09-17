@@ -144,15 +144,13 @@ html {
 }
 
 #Current a {
-    color: var(--ColorHighlight);
+    color: var(--theme-accent-text) !important;
     font-weight: 550;
     letter-spacing: -0.2px;
-    filter: brightness(0.3);
 }
 
 #Current a svg {
-    color: var(--ColorHighlight);
-    filter: brightness(0.3);
+    color: var(--theme-accent-text) !important;
 }
 
 .menu hr {
@@ -630,14 +628,12 @@ html {
 }
 
 #app-recommend-texts {
-    color: var(--ColorHighlight);
+    color: var(--theme-accent-text);
     font-weight: 550;
-    filter: brightness(0.3);
 }
 
 #app-recommend svg {
-    filter: brightness(0.3);
-    fill: var(--ColorHighlight);
+    fill: var(--theme-accent-text);
 }
 
 /* Test to define platform */
@@ -719,6 +715,7 @@ html {
         width: 310px;
         margin-bottom: 2.5rem;
         margin-top: 2.5rem;
+        filter: drop-shadow(0 0 0.75rem hsla(0, 0%, 0%, 0.185));
     }
 }
 

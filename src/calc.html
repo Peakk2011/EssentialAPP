@@ -10,15 +10,6 @@
     <!-- Material icons -->
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script>
-        // Runtime detection
-        document.addEventListener('DOMContentLoaded', () => {
-            const runtime = window.electronAPI ? 'electron' : 'web';
-            document.documentElement.setAttribute('data-runtime', runtime);
-            document.documentElement.setAttribute('data-os', window.runtimeInfo?.os || 'unknown');
-            document.body.classList.add(`os-${window.runtimeInfo?.os === 'darwin' ? 'mac' : window.runtimeInfo?.os === 'win32' ? 'windows' : 'linux'}`);
-        });
-    </script>
 </head>
 
 <body>
@@ -78,13 +69,8 @@
 
     <!-- </div> -->
 
-    <script src="./frontendJS/PUBLICscripts.js" defer></script>
-    <script src="./Featured/calculator.js" defer></script>
-    <script type="module">
-        import { initTheme, listenThemeSync } from './Essential_Pages/Settings_Config/theme.js';
-        initTheme();
-        listenThemeSync();
-    </script>
+    <script src="./frontendJS/PUBLICscripts.js" type="module" defer></script>
+    <script src="./Featured/calculator.js" type="module" defer></script>
 
 </body>
 

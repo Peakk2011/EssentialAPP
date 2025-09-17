@@ -210,7 +210,7 @@ nav {
     margin: 1.5rem auto;
     padding: 0.5rem 1.15rem;
     background-color: var(--theme-accent);
-    color: var(--theme-bg);
+    color: var(--theme-accent-text);
     text-align: center;
     width: fit-content;
     font-weight: bold;

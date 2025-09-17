@@ -147,33 +147,33 @@
 
 /* Light Theme */
 :root[data-theme="light"], html.light, body.light {
-    --theme-bg: hsl(45, 43%, 96%);               /* #faf8f0 */
+    --theme-bg: hsl(45, 40%, 96.5%);             /* #faf8f3 */
     --theme-fg: hsl(0, 0%, 6%);                  /* #0f0f0f */
     --theme-primary: hsl(0, 0%, 100%);           /* #ffffff */
     --theme-card: hsl(0, 0%, 99%);               /* #fcfcfc */
     --theme-titlebar: hsl(0, 0%, 94%);           /* #f0f0f0 */
-    --theme-border: hsl(0, 0%, 81%);             /* #cfcfcf */
-    --HoverColor: hsl(40, 10%, 85%);             /* Already HSL */
-    --SoftHoverColor: hsl(40, 10%, 88%);         /* Already HSL */
+    --theme-border: hsl(40, 15%, 88.5%);           /* #ddd3c9 */
+    --HoverColor: hsl(40, 10%, 85%);             
+    --SoftHoverColor: hsl(40, 15%, 91.25%);         
     --theme-links: hsl(0, 0%, 13%);              /* #222 */
     --NameColorSvg: hsl(0, 0%, 0%);              /* #000 */
-    --theme-accent: hsl(0, 15%, 80%);            /* #ccaeae */
+    --theme-accent: hsl(0, 15%, 80%);
     --HRborder: solid 1px hsl(0, 0%, 90%);       /* #e6e6e6 */
     --RippleEffectColor: hsla(0, 0%, 0%, 0.27);  /* rgba(0, 0, 0, 0.27) */
-    --TitlebarColor: hsl(42, 14%, 95%);          /* #f3f2f0 */
+    --TitlebarColor: hsl(30, 20%, 96.5%);          /* #f3f2f0 */
     --TitlebarColorButton: hsl(0, 0%, 19%);      /* #303030 */
-    --TitlebarColorBorder: solid 1px hsl(0, 0%, 81%);
-    --TitlebarColorHover: hsl(40, 10%, 82.5%);   /* Already HSL */
-    --ctx-menu-bg: hsl(60, 9%, 96%);             /* #f6f6f5 */
-    --ctx-menu-hover: hsl(0, 0%, 89%);           /* #e4e4e4 */
+    --TitlebarColorBorder: var(--theme-border) solid 1px;
+    --TitlebarColorHover: hsl(40, 10%, 92.5%);   
+    --ctx-menu-bg: hsla(60, 11%, 96%, 0.900);             /* #f6f6f5 */
+    --ctx-menu-hover: hsl(40, 15%, 90%);           /* #e4e4e4 */
     --ctx-menu-active: hsl(0, 0%, 91%);          /* #e8e8e8 */
     --ctx-menu-text: hsl(0, 0%, 0%);             /* #000 */
     --ctx-menu-text-hover: hsl(0, 0%, 0%);       /* #000000 */
     --ctx-menu-shadow: 
-        0px 32px 48px hsla(0, 0%, 0%, 0.25),
-        0px 16px 56px hsla(0, 0%, 0%, 0.20),
-        0px 20px 24px hsla(0, 0%, 0%, 0.30);
-    --PrimaryButtonsColors: hsl(45, 8%, 81%);    /* #cecdc6 */
+        0px 4px 12px hsla(0, 0%, 0%, 0.06),      /* Subtle main shadow */
+        0px 8px 24px hsla(0, 0%, 0%, 0.08),      /* Soft secondary spread */
+        0px 16px 32px hsla(0, 0%, 0%, 0.10);     /* long shadow */
+    --PrimaryButtonsColors: hsl(45, 8%, 90%);    /* #cecdc6 */
     --LightmodeToggleButtons: block;
     --DarkmodeToggleButtons: none;
     --BackgroundBlurColor: hsla(45, 43%, 96%, 0.765); /* rgba(250, 248, 240, 0.765) */

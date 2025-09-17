@@ -2,8 +2,8 @@
 
 #shortDate {
     position: fixed;
-    right: 2rem;
-    top: 70px;
+    right: 1rem;
+    top: 12px;
     /* Lot of lang support */
     font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
     font-weight: 300;
@@ -124,6 +124,7 @@
 }
 
 /* --- Animations (kept for good UX) --- */
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -271,6 +272,7 @@
 }
 
 /* --- Category Filters --- */
+
 .category-filters {
     display: flex;
     gap: 1rem;
@@ -313,6 +315,7 @@
 }
 
 /* --- Todo List --- */
+
 .todo-list {
     list-style: none;
 }

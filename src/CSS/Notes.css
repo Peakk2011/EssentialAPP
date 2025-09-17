@@ -117,6 +117,7 @@ textarea::placeholder {
     #reset-zoom span {
         filter: brightness(0.3);
         font-weight: 500;
+        color: var(--theme-accent-text);
     }
 
     .zoom-btn {
