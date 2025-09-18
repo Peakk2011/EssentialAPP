@@ -163,7 +163,6 @@
 /* --- New Minimalist Styles --- */
 .context-menu {
     position: absolute;
-    background: var(--theme-bg-secondary, #2a2a2a);
     border: 1px solid var(--theme-border, #444);
     border-radius: 6px;
     z-index: 1000;
@@ -210,15 +209,6 @@
     color: #888;
 }
 
-.add-task-wrapper input[type="date"] {
-    background: transparent;
-    border: 1px solid var(--theme-border, #3a3a3a);
-    color: var(--theme-fg);
-    border-radius: 6px;
-    padding: 0.65rem;
-    font-family: inherit;
-}
-
 #todo-list li input[type="checkbox"] {
     margin-right: 0.5rem;
     width: 18px;
@@ -236,32 +226,52 @@
 /* --- Input Area --- */
 .add-task-wrapper {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    gap: 8px;
+    position: fixed;
+    left: 102.5%;
+    height: 44px;
+    border-radius: 100vmax;
+    width: fit-content;
+    padding: 0.35rem 0.5rem;
+    background: var(--toolbar-bg);
+    outline: var(--theme-border) solid 1.5px;
+}
+
+.todolist-menu {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-65%);
+    height: 44px;
+    border-radius: 100vmax;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #todo-input {
     flex-grow: 1;
+    border: 1px solid var(--theme-border);
     padding: 0.75rem 1rem;
-    border: 1px solid var(--theme-border, #3a3a3a);
-    border-radius: 6px;
-    background-color: var(--theme-bg-secondary, #252525);
+    border-radius: 100vmax;
     color: var(--theme-fg);
     font-size: 1rem;
     outline: none;
     transition: border-color 0.2s;
+    width: 280px;
 }
 
 #todo-input:focus {
-    border-color: var(--theme-accent, #5DADE2);
+    border-color: var(--theme-accent);
 }
 
 #add-btn {
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 100vmax;
     border: none;
-    background-color: var(--theme-accent, #5DADE2);
-    color: white;
-    border-radius: 6px;
+    background-color: var(--theme-accent);
+    color: var(--theme-accent-text);
     cursor: pointer;
     font-weight: 500;
     transition: background-color 0.2s;

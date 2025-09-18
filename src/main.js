@@ -42,13 +42,6 @@ app.commandLine.appendSwitch('enable-accelerated-mjpeg-decode');
 app.commandLine.appendSwitch('enable-accelerated-video');
 app.commandLine.appendSwitch('disable-autofill');
 
-if (process.platform === 'win32') {
-  const { exec } = require('child_process');
-  exec(`wmic process where name="electron.exe" CALL setpriority "high priority"`);
-  app.commandLine.appendSwitch('high-dpi-support', '1');
-  app.commandLine.appendSwitch('force-device-scale-factor', '1');
-}
-
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
@@ -79,18 +72,17 @@ const safeLoad = async (win, filePath) => {
       return true;
     }
 
-    const fullPath = path.join(__dirname, filePath);
-    if (fs.existsSync(fullPath)) {
-      await win.loadFile(fullPath);
+    if (fs.existsSync(filePath)) {
+      await win.loadFile(path.resolve(__dirname, filePath));
       return true;
     } else {
       console.warn(`ESNTL: ${filePath} not found`);
-      await win.loadFile(path.join(__dirname, Essential_links.Error.ErrorPage));
+      await win.loadFile(path.resolve(__dirname, Essential_links.Error.ErrorPage));
       return false;
     }
   } catch (err) {
     console.error('ESNTL Error: Safeload error:', err);
-    await win.loadFile(path.join(__dirname, Essential_links.Error.ErrorPage));
+    await win.loadFile(path.resolve(__dirname, Essential_links.Error.ErrorPage));
     return false;
   }
 };
@@ -102,8 +94,7 @@ const loadFileWithCheck = async (window, filePath, context) => {
       await window.loadURL(filePath);
       return true;
     } else {
-      // local
-      const fullPath = path.join(__dirname, filePath);
+      const fullPath = path.resolve(__dirname, filePath);
       if (fs.existsSync(fullPath)) {
         await window.loadFile(fullPath);
         return true;

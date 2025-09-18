@@ -41,16 +41,16 @@ const FIRST_TIME_CONFIG = {
 };
 
 const Essential_links = {
-  home: 'index.html',
-  todolist: 'Todolist.html',
-  clock: 'Time.html',
-  Calc: 'calc.html',
-  notes: 'Notes.html',
-  paint: 'Paint.html',
-  settings: './Essential_Pages/Settings.html',
-  about: './Essential_Pages/AboutMint.html',
+  home: path.join(__dirname, '..', 'index.html'),
+  todolist: path.join(__dirname, '..', 'Todolist.html'),
+  clock: path.join(__dirname, '..', 'Time.html'),
+  Calc: path.join(__dirname, '..', 'calc.html'),
+  notes: path.join(__dirname, '..', 'Notes.html'),
+  paint: path.join(__dirname, '..', 'Paint.html'),
+  settings: path.join(__dirname, '..', 'Essential_Pages', 'Settings.html'),
+  about: path.join(__dirname, '..', 'Essential_Pages', 'AboutMint.html'),
   Error: {
-    ErrorPage: 'error.html'
+    ErrorPage: path.join(__dirname, '..', 'error.html')
   }
 };
 

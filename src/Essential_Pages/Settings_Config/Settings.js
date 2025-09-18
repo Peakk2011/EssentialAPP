@@ -168,7 +168,7 @@ if (picker) {
 
         // Special default colors for each theme
         const specialDefaults = {
-            dark: 'hsl(0, 15%, 75%)',   // --theme-accent in :root[data-theme="dark"]
+            dark: 'hsl(0, 32%, 85%)',   // --theme-accent in :root[data-theme="dark"]
             light: 'hsl(0, 15%, 80%)'   // --theme-accent in :root[data-theme="light"]
         };
 

@@ -125,11 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('todo-input');
     const addBtn = document.getElementById('add-btn');
 
-    const dueDateInput = document.createElement('input');
-    dueDateInput.type = 'date';
-    dueDateInput.id = 'due-date-input';
-    input.parentElement.insertBefore(dueDateInput, addBtn);
-
     const categoryFiltersContainer = document.createElement('div');
     categoryFiltersContainer.className = 'category-filters';
     categoryFiltersContainer.id = 'category-filters';
@@ -468,7 +463,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addBtn.addEventListener('click', () => {
         const text = input.value.trim();
-        const dueDate = dueDateInput.value;
         if (text) {
             let assignedCategory = 'Default'; // Fallback
             if (currentCategoryFilter !== 'All') {
@@ -489,7 +483,6 @@ document.addEventListener('DOMContentLoaded', () => {
             render();
             input.value = '';
             input.focus();
-            dueDateInput.value = '';
         }
     });
 

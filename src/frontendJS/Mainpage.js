@@ -858,8 +858,13 @@ function updateUIForActiveApp(activeAppId) {
         contentElement.classList.toggle('full-width', isAppActive);
     }
 
-    if(sidebarHomePage) {
+    if (sidebarHomePage) {
         sidebarHomePage.classList.toggle('while-open-anotherapp', isAppActive)
+    }
+
+    const navbar_ul = document.querySelector('nav ul');
+    if (navbar_ul) {
+        navbar_ul.classList.toggle('while-open-othersapp', isAppActive);
     }
 
     const contentTextH1 = document.querySelector('.contentTEXT h1');
@@ -1032,12 +1037,6 @@ function reloadApp(appId) {
     }
 }
 
-function duplicateApp(appId) {
-    if (window.electronAPI && appConfig[appId]) {
-        window.electronAPI.createNewWindow(appConfig[appId].src);
-    }
-}
-
 function closeOtherApps(appIdToKeep) {
     Array.from(openApps).filter(id => id !== appIdToKeep).forEach(id => closeApp(id));
 }
@@ -1053,7 +1052,18 @@ function closeAppsToTheRight(appId) {
 
 const tabActionHandlers = {
     'reload': reloadApp,
-    'duplicate': duplicateApp,
+    'duplicate': (appId) => {
+        console.log('[Tab Action] Duplicate called for:', appId);
+        if (window.electronAPI?.invoke && appConfig[appId]) {
+            const url = appConfig[appId].src;
+            console.log('[Tab Action] Opening URL:', url);
+            window.electronAPI.invoke('open-in-new-window', { url: url, title: appId })
+                .then(result => console.log('[Tab Action] Result:', result))
+                .catch(err => console.error('[Tab Action] Error:', err));
+        } else {
+            console.error('[Tab Action] Missing electronAPI or appConfig for:', appId);
+        }
+    },
     'close-others': closeOtherApps,
     'close-right': closeAppsToTheRight,
     'close': closeApp
@@ -1121,11 +1131,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.tabAPI?.onDisplayMenu) {
         window.tabAPI.onDisplayMenu(({ menuHTML, cssContent, menuId }) => {
-            // Remove any other custom menus to prevent overlap
+
             document.querySelectorAll('.context-menu, .custom-context-menu').forEach(m => {
                 if (m.id !== menuId) m.remove();
             });
-            // Inject CSS
+
             if (!document.getElementById('contextMenuStyles')) {
                 const style = document.createElement('style');
                 style.id = 'contextMenuStyles';
@@ -1138,16 +1148,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const menu = document.getElementById(menuId);
             if (!menu) return;
 
-            // Show with animation
             requestAnimationFrame(() => menu.classList.add('show'));
 
-            // Add click listeners to items
             menu.querySelectorAll('.menu-item').forEach(item => {
                 item.addEventListener('mousedown', function (e) {
                     const action = this.getAttribute('data-action');
+                    const href = this.getAttribute('data-href');
+                    const title = this.getAttribute('data-title');
                     const appId = this.getAttribute('data-appid');
-                    if (action && appId && tabActionHandlers[action]) {
-                        tabActionHandlers[action](appId);
+                    if (action && appId) {
+                        if (action === 'open-in-new-window' && href && title) {
+                            window.electronAPI.invoke('open-in-new-window', { url: href, title: title });
+                        } else if (tabActionHandlers[action]) {
+                            tabActionHandlers[action](appId);
+                        }
                     }
                     menu.remove();
                 });
@@ -1160,6 +1174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.removeEventListener('click', closeMenu, { capture: true });
                 }
             };
+
             document.addEventListener('click', closeMenu, { capture: true });
         });
     }
@@ -1192,16 +1207,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('message', (event) => {
-        if (event.data.action === 'forwardKeydown') {
-            const fakeEvent = new KeyboardEvent('keydown', {
-                key: event.data.key,
-                code: event.data.code,
-                ctrlKey: event.data.ctrlKey,
-                metaKey: event.data.metaKey,
-                shiftKey: event.data.shiftKey,
-                bubbles: true
-            });
-            document.dispatchEvent(fakeEvent);
+        if (event.data.type === 'tab-action') {
+            const { action, appId } = event.data;
+            console.log('[Message] Tab action received:', action, appId);
+            if (tabActionHandlers[action]) {
+                tabActionHandlers[action](appId);
+            } else {
+                console.error('[Message] Unknown action:', action);
+            }
         }
     });
 });

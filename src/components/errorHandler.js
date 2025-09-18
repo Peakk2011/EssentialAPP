@@ -15,7 +15,7 @@ const handleError = async (win, error, context = '') => {
       });
       // Check files before loading
       if (context !== 'error-page-load' && essentialLinks) {
-        const errorPath = path.join(__dirname, '..', essentialLinks.Error.ErrorPage);
+        const errorPath = path.resolve(__dirname, '..', essentialLinks.Error.ErrorPage || 'error.html');
         if (fs.existsSync(errorPath)) {
           await win.loadFile(errorPath);
         } else {

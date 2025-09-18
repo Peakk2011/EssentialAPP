@@ -41,6 +41,10 @@ nav ul {
     z-index: 1000;
 }
 
+nav ul.while-open-othersapp {
+    border-bottom: solid 1px transparent;
+}
+
 nav ul li {
     position: relative;
     z-index: 1001;
@@ -115,9 +119,9 @@ nav ul li a:hover {
 }
 
 #GotoHomePage.while-open-anotherapp {
-    border-bottom: var(--TitlebarColorBorder);
+    border-bottom: solid 1px transparent;
     border-right: solid 1px transparent;
-    
+    background-color: var(--theme-bg);
 }
 
 #GotoHomePage a:hover {
@@ -185,6 +189,7 @@ nav ul li a:hover {
 #MainLINKS .app-tab.active a {
     background-color: var(--SoftHoverColor);
     color: var(--theme-fg);
+    border-bottom: var(--TitlebarColorBorder);
 }
 
 .create-new-btn {
@@ -300,10 +305,6 @@ nav ul li a:hover {
     #GotoHomePage {
         border: none;
         background-color: var(--TitlebarColor);
-    }
-
-    #GotoHomePage.while-open-anotherapp {
-        border-bottom: 0px solid transparent;
     }
 }
 

@@ -6,6 +6,24 @@
  * Codename: basic-requirement-app
  */
 
+/*
+ * Copyright © 2025 Mint teams
+ * This file is part of EssentialAPP.
+ *
+ * EssentialAPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * EssentialAPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with EssentialAPP. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 export const pipe = (...fns) => (x) => fns.reduce((v, f) => f(v), x);
 export const compose = (...fns) => (x) => fns.reduceRight((v, f) => f(v), x);
 
@@ -71,15 +89,15 @@ function createDomNode(vNode) {
     if (typeof vNode === 'string' || typeof vNode === 'number') {
         return document.createTextNode(String(vNode));
     }
-    
+
     const $el = document.createElement(vNode.tag);
     updateProps($el, {}, vNode.props);
-    
+
     vNode.children.forEach(child => {
         const childNode = createDomNode(child);
         if (childNode) $el.appendChild(childNode);
     });
-    
+
     return $el;
 }
 
@@ -89,20 +107,20 @@ function diff($parent, newVNode, oldVNode, index = 0) {
     } else if (!newVNode) {
         const child = $parent.childNodes[index];
         if (child) $parent.removeChild(child);
-    } else if (!isSameType(newVNode, oldVNode) || 
-               (typeof newVNode === 'string' && newVNode !== oldVNode)) {
+    } else if (!isSameType(newVNode, oldVNode) ||
+        (typeof newVNode === 'string' && newVNode !== oldVNode)) {
         const newNode = createDomNode(newVNode);
         const oldNode = $parent.childNodes[index];
         if (oldNode) $parent.replaceChild(newNode, oldNode);
     } else if (typeof newVNode === 'object') {
         const currentNode = $parent.childNodes[index];
         updateProps(currentNode, oldVNode.props, newVNode.props);
-        
+
         const maxLen = Math.max(
             newVNode.children?.length || 0,
             oldVNode.children?.length || 0
         );
-        
+
         for (let i = 0; i < maxLen; i++) {
             diff(currentNode, newVNode.children?.[i], oldVNode.children?.[i], i);
         }
@@ -119,11 +137,11 @@ export function createState(initialValue) {
     const notify = () => {
         if (isRendering) return;
         isRendering = true;
-        
+
         requestAnimationFrame(() => {
             try {
                 subscribers.forEach(fn => fn(state));
-                
+
                 if (mountPoint && state?.vdom) {
                     diff(mountPoint, state.vdom, prevVNode);
                     prevVNode = fastClone(state.vdom);
@@ -136,7 +154,7 @@ export function createState(initialValue) {
 
     return {
         get: () => state,
-        
+
         set: (newState) => {
             const nextState = typeof newState === 'function' ? newState(state) : newState;
             if (nextState !== state) {
@@ -144,7 +162,7 @@ export function createState(initialValue) {
                 notify();
             }
         },
-        
+
         subscribe: (fn, mount) => {
             if (typeof fn === 'function') {
                 subscribers.push(fn);
@@ -153,7 +171,7 @@ export function createState(initialValue) {
                     if (idx > -1) subscribers.splice(idx, 1);
                 };
             }
-            
+
             if (mount instanceof HTMLElement) {
                 mountPoint = mount;
                 if (state?.vdom) {
@@ -163,7 +181,7 @@ export function createState(initialValue) {
                 }
             }
         },
-        
+
         createElement
     };
 }
@@ -177,29 +195,29 @@ export function injectCSS(css, options = {}) {
 
     const style = document.createElement('style');
     style.textContent = css;
-    
+
     if (options.nonce) style.nonce = options.nonce;
     if (options.media) style.media = options.media;
-    
+
     document.head.appendChild(style);
     cssCache.add(hash);
-    
+
     style.removeCSS = () => {
         if (style.parentNode) style.parentNode.removeChild(style);
         cssCache.delete(hash);
     };
-    
+
     return style;
 }
 
 export function injectHTML(selector, html, options = {}) {
     const target = document.querySelector(selector);
     if (!target) throw new Error(`No element found: ${selector}`);
-    
+
     if (options.sanitize !== false) {
         html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
     }
-    
+
     const mode = options.mode || 'replace';
     if (mode === 'replace') {
         target.innerHTML = html;
@@ -208,7 +226,7 @@ export function injectHTML(selector, html, options = {}) {
     } else if (mode === 'prepend') {
         target.insertAdjacentHTML('afterbegin', html);
     }
-    
+
     return target;
 }
 
@@ -224,10 +242,10 @@ export function injectTitle(title) {
 export async function get(url, targetSelector) {
     const isCSS = url.toLowerCase().endsWith('.css');
     const isHTML = /\.(html?|htm)$/i.test(url);
-    
+
     if (isCSS) {
         if (document.querySelector(`link[href="${url}"]`)) return;
-        
+
         return new Promise((resolve, reject) => {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
@@ -237,19 +255,19 @@ export async function get(url, targetSelector) {
             document.head.appendChild(link);
         });
     }
-    
+
     if (isHTML) {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
+
         const html = await response.text();
         const target = document.querySelector(targetSelector || 'body');
         if (!target) throw new Error(`No element found: ${targetSelector}`);
-        
+
         target.insertAdjacentHTML('beforeend', html);
         return target;
     }
-    
+
     throw new Error('Only .css and .html files supported');
 }
 
@@ -260,14 +278,14 @@ export async function processIncludes(context = document) {
         context.body || context,
         NodeFilter.SHOW_TEXT
     );
-    
+
     const promises = [];
     let node;
-    
+
     while ((node = walker.nextNode())) {
         const text = node.nodeValue;
         const matches = text.match(/@include\(['"]([^'"]+)['"]\)/g);
-        
+
         if (matches) {
             matches.forEach(match => {
                 const file = match.match(/@include\(['"]([^'"]+)['"]\)/)[1];
@@ -281,7 +299,7 @@ export async function processIncludes(context = document) {
             });
         }
     }
-    
+
     await Promise.all(promises);
 }
 
@@ -290,12 +308,12 @@ export const AdjustHook = (options = {}) => {
         interval: options.interval || 1000,
         endpoint: options.endpoint || "/reload",
         onReload: options.onReload || (() => location.reload()),
-        onError: options.onError || (() => {}),
+        onError: options.onError || (() => { }),
         enabled: options.enabled !== false
     };
 
     if (!config.enabled) {
-        return { stop: () => {}, getStats: () => ({}), getMetrics: () => ({}) };
+        return { stop: () => { }, getStats: () => ({}), getMetrics: () => ({}) };
     }
 
     let intervalId;
@@ -310,7 +328,7 @@ export const AdjustHook = (options = {}) => {
                 cache: 'no-cache',
                 signal: AbortSignal.timeout(3000)
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 if (data?.reload) config.onReload();
@@ -330,15 +348,15 @@ export const AdjustHook = (options = {}) => {
                 intervalId = null;
             }
         },
-        
+
         getStats: () => ({
             requests,
             errors,
             uptime: Date.now() - startTime,
             successRate: requests > 0 ? ((requests - errors) / requests * 100) : 100
         }),
-        
-        getMetrics: function() { return this.getStats(); }
+
+        getMetrics: function () { return this.getStats(); }
     };
 };
 
@@ -359,14 +377,14 @@ import PerformanceMonitor from './performanceMonitor.js';
 export const ReloadPerformanceTracker = {
     enabled: false,
     history: [],
-    
+
     recordReload(duration) {
         if (this.enabled) {
             this.history.push({ duration, timestamp: Date.now() });
             if (this.history.length > 10) this.history.shift();
         }
     },
-    
+
     getStats() {
         if (!this.history.length) return null;
         const durations = this.history.map(h => h.duration);
@@ -377,7 +395,7 @@ export const ReloadPerformanceTracker = {
             maxTime: Math.max(...durations)
         };
     },
-    
+
     enable() { this.enabled = true; },
     disable() { this.enabled = false; }
 };

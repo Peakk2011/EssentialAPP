@@ -5,7 +5,7 @@ export const themeColorSets = {
     dark: [
         '#F6EACC', '#D1BBA7', '#CDBBA7', '#D7B996', '#d2a47d',
         '#c1e3b9', '#aeccab', '#bbdac1', '#b7d7b3', '#cadcbc',
-        '#A6C5DA', '#9BB8CD', '#90ABC0', '#859EB3', '#7A91A7',
+        '#A6C5DA', '#9BB8CD', '#90ABC0', '#859EB3', '#72879c',
         '#FFC0C0', '#FFA0A0', '#F68484', '#EB6F6F', '#E05A5A',
         '#feeaeb', '#FFD6D6', '#f0c8c8', '#d4b6b6', '#fcceca',
     ],
@@ -14,7 +14,7 @@ export const themeColorSets = {
         '#5F9C6F', '#4C7F5F', '#5A8F6F', '#578C5F', '#6A8F6A',
         '#5A7A8C', '#4F6D7F', '#446072', '#3A5365', '#2F4658',
         '#B24F4F', '#A03F3F', '#8F2F2F', '#7F1F1F', '#6F0F0F',
-        '#B29A9A', '#A08080', '#8F7070', '#7F6060', '#9F7878'
+        '#B29A9A', '#A08080', '#8F7070', '#7F6060', '#9F7878',
     ]
 };
 
@@ -26,8 +26,40 @@ function getBrightness(hex) {
     return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
+function hexToHsl(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return null;
+
+    let r = parseInt(result[1], 16) / 255;
+    let g = parseInt(result[2], 16) / 255;
+    let b = parseInt(result[3], 16) / 255;
+
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+        h = s = 0; // achromatic
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    return { h: h * 360, s: s * 100, l: l * 100 };
+}
+
 function getAccentTextColor(bgColor) {
-    return getBrightness(bgColor) > 180 ? '#000' : '#fff';
+    if (bgColor.startsWith('hsl')) {
+        const lightness = parseFloat(bgColor.match(/(\d+(\.\d+)?)%\)/)[1]);
+        return lightness < 60 ? '#fff' : '#000';
+    }
+    const hsl = hexToHsl(bgColor);
+    return hsl && hsl.l < 60 ? '#fff' : '#000';
 }
 
 function updateAccentTextColor(accentColor) {

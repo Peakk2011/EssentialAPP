@@ -3,9 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>404 - You're Lost Bruh</title>
+    <title>Error</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/defaultComp.css">
+    <title>EssentialAPP Error</title>
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script>
@@ -45,9 +46,10 @@
             box-shadow: 0px 12px 17px rgba(0, 0, 0, 0.15),
                 0px 2px 20px rgba(0, 0, 0, 0.07);
             border: solid 1px #313131;
-            max-width: 400px;
+            max-width: 350px;
             animation: floatUp 0.2s ease-out;
             -webkit-app-region: no-drag;
+            width: 350px;
         }
 
         @keyframes floatUp {
@@ -78,14 +80,13 @@
         }
 
         .roast {
-            padding: 1.2rem;
             border-radius: 12px;
             font-size: 1rem;
-            color: #f8e8e8;
+            color: #eee;
             margin-bottom: 1.5rem;
-            border: 1px solid #FF6D6D;
             text-wrap: balance;
             height: 130px;
+            font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
         }
 
         .roast p {
@@ -124,7 +125,6 @@
             transform: translateX(-50%);
             width: 100%;
             height: 40px;
-            border-bottom: solid 1px #3f3f3f;
             top: 0;
             -webkit-app-region: drag;
         }
@@ -132,7 +132,9 @@
         #CenterTitlebar h2 {
             line-height: 40px;
             margin-left: 1rem;
-            font-size: 16px;
+            font-size: 14px;
+            letter-spacing: -0.2px;
+            font-weight: 500;
         }
 
         [data-os="darwin"] #CenterTitlebar h2 {
@@ -168,6 +170,26 @@
         .Text a:hover {
             background-color: #313131;
         }
+
+        @media (max-width: 400px) {
+            .card {
+                background-color: transparent;
+                border: none;
+                box-shadow: none;
+            }
+
+            .roast {
+                height: 100px;
+            }
+
+            button {
+                transform: translateX(-7px);
+            }
+
+            .Text {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -178,23 +200,16 @@
                     width="24px" fill="#e3e3e3">
                     <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
                 </svg></a>
-            <h2>Path is undefined</h2>
+            <h2>EssentialAPP Error</h2>
             <h2></h2>
         </div>
     </div>
-    <div class="card">
-        <h1>Path is undefined</h1>
-        <p>
-            If you see this page, you are not ordinary.
-        </p>
+    <div class="card electron-only">
+        <h1>EssentialAPP Error</h1>
         <div class="roast">
-            <em
-                style="font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif !important;">Click
-                top left button to go a correct page or click button below</em>
-            <p>To reopen this app run: <span
-                    style="font-family: 'JetBrains Mono', monospace; padding: 0.2rem 0.3rem; color: #FF6D6D;border-radius: 6px; border: solid 1px #FF6D6D; font-size: 14px;">npm
-                    start</span>
-            </p>
+            Some features in EssentialAPP are currently not working.<br>
+            Please try again after the next update.<br>
+            The developer is working hard to fix these issues.<br>
         </div>
         <button onclick="goHome()">Retrun to home page</button>
     </div>
@@ -203,11 +218,7 @@
         function goHome() {
             window.location.href = "index.html";
         }
-        setTimeout(() => {
-            document.title = "Noclip player...";
-        }, 1500);
     </script>
-    <script src="../node_modules/nprogress/nprogress.js"></script>
 </body>
 
 </html>

@@ -9,7 +9,6 @@ let wasmExports = null;
 
 async function loadWasm() {
     try {
-        // สมมติ calculator.wasm อยู่ที่เดียวกับ calc.html
         const response = await fetch('calculator.wasm');
         const buffer = await response.arrayBuffer();
         const { instance } = await WebAssembly.instantiate(buffer);

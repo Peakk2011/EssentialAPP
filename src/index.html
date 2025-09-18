@@ -36,6 +36,18 @@
         </ul>
     </nav>
 
+    <div id="app-popover" style="display: none;">
+        <h4>Open a new app</h4>
+        <div class="app-grid-popover">
+            <a href="javascript:void(0)" onclick="showApp('Todolist', event)">Todolist</a>
+            <a href="javascript:void(0)" onclick="showApp('Clock', event)">Clock</a>
+            <a href="javascript:void(0)" onclick="showApp('Calculator', event)">Calculator</a>
+            <a href="javascript:void(0)" onclick="showApp('Note', event)">Notes</a>
+            <a href="javascript:void(0)" onclick="showApp('Paint', event)">Paint</a>
+            <a href="javascript:void(0)" onclick="showHome()">Home Screen</a>
+        </div>
+    </div>
+
     <div class="menu">
         <div class="menuText">
             <svg class="lazy-load" width="553" height="72" viewBox="0 0 553 72" fill="none"
@@ -330,18 +342,6 @@
                 </div>
             </div>
 
-        </div>
-
-        <div id="app-popover" style="display: none;">
-            <h4>Open a new app</h4>
-            <div class="app-grid-popover">
-                <a href="javascript:void(0)" onclick="showApp('Todolist', event)">Todolist</a>
-                <a href="javascript:void(0)" onclick="showApp('Clock', event)">Clock</a>
-                <a href="javascript:void(0)" onclick="showApp('Calculator', event)">Calculator</a>
-                <a href="javascript:void(0)" onclick="showApp('Note', event)">Notes</a>
-                <a href="javascript:void(0)" onclick="showApp('Paint', event)">Paint</a>
-                <a href="javascript:void(0)" onclick="showHome()">Home Screen</a>
-            </div>
         </div>
 
     </div>
