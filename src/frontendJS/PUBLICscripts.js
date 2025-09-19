@@ -64,6 +64,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return
   }
 
+  if (window.electronAPI && typeof window.electronAPI.onFullscreenChange === 'function') {
+
+    window.electronAPI.onFullscreenChange((isFullscreen) => {
+      console.log('Renderer received fullscreen state:', isFullscreen);
+      document.body.classList.toggle('fullscreen-active', isFullscreen);
+    });
+
+  }
+
   const menu = document.querySelector('.menu');
   const content = document.querySelector('.content');
   if (menu && content) {

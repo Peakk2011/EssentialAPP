@@ -64,6 +64,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
         clearAppCache: () => ipcRenderer.invoke('debug:clear-app-cache'),
         relaunchApp: () => ipcRenderer.invoke('debug:relaunch-app'),
         getMemoryInfo: () => ipcRenderer.invoke('debug:get-memory-info')
+    },
+    onFullscreenChange: (callback) => {
+        ipcRenderer.on('fullscreen-changed', (event, isFullscreen) => callback(isFullscreen));
     }
 });
 

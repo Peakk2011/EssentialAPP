@@ -177,18 +177,25 @@ const createMainWindow = async (systemInfo) => {
       // To execute the lazy load image <img data-src="path/to/your/image.png">
     });
 
-    mainWindow.on('enter-full-screen', () => {
-      originalBounds = mainWindow.getBounds();
-    });
+    if (process.platform === 'darwin') {
+      mainWindow.on('enter-full-screen', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('fullscreen-changed', true);
+        }
+      });
 
-    mainWindow.on('leave-full-screen', () => {
-      if (originalBounds) {
-        setTimeout(() => {
-          mainWindow.setBounds(originalBounds);
-          originalBounds = null;
-        }, 100);
-      }
-    });
+      mainWindow.on('leave-full-screen', () => {
+        if (originalBounds) {
+          setTimeout(() => {
+            mainWindow.setBounds(originalBounds);
+            originalBounds = null;
+          }, 100);
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('fullscreen-changed', false);
+        }
+      });
+    }
 
     mainWindow.webContents.on('did-fail-load', async (event, errorCode) => {
       await handleError(mainWindow, new Error(`Navigation failed`), 'page-load');
@@ -216,11 +223,8 @@ const createMainWindow = async (systemInfo) => {
       }
     });
 
-    console.log("Electron version:", process.versions.electron);
-    console.log("Chrome (Chromium) version:", process.versions.chrome);
-    console.log("Node.js version:", process.versions.node);
-    console.log("V8 version:", process.versions.v8);
-
+    // console.log("Electron version:", process.versions.electron);
+    
     mainWindow.on('closed', () => {
       mainWindow = null;
     });

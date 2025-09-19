@@ -317,17 +317,30 @@ nav ul li a:hover {
     width: 48px;
 }
 
+[data-os="darwin"] #GotoHomePage.while-open-anotherapp {
+    border-bottom: solid 1px transparent;
+    border-left: solid 1px transparent;
+}
+
+[data-os="darwin"] body:fullscreen #GotoHomePage,
+[data-os="darwin"] body.fullscreen-active #GotoHomePage {
+    margin-left: 0 !important;
+    border-left: solid 1px transparent;
+    border-right: solid 1px transparent;
+}
+
 [data-os="darwin"] #KeepONtop {
     right: 0;
+    border-right: solid 1px transparent;
+    border-left: solid 1px transparent;
 }
 
 [data-os="darwin"] #MainLINKS li a {
     height: 38px;
-    border-bottom: var(--TitlebarColorBorder);
 }
 
 [data-os="darwin"] .create-new-btn svg {
-    transform: translateY(1.5px) scale(90%);
+    transform: translateY(1px) scale(90%);
 }
 
 /* .os-mac {}

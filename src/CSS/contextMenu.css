@@ -80,6 +80,10 @@
   color: var(--theme-accent-text);
 }
 
+.menu-item:hover.menu-item .material-symbols-outlined {
+  color: var(--theme-accent-text);
+}
+
 .menu-item .material-symbols-outlined {
   margin-right: var(--ctx-menu-padding);
   font-size: var(--ctx-menu-icon-size);

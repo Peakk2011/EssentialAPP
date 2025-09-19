@@ -674,10 +674,6 @@ html {
     --window-controls: none;
 }
 
-[data-runtime="electron"][data-os="darwin"] nav {
-    padding-left: var(--window-controls-width);
-}
-
 [data-runtime="electron"][data-os="darwin"] nav ul {
     height: 38px;
 }
