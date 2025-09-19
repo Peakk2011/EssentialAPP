@@ -48,6 +48,7 @@ body {
     line-height: 40px;
     font-size: 14px;
     font-weight: 450;
+    font-family: var(--font-text), sans-serif;
 }
 
 /* [data-os="darwin"] #CenterTitlebar h2 {

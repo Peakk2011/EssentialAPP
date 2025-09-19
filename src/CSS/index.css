@@ -564,14 +564,21 @@ html {
     color: var(--theme-links);
     background-color: var(--theme-bg);
     border-bottom: var(--TitlebarColorBorder);
-    padding: 0.5rem 0rem;
-    margin-bottom: 0.25rem;
+    padding: 0.65rem 0rem;
     transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    font-weight: 550;
+    letter-spacing: -0.4px;
+}
+
+.app-grid-popover:hover a {
+    opacity: 0.6;
+    filter: blur(1px);
 }
 
 .app-grid-popover a:hover {
     border-bottom: solid 1px var(--theme-accent);
-    color: var(--theme-accent);
+    opacity: 1;
+    filter: blur(0px);
     transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
@@ -626,7 +633,7 @@ html {
 }
 
 .app-grid a:hover {
-    filter: brightness(1.5);
+    background-color: var(--HoverColor);
 }
 
 .app-grid a svg {

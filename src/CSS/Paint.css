@@ -94,6 +94,7 @@ select {
 
 select:hover {
     background-color: var(--PrimaryButtonsColors);
+    cursor: pointer;
 }
 
 .color-picker {

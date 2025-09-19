@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         lapButton.addEventListener('click', () => {
-            if (isRunning) {
+            if (isRunning && exports.stopwatch_get_lap_count() < 5) {
                 exports.stopwatch_lap();
                 renderLaps();
             }

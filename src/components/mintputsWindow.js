@@ -48,7 +48,8 @@ class MintputsWindowManager {
                 win.on('closed', () => this.openedWindows.delete(win));
 
                 win.show();
-                await this.safeLoad(win, url);
+                const fullPath = path.join(__dirname, '..', url);
+                await this.safeLoad(win, fullPath);
 
                 return { success: true, windowId: win.id };
             } catch (err) {

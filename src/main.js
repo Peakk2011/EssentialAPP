@@ -72,8 +72,14 @@ const safeLoad = async (win, filePath) => {
       return true;
     }
 
-    if (fs.existsSync(filePath)) {
-      await win.loadFile(path.resolve(__dirname, filePath));
+    if (path.isAbsolute(filePath) && fs.existsSync(filePath)) {
+      await win.loadFile(filePath);
+      return true;
+    }
+
+    const resolvedPath = path.resolve(__dirname, filePath);
+    if (fs.existsSync(resolvedPath)) {
+      await win.loadFile(resolvedPath);
       return true;
     } else {
       console.warn(`ESNTL: ${filePath} not found`);
@@ -210,6 +216,11 @@ const createMainWindow = async (systemInfo) => {
       }
     });
 
+    console.log("Electron version:", process.versions.electron);
+    console.log("Chrome (Chromium) version:", process.versions.chrome);
+    console.log("Node.js version:", process.versions.node);
+    console.log("V8 version:", process.versions.v8);
+
     mainWindow.on('closed', () => {
       mainWindow = null;
     });
@@ -222,35 +233,35 @@ const createMainWindow = async (systemInfo) => {
 
 // Main application
 (async () => {
-    app.on('ready', () => {
-        globalShortcut.register('Control+Shift+I', () => {
-            const focusedWin = getFocusedWindow();
-            if (focusedWin) focusedWin.webContents.toggleDevTools();
-        });
+  app.on('ready', () => {
+    globalShortcut.register('Control+Shift+I', () => {
+      const focusedWin = getFocusedWindow();
+      if (focusedWin) focusedWin.webContents.toggleDevTools();
     });
+  });
 
-    const mainFunctions = {
-        createMainWindow,
-        createWindowWithPromise,
-        safeLoad,
-        loadFileWithCheck,
-        handleError,
-        getFocusedWindow,
-        getMainWindow: () => mainWindow,
-    };
+  const mainFunctions = {
+    createMainWindow,
+    createWindowWithPromise,
+    safeLoad,
+    loadFileWithCheck,
+    handleError,
+    getFocusedWindow,
+    getMainWindow: () => mainWindow,
+  };
 
-    const appManager = new AppManager(createMainWindow);
-    appManager.initialize();
+  const appManager = new AppManager(createMainWindow);
+  appManager.initialize();
 
-    const eventManager = new EventManager({ handleError, getFocusedWindow });
-    eventManager.initialize();
+  const eventManager = new EventManager({ handleError, getFocusedWindow });
+  eventManager.initialize();
 
-    const startupManager = new StartupManager(config, { ...mainFunctions, createMainWindow: () => createMainWindow(systemInfo) });
-    await startupManager.run();
+  const startupManager = new StartupManager(config, { ...mainFunctions, createMainWindow: () => createMainWindow(systemInfo) });
+  await startupManager.run();
 
-    const menuManager = new MenuManager(config);
-    menuManager.initialize();
+  const menuManager = new MenuManager(config);
+  menuManager.initialize();
 
-    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setTitle("EssentialAPP");
-    process.title = "EssentialAPP";
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setTitle("EssentialAPP");
+  process.title = "EssentialAPP";
 })();

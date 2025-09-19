@@ -1,5 +1,6 @@
 const { ipcMain, BrowserWindow, shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const ContextMenu = require('./ContextMenu');
 
 class ContextMenuEvents {
@@ -245,8 +246,6 @@ class ContextMenuEvents {
 
         ipcMain.handle('open-in-new-window', async (event, data) => {
             try {
-                console.log('ESNTL: Open in new window requested with data:', data);
-
                 const { url, title: customTitle } = (typeof data === 'object' && data !== null)
                     ? data
                     : { url: data, title: null };
@@ -256,14 +255,69 @@ class ContextMenuEvents {
                     return { success: false, error: 'Invalid URL' };
                 }
 
-                const finalUrl = url;
-                console.log('ESNTL: Final URL:', finalUrl);
+                let finalUrl;
+
+                // Path
+                if (url === 'calculator.html' || url.includes('calculator.html')) {
+                    finalUrl = path.resolve(__dirname, '..', 'calc.html');
+                } else if (url === 'Time.html' || url.includes('Time.html')) {
+                    finalUrl = path.resolve(__dirname, '..', 'Time.html');
+                } else if (url === 'Notes.html' || url.includes('Notes.html')) {
+                    finalUrl = path.resolve(__dirname, '..', 'Notes.html');
+                } else if (url === 'Paint.html' || url.includes('Paint.html')) {
+                    finalUrl = path.resolve(__dirname, '..', 'Paint.html');
+                } else if (url === 'todolist.html' || url.includes('todolist.html')) {
+                    finalUrl = path.resolve(__dirname, '..', 'todolist.html');
+                } else if (url === 'Todolist.html' || url.includes('Todolist.html')) {
+                    finalUrl = path.resolve(__dirname, '..', 'todolist.html');
+                } else if (url === 'calc.html' || url.includes('calc.html')) {
+                    finalUrl = path.resolve(__dirname, '..', 'calc.html');
+                }
+
+                // Path that is malformed
+                else if (url.includes('EssentialAPPsrc') && !url.includes('\\') && !url.includes('/')) {
+                    // Extract filename from malformed path
+                    const match = url.match(/src([A-Z][a-z]+\.html)$/);
+                    if (match) {
+                        const filename = match[1];
+                        if (filename === 'Todolist.html') {
+                            finalUrl = path.resolve(__dirname, '..', 'todolist.html');
+                        } else if (filename === 'Calculator.html') {
+                            finalUrl = path.resolve(__dirname, '..', 'calc.html');
+                        } else if (filename === 'Notes.html') {
+                            finalUrl = path.resolve(__dirname, '..', 'Notes.html');
+                        } else {
+                            finalUrl = path.resolve(__dirname, '..', filename);
+                        }
+                        // console.log('ESNTL: Fixed malformed path, extracted:', filename, 'resolved to:', finalUrl);
+                    }
+                }
+
+                else if (url.startsWith('http://') || url.startsWith('https://')) {
+                    finalUrl = url;
+                }
+
+                else if (path.isAbsolute(url) && fs.existsSync(url)) {
+                    finalUrl = url;
+                }
+
+                else {
+                    finalUrl = path.resolve(__dirname, '..', url);
+                }
+
+                // console.log('ESNTL: Final URL:', finalUrl);
+
+                // Check with files existes
+                if (!finalUrl.startsWith('http') && !fs.existsSync(finalUrl)) {
+                    console.error('ESNTL: File not found:', finalUrl);
+                    return { success: false, error: 'File not found: ' + finalUrl };
+                }
 
                 for (const win of BrowserWindow.getAllWindows()) {
                     if (!win.isDestroyed()) {
                         const currentUrl = win.webContents.getURL();
-                        if (currentUrl === finalUrl || currentUrl.endsWith(url)) {
-                            console.log('ESNTL: Found existing window, focusing...');
+                        if (currentUrl.includes(path.basename(finalUrl))) {
+                            // console.log('ESNTL: Found existing window');
                             if (win.isMinimized()) win.restore();
                             win.focus();
                             return { success: true, action: 'focused' };
@@ -271,14 +325,13 @@ class ContextMenuEvents {
                     }
                 }
 
-                // title as variables = or customTitle than... else are fallback
                 const title = customTitle || (
-                    path.basename(url, path.extname(url))
+                    path.basename(finalUrl, path.extname(finalUrl))
                         .charAt(0).toUpperCase() +
-                    path.basename(url, path.extname(url)).slice(1)
+                    path.basename(finalUrl, path.extname(finalUrl)).slice(1)
                 );
 
-                console.log('ESNTL: Creating new window with title:', title);
+                // console.log('ESNTL: Creating new window with title:', title);
 
                 const newWindow = await this.createWindowWithPromise({
                     width: 350,
@@ -289,7 +342,6 @@ class ContextMenuEvents {
                     icon: this.getThemeIcon(),
                     webPreferences: {
                         ...this.BASE_WEB_PREFERENCES,
-                        // Check preload
                         preload: path.join(__dirname, 'preload.js')
                     }
                 });
@@ -297,10 +349,12 @@ class ContextMenuEvents {
                 const loadSuccess = await this.safeLoad(newWindow, finalUrl);
                 if (!loadSuccess) {
                     console.error(`ESNTL: Failed to load URL in new window: ${finalUrl}`);
+                    newWindow.close();
+                    return { success: false, error: 'Failed to load file' };
                 }
-                newWindow.show();
 
-                console.log('ESNTL: New window created successfully');
+                newWindow.show();
+                // console.log('ESNTL: New window created successfully');
                 return { success: true, action: 'created' };
 
             } catch (err) {

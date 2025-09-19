@@ -46,15 +46,14 @@ class ContextMenu {
     let appUrl;
     const lowerCaseAppId = appId.toLowerCase();
 
-    // Find the link, ignoring case for robustness.
     for (const key in this.links) {
-      if (key.toLowerCase() === lowerCaseAppId) {
+      if (key.toLowerCase().startsWith(lowerCaseAppId)) {
         appUrl = this.links[key];
         break;
       }
     }
 
-    // If not found in links, create a simple relative path. The main process will resolve it.
+    // If file not found
     if (!appUrl) {
       appUrl = `${lowerCaseAppId}.html`;
     }

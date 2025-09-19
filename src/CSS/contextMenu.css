@@ -74,8 +74,10 @@
 }
 
 .menu-item:hover {
-  color: var(--ctx-menu-text-hover);
-  background: var(--ctx-menu-hover);
+  /* color: var(--ctx-menu-text-hover);
+  background: var(--ctx-menu-hover); */
+  background-color: var(--ColorHighlight);
+  color: var(--theme-accent-text);
 }
 
 .menu-item .material-symbols-outlined {
@@ -99,6 +101,7 @@
   letter-spacing: 0.3px;
   position: relative;
   z-index: 1;
+  font-weight: 450;
 }
 
 .menu-item::after {
@@ -150,7 +153,6 @@
 [data-lang="th-TH"] .menu-label {
   font-family: 'IBM Plex Sans Thai', sans-serif;
   font-size: 13.5px;
-  font-weight: 400;
   letter-spacing: 0;
   /* Trim font to center */
   margin-top: 0;
@@ -162,13 +164,11 @@
 
 [data-lang="en-US"] .menu-label {
   font-family: 'Inter Tight', sans-serif;
-  font-weight: 300;
   letter-spacing: 0.3px;
 }
 
 [data-lang="hi-IN"] .menu-label {
   font-family: 'Hind', sans-serif;
-  font-weight: 300;
   letter-spacing: 0.3px;
   /* Trim font to center */
   margin-top: 0;
@@ -180,6 +180,5 @@
 
 [data-lang="zh-CN"] .menu-label {
   font-family: 'Noto Sans SC', sans-serif;
-  font-weight: 300;
   letter-spacing: 0.3px;
 }

@@ -147,12 +147,12 @@
 
 /* Light Theme */
 :root[data-theme="light"], html.light, body.light {
-    --theme-bg: hsl(45, 40%, 96.5%);             /* #faf8f3 */
+    --theme-bg: hsl(50, 40%, 96.5%);             
     --theme-fg: hsl(0, 0%, 6%);                  /* #0f0f0f */
     --theme-primary: hsl(0, 0%, 100%);           /* #ffffff */
     --theme-card: hsl(0, 0%, 99%);               /* #fcfcfc */
     --theme-titlebar: hsl(0, 0%, 94%);           /* #f0f0f0 */
-    --theme-border: hsl(40, 15%, 88.5%);           /* #ddd3c9 */
+    --theme-border: hsl(40, 15%, 82.5%);           
     --HoverColor: hsl(40, 10%, 85%);             
     --SoftHoverColor: hsl(40, 15%, 91.25%);         
     --theme-links: hsl(0, 0%, 13%);              /* #222 */
@@ -160,7 +160,7 @@
     --theme-accent: hsl(0, 15%, 80%);
     --HRborder: solid 1px hsl(0, 0%, 90%);       /* #e6e6e6 */
     --RippleEffectColor: hsla(0, 0%, 0%, 0.27);  /* rgba(0, 0, 0, 0.27) */
-    --TitlebarColor: hsl(30, 20%, 96.5%);          /* #f3f2f0 */
+    --TitlebarColor: hsl(50, 40%, 96.5%);          /* #f3f2f0 */
     --TitlebarColorButton: hsl(0, 0%, 19%);      /* #303030 */
     --TitlebarColorBorder: var(--theme-border) solid 1px;
     --TitlebarColorHover: hsl(40, 10%, 92.5%);   

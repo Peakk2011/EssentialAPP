@@ -2,7 +2,7 @@
 
 .calcContainer {
     margin: 0;
-    height: calc(100vh - 40px);
+    height: calc(100vh - 80px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -39,7 +39,6 @@ button {
     width: 80px;
     height: 80px;
     cursor: pointer;
-    color: white;
 }
 
 button:hover {
@@ -51,12 +50,13 @@ button:active {
 }
 
 .number {
-    background: #333;
+    background: var(--toolbar-bg);
+    outline: solid 2px var(--theme-border);
 }
 
 .operator {
     background-color: var(--ColorHighlight);
-    color: #000;
+    color: var(--theme-accent-text);
 }
 
 .operator h1 {
@@ -66,8 +66,7 @@ button:active {
 }
 
 .special {
-    background: #a5a5a5;
-    color: black;
+    background: var(--HoverColor);
 }
 
 .zero {

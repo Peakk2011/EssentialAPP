@@ -50,7 +50,7 @@ class WindowManager {
 
     updateAllWindowsTheme(theme) {
         const titlebarthemes = {
-            light: '#f6f5f3',
+            light: 'hsl(50, 40%, 96.5%)',
             dark: '#0f0f0f',
             symbol: {
                 light: '#000000',

@@ -95,7 +95,7 @@ const DialogWindows_Config = {
 };
 
 const DialogWindowsName = {
-  about: 'About EssentialAPP',
+  about: 'About',
   settings: 'EssentialAPP settings',
   settingsContent: {
     Theme: 'Theme',

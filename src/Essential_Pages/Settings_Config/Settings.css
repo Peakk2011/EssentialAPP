@@ -53,10 +53,10 @@ nav {
 }
 
 .NavContent h1 {
-    font-weight: 550;
+    font-weight: 500;
     line-height: 1.4;
-    font-size: 18px;
-    letter-spacing: -0.4px;
+    font-size: 16px;
+    letter-spacing: -0.25px;
     font-family: var(--font-text);
     color: var(--theme-fg);
 }
@@ -207,7 +207,7 @@ nav {
 }
 
 #ResetColor {
-    margin: 1.5rem auto;
+    margin: 1.75rem auto;
     padding: 0.5rem 1.15rem;
     background-color: var(--theme-accent);
     color: var(--theme-accent-text);
@@ -218,6 +218,7 @@ nav {
     position: absolute;
     bottom: 0;
     left: 1.5rem;
+    letter-spacing: -0.25px;
 
     transition: all 400ms cubic-bezier(0.19, 1, 0.22, 1);
 }

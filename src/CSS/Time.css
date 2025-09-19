@@ -3,42 +3,54 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    font-size: 16.5vw;
+    font-size: 15.5vw;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
 }
 
-#time-main,#time-ms {
+#time-main,
+#time-ms {
     font-family: "Host Grotesk", "Segoe UI", sans-serif;
 }
 
 .contentBTN {
-    display: flex;
-    gap: 10px;
-    position: absolute;
-    width: max-content;
-    bottom: 35px;
+    position: fixed;
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
+    height: 44px;
+    width: fit-content;
+    background: var(--toolbar-bg);
+    outline: var(--theme-border) solid 1.5px;
+    z-index: 1000;
+    padding: 8px;
+    gap: 2px;
+    display: flex;
+    align-items: center;
+    border-radius: 100vmax;
 }
 
 .contentBTN button {
-    padding: 0.6rem 1.25rem;
-    border-radius: 0.75rem;
-    --TimeButtons: #222;
-    background-color: var(--TimeButtons);
-    width: fit-content;
-    display: inline-block;
-    text-align: center;
+    padding: 0.5rem 1rem;
+    background-color: transparent;
     border: none;
-    font-size: 18px;
-    color: #fff;
+    border-radius: 100vmax;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+    background: transparent;
+    color: var(--text-primary);
+}
+
+.contentBTN #start {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
 }
 
 .contentBTN button:hover {
-    background-color: #3F3F3F;
-    transition: ease 0.3s all;
+    background-color: var(--PrimaryButtonsColors);
 }
 
 .lapsContent {
@@ -47,8 +59,27 @@
 }
 
 #laps {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 80px;
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    text-align: right;
+}
+
+#laps li {
+    font-family: var(--font-text), sans-serif;
+    border-bottom: solid 1px var(--theme-border);
+    padding: 0.65rem 0rem;
+}
+
+@media (max-width: 350px) {
+
+    /* Sorry for my hardcode */
+    button {
+        padding: 0.5rem 0.8rem;
+    }
+
+    .contentBTN {
+        bottom: 20px;
+    }
+
 }
