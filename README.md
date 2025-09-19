@@ -1,4 +1,4 @@
-# EssentialAPP - Made by Mint teams
+# EssentialAPP
 
 [![Made with Electron](https://img.shields.io/badge/Built%20with-Electron-47848F?logo=electron)](https://www.electronjs.org/)  
 [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/Peakk2011/Basic-requirement-app)  
