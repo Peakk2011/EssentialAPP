@@ -148,16 +148,6 @@ who handled **design**, **frontend**, **frameworks**, and **packaging**.
 
 ---
 
-## License  
-MIT
-
-**License Pending**  
-
-This is an open-source project free to edit, <br>
-improve, and share the app as you needed. ✅  
-
----
-
 ## Stay Connected  
 
 Follow the repository for updates, new features, <br>
