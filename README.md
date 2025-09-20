@@ -1,15 +1,13 @@
 <div align="center">
   <p align="center">
-    <img src="https://drive.google.com/uc?id=1ZIHizLWlvj8Mlj-0yTzh3YF5eOU5I0li" alt="App Thumbnail" width="400px">
+<!--     <img src="https://drive.google.com/uc?id=1ZIHizLWlvj8Mlj-0yTzh3YF5eOU5I0li" alt="App Thumbnail" width="400px"> -->
+    <img src="assets/README-Show.png" alt="App Thumbnail" width="350px">
   </p>
   <h1 align="center">EssentialAPP</h1>
 
   <div style="text-align: center;">
     <a href="https://www.electronjs.org/">
       <img src="https://img.shields.io/badge/Electron-47848F?style=for-the-badge&logo=electron&logoColor=white" alt="Built with Electron">
-    </a>
-    <a href="https://github.com/Peakk2011/Basic-requirement-app">
-      <img src="https://img.shields.io/badge/Open%20Source-FF69B4?style=for-the-badge" alt="Open Source Love">
     </a>
     <a href="#">
       <img src="https://img.shields.io/badge/macOS|Windows|Linux-4BCFFA?style=for-the-badge" alt="Platforms">
@@ -147,16 +145,6 @@ who handled **design**, **frontend**, **frameworks**, and **packaging**.
 
 > *"Build with Performance and quality."*  
 > _Tested on many devices_
-
----
-
-## License  
-MIT
-
-**License Pending**  
-
-This is an open-source project free to edit, <br>
-improve, and share the app as you needed. ✅  
 
 ---
 
