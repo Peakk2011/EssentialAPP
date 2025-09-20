@@ -3,6 +3,9 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
   packagerConfig: {
+    name: 'EssentialAPP',
+    productName: 'EssentialAPP',
+    executableName: 'EssentialAPP',
     asar: true,
   },
   rebuildConfig: {},

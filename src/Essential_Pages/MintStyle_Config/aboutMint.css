@@ -1,3 +1,16 @@
+body,
+html {
+    background-color: var(--theme-bg);
+}
+
+#DragWindow {
+    -webkit-app-region: drag;
+    width: 100%;
+    height: 40px;
+    position: fixed;
+    top: 0;
+}
+
 .About {
     max-width: 280px;
     width: 280px;
@@ -11,7 +24,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: #0f0f0f;
+    background: var(--theme-bg);
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s cubic-bezier(0.2, 0.0, 0, 1.0);
@@ -37,33 +50,33 @@
 }
 
 #TextEssentialLogo {
-    width: 205px;
+    width: 215px;
     margin: auto;
     display: flex;
     justify-content: center;
-    margin-top: 7rem;
+    margin-top: 7.5rem;
 }
 
 .AboutSvgLogo svg {
     margin: auto;
     display: flex;
     justify-content: center;
-    width: 65px;
+    width: 120px;
     height: auto;
     position: fixed;
-    top: 28%;
+    top: 26%;
     left: 50%;
     margin-bottom: 1.5rem;
     transform: translate(-50%, 0%);
 }
 
 .AboutSvgLogo svg path {
-    fill: var(--theme-accent);
+    fill: var(--theme-fg);
     animation: none !important;
 }
 
 #TextEssentialLogo path {
-    stroke: var(--theme-accent);
+    stroke: var(--theme-fg);
     stroke-width: 1;
     stroke-dasharray: 2500;
     stroke-dashoffset: 2500;
@@ -84,13 +97,12 @@
     }
 
     to {
-        fill: var(--accent);
+        fill: var(--theme-fg);
     }
 }
 
 #ForMint {
     font-size: 16px;
-    color: #fff;
     position: fixed;
     top: 0;
     left: 50%;
@@ -108,7 +120,7 @@
     left: 50%;
     transform: translateX(-50%);
     bottom: 40px;
-    font-weight: 450;
+    font-weight: 500;
     font-size: 16.4px;
     min-width: max-content;
     text-align: center;
@@ -118,6 +130,8 @@
     opacity: 0;
     white-space: pre;
     pointer-events: none;
+    font-family: 'General Sans', sans-serif;
+    letter-spacing: -0.4px;
 }
 
 #Typing_Effect.active {
@@ -163,12 +177,15 @@
 }
 
 #VersionName {
-    color: #e2e2e2;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     font-size: 16px;
     min-width: max-content;
+}
+
+#VersionName span {
+    font-weight: 450;
     font-family: 'General Sans', sans-serif;
 }
 

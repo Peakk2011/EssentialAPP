@@ -11,6 +11,7 @@ const canvasContainer = document.getElementById('canvasContainer');
 const colorPickerTrigger = document.getElementById('color-picker-trigger');
 const iroPickerContainer = document.getElementById('iro-picker-container');
 let brushColor = '#000000';
+let lastBrushColor = '#000000'; // Store the last color before erasing
 
 const sizePicker = document.getElementById('brushSize');
 const sizeDisplay = document.getElementById('sizeDisplay');
@@ -18,6 +19,16 @@ const brushType = document.getElementById('brushType');
 const exportFormat = document.getElementById('exportFormat');
 const clearBtn = document.getElementById('clearBtn');
 const saveBtn = document.getElementById('saveBtn');
+const mainEraserBtn = document.getElementById('mainEraserBtn');
+const responsiveEraserBtn = document.getElementById('responsiveEraserBtn');
+
+const moreOptionsToggle = document.getElementById('more-options-toggle');
+const moreOptionsResponsive = document.getElementById('more-options-responsive');
+const responsiveColorPickerTrigger = document.getElementById('responsive-color-picker-trigger');
+const responsiveBrushSize = document.getElementById('responsiveBrushSize');
+const responsiveSizeDisplay = document.getElementById('responsiveSizeDisplay');
+
+let isErasing = false;
 
 // iro.js Color Picker
 const colorPicker = new iro.ColorPicker(iroPickerContainer, {
@@ -35,7 +46,13 @@ const colorPicker = new iro.ColorPicker(iroPickerContainer, {
 
 colorPicker.on('color:change', (color) => {
     brushColor = color.hexString;
+    if (!isErasing) {
+        lastBrushColor = brushColor;
+    }
     colorPickerTrigger.style.backgroundColor = brushColor;
+    if (responsiveColorPickerTrigger) {
+        responsiveColorPickerTrigger.style.backgroundColor = brushColor;
+    }
 });
 
 colorPickerTrigger.addEventListener('click', (e) => {
@@ -44,11 +61,67 @@ colorPickerTrigger.addEventListener('click', (e) => {
     iroPickerContainer.style.display = isVisible ? 'none' : 'flex';
 });
 
+if (responsiveColorPickerTrigger) {
+    responsiveColorPickerTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // This will open the main color picker which is now positioned relative to the main toolbar
+        const isVisible = iroPickerContainer.style.display === 'flex';
+        iroPickerContainer.style.display = isVisible ? 'none' : 'flex';
+    });
+}
+
 document.addEventListener('click', (e) => {
-    if (!iroPickerContainer.contains(e.target) && e.target !== colorPickerTrigger) {
+    // Close color picker if clicking outside
+    if (iroPickerContainer.style.display === 'flex' && !iroPickerContainer.contains(e.target) && e.target !== colorPickerTrigger && e.target !== responsiveColorPickerTrigger) {
         iroPickerContainer.style.display = 'none';
     }
+    // Close responsive menu if clicking outside
+    if (moreOptionsResponsive && moreOptionsResponsive.style.display === 'block' && !moreOptionsResponsive.contains(e.target) && e.target !== moreOptionsToggle) {
+        moreOptionsResponsive.style.display = 'none';
+    }
 });
+
+const toggleEraser = () => {
+    isErasing = !isErasing;
+    if (isErasing) {
+        // Activate eraser
+        if (mainEraserBtn) mainEraserBtn.classList.add('active');
+        if (responsiveEraserBtn) {
+            responsiveEraserBtn.closest('.responsive-control-item')?.classList.add('active');
+        }
+        const canvasBg = getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim();
+        brushColor = canvasBg || '#ffffff'; // Fallback to white
+    } else {
+        // Deactivate eraser
+        if (mainEraserBtn) mainEraserBtn.classList.remove('active');
+        if (responsiveEraserBtn) {
+            responsiveEraserBtn.closest('.responsive-control-item')?.classList.remove('active');
+        }
+        brushColor = lastBrushColor;
+        colorPicker.color.hexString = lastBrushColor;
+    }
+};
+
+if (mainEraserBtn) {
+    mainEraserBtn.addEventListener('click', toggleEraser);
+}
+if (responsiveEraserBtn) {
+    responsiveEraserBtn.addEventListener('click', toggleEraser);
+}
+
+const responsiveColorControl = document.getElementById('responsive-color-control');
+if (responsiveColorControl) {
+    responsiveColorControl.addEventListener('click', () => {
+        document.getElementById('responsive-color-picker-trigger')?.click();
+    });
+}
+
+const responsiveEraserControl = document.getElementById('responsive-eraser-control');
+if (responsiveEraserControl) {
+    responsiveEraserControl.addEventListener('click', () => {
+        document.getElementById('responsiveEraserBtn')?.click();
+    });
+}
 
 // Vector drawing - SVG
 let svg, svgGroup;
@@ -481,7 +554,13 @@ const startDrawing = (e) => {
     if (brushType && brushType.value === 'smooth') {
         // Smooth line
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        // When erasing, we need to get the background color dynamically
+        const drawingColor = isErasing
+            ? getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim() || '#ffffff'
+            : brushColor;
+
         path.setAttribute('d', `M ${lastX} ${lastY}`);
+        path.setAttribute('stroke', drawingColor);
         path.setAttribute('stroke', brushColor);
         path.setAttribute('stroke-width', sizePicker ? sizePicker.value : '2');
         path.setAttribute('stroke-linecap', 'round');
@@ -493,11 +572,15 @@ const startDrawing = (e) => {
     } else {
         // Texture brush - create initial dot
         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        const drawingColor = isErasing
+            ? getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim() || '#ffffff'
+            : brushColor;
+
         const size = sizePicker ? parseFloat(sizePicker.value) : 5;
         circle.setAttribute('cx', lastX);
         circle.setAttribute('cy', lastY);
         circle.setAttribute('r', size * 0.5);
-        circle.setAttribute('fill', brushColor);
+        circle.setAttribute('fill', drawingColor);
         circle.setAttribute('opacity', '0.7');
         currentPath.appendChild(circle);
     }
@@ -520,6 +603,10 @@ const draw = (e) => {
         // Texture brush
         const steps = Math.ceil(dist / 3);
         for (let i = 1; i <= steps; i++) {
+            const drawingColor = isErasing
+                ? getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim() || '#ffffff'
+                : brushColor;
+
             const t = i / steps;
             const x = lastX + (coords.x - lastX) * t;
             const y = lastY + (coords.y - lastY) * t;
@@ -529,7 +616,7 @@ const draw = (e) => {
             circle.setAttribute('cx', x);
             circle.setAttribute('cy', y);
             circle.setAttribute('r', size * (0.3 + Math.random() * 0.3));
-            circle.setAttribute('fill', brushColor);
+            circle.setAttribute('fill', drawingColor);
             circle.setAttribute('opacity', 0.4 + Math.random() * 0.3);
             currentPath.appendChild(circle);
         }
@@ -737,7 +824,10 @@ if (saveBtn) saveBtn.addEventListener('click', saveImage);
 // Size display update
 if (sizePicker && sizeDisplay) {
     sizePicker.addEventListener('input', () => {
-        sizeDisplay.textContent = sizePicker.value + 'px';
+        const newSize = sizePicker.value;
+        if (sizeDisplay) sizeDisplay.textContent = `${newSize}px`;
+        if (responsiveBrushSize) responsiveBrushSize.value = newSize;
+        if (responsiveSizeDisplay) responsiveSizeDisplay.textContent = `${newSize}px`;
     });
 }
 
@@ -789,6 +879,35 @@ if (window.electronAPI?.onThemeChange) {
         setTheme(e.detail);
     });
 }
+
+// More options toggle logic for small screens
+if (moreOptionsToggle) {
+    moreOptionsToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = moreOptionsResponsive.style.display === 'block';
+        moreOptionsResponsive.style.display = isVisible ? 'none' : 'block';
+    });
+}
+
+// Sync brush sizes
+if (sizePicker && responsiveBrushSize) {
+    sizePicker.addEventListener('input', () => {
+        const newSize = sizePicker.value;
+        responsiveBrushSize.value = newSize;
+        if (sizeDisplay) sizeDisplay.textContent = `${newSize}px`;
+        if (responsiveSizeDisplay) responsiveSizeDisplay.textContent = `${newSize}px`;
+    });
+
+    responsiveBrushSize.addEventListener('input', () => {
+        const newSize = responsiveBrushSize.value;
+        sizePicker.value = newSize;
+        if (sizeDisplay) sizeDisplay.textContent = `${newSize}px`;
+        if (responsiveSizeDisplay) responsiveSizeDisplay.textContent = `${newSize}px`;
+    });
+    // Initial sync
+    if (responsiveSizeDisplay) responsiveSizeDisplay.textContent = `${responsiveBrushSize.value}px`;
+}
+
 
 // Communicate with parent window
 document.addEventListener('DOMContentLoaded', () => {

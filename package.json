@@ -1,6 +1,6 @@
 {
   "name": "essentialapp",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "codename": "Fascination",
   "description": "EssentialAPP is all-in-one for the app you need.",
   "keywords": [],
@@ -18,14 +18,15 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron-forge start",
-    "package": "run electron-forge package",
-    "make": "run electron-forge make",
-    "publish": "run electron-forge publish",
-    "lint": "run eslint .",
-    "dev": "run electron-forge start"
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "eslint .",
+    "dev": "electron-forge start"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
+    "electron-log": "^5.4.3",
     "electron-squirrel-startup": "^1.0.1",
     "electron-updater": "^6.6.2",
     "nprogress": "^0.2.0"
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@electron-forge/cli": "^7.8.0",
     "@electron-forge/maker-deb": "^7.8.0",
+    "@electron-forge/maker-dmg": "^7.9.0",
     "@electron-forge/maker-rpm": "^7.8.0",
     "@electron-forge/maker-squirrel": "^7.8.0",
     "@electron-forge/maker-zip": "^7.8.0",
@@ -42,5 +44,42 @@
     "@electron/fuses": "^1.8.0",
     "electron": "^38.1.2"
   },
-  "productName": "EssentialAPP"
+  "productName": "EssentialAPP",
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "./assets/icon/icons"
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "setupIcon": "./assets/icon/icons.ico"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-dmg",
+          "config": {
+            "icon": "./assets/icon/icons.icns"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {
+            "options": {
+              "icon": "./assets/icon/icons.png"
+            }
+          }
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {
+            "options": {
+              "icon": "./assets/icon/icons.png"
+            }
+          }
+        }
+      ]
+    }
+  }
 }

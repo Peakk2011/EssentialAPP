@@ -1,4 +1,4 @@
-// GLOBAL THEME SWITCHER FILE
+// Global theme switcher files
 const THEME_KEY = 'app_theme';
 
 export async function applyTheme(theme) {

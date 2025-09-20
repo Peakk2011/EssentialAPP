@@ -1,5 +1,6 @@
 /*
  * Copyright © 2025 Mint teams
+ * Copyright © 2025 Peakk
  * This file is part of EssentialAPP.
  *
  * EssentialAPP is free software: you can redistribute it and/or modify
@@ -16,7 +17,7 @@
  * along with EssentialAPP. If not, see <https://www.gnu.org/licenses/>.
  */
 
-const { app, BrowserWindow, globalShortcut } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron');
 const path = require('node:path');
 const fs = require('fs');
 require('dotenv').config();
@@ -46,7 +47,6 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-// Global state
 let mainWindow;
 
 // Core Functions
@@ -128,6 +128,11 @@ const createMainWindow = async (systemInfo) => {
       throw err;
     });
 
+    // Listen for theme changes
+    ipcMain.on('titlebar-theme-change', (event, theme) => {
+      configManager.saveTheme(theme);
+    });
+
     // Open DevTools While Boot up
     mainWindow.webContents.openDevTools({ mode: 'undocked' });
 
@@ -197,6 +202,10 @@ const createMainWindow = async (systemInfo) => {
       });
     }
 
+    if (process.platform === 'win32') {
+      app.setAppUserModelId('com.mintteams.essentialapp');
+    }
+
     mainWindow.webContents.on('did-fail-load', async (event, errorCode) => {
       await handleError(mainWindow, new Error(`Navigation failed`), 'page-load');
     });
@@ -224,7 +233,7 @@ const createMainWindow = async (systemInfo) => {
     });
 
     // console.log("Electron version:", process.versions.electron);
-    
+
     mainWindow.on('closed', () => {
       mainWindow = null;
     });

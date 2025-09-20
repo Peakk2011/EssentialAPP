@@ -3,8 +3,8 @@ initTheme();
 listenThemeSync();
 
 document.addEventListener('DOMContentLoaded', () => {
-    const NOTES_STORAGE_KEY = 'essential_app_note_content'; // Simple key for single note
-    const ZOOM_STORAGE_KEY = 'essential_app_note_zoom';
+    const NOTES_STORAGE_KEY = 'EssentialAPP.noteContent'; // Simple key for single note
+    const ZOOM_STORAGE_KEY = 'EssentialAPP.noteZoom';
     const textarea = document.getElementById('autoSaveTextarea');
     const notesChannel = new BroadcastChannel('notes_sync_channel');
     let isTyping = false;

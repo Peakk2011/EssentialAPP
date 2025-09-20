@@ -54,10 +54,11 @@ const Essential_links = {
   }
 };
 
+// Runtime icons
 const getThemeIcon = () => {
   return nativeTheme.shouldUseDarkColors
-    ? path.join(__dirname, '..', 'assets', 'icons', 'WrapperEssentialAppLogo', 'EssentialAppSystemLogo.png')
-    : path.join(__dirname, '..', 'assets', 'icons', 'WrapperEssentialAppLogo', 'EssentialAppSystemLogoLight.png');
+    ? path.join(__dirname, '..', 'assets', 'icons', 'Runtime', 'EssentialAppSystemLogo.png')
+    : path.join(__dirname, '..', 'assets', 'icons', 'Runtime', 'EssentialAppSystemLogoLight.png');
 };
 
 const PLATFORM_CONFIG = {

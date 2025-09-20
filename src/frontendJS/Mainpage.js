@@ -755,10 +755,10 @@ const showApp = (appId, event) => {
 
     if (!openApps.has(appId)) {
         openApps.add(appId);
-        localStorage.setItem('EssentialApp.openApps', JSON.stringify(Array.from(openApps)));
+        localStorage.setItem('EssentialAPP.openApps', JSON.stringify(Array.from(openApps)));
     }
 
-    localStorage.setItem('EssentialApp.lastActiveApp', appId);
+    localStorage.setItem('EssentialAPP.lastActiveApp', appId);
 
     hideAllIframes();
 
@@ -798,7 +798,7 @@ const closeApp = (appId, event) => {
     state.editingTabIndex = -1; // Reset editing state when closing an app
 
     openApps.delete(appId);
-    localStorage.setItem('EssentialApp.openApps', JSON.stringify(Array.from(openApps)));
+    localStorage.setItem('EssentialAPP.openApps', JSON.stringify(Array.from(openApps)));
 
     const iframe = document.getElementById(appId);
     if (iframe) {
@@ -996,7 +996,7 @@ const showHome = () => {
     hideLoading();
     currentActiveApp = null;
     updateUIForActiveApp(null);
-    localStorage.setItem('EssentialApp.lastActiveApp', 'home');
+    localStorage.setItem('EssentialAPP.lastActiveApp', 'home');
 }
 
 const showAllApps = () => {
@@ -1094,6 +1094,38 @@ const usingThemeObserver = () => {
     updateWelcomeImage();
 };
 
+// Animation
+
+const appInstruction = document.getElementById('app-instruction');
+
+const typeTextToElement = (text, element, delay = 35, onComplete) => {
+    let index = 0;
+    element.innerHTML = '';
+
+    const nextChar = () => {
+        if (index < text.length) {
+            const char = text[index];
+            element.innerHTML += char === '\n' ? '<br>' : char;
+            index++;
+            setTimeout(nextChar, delay);
+        } else if (onComplete) {
+            onComplete();
+        }
+    };
+
+    nextChar();
+};
+
+typeTextToElement(
+    'Select an app from the menu\nBelow to get started.',
+    appInstruction,
+    35
+);
+
+document.querySelectorAll('.app-grid a').forEach((button, index) => {
+    button.style.setProperty('--delay', index);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     container = document.getElementById('home-content');
     canvasAreas = document.getElementById('canvasAreas');
@@ -1109,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hideAllIframes();
 
     // Load saved open apps and ensure they're properly initialized
-    const savedOpenApps = JSON.parse(localStorage.getItem('EssentialApp.openApps') || '[]');
+    const savedOpenApps = JSON.parse(localStorage.getItem('EssentialAPP.openApps') || '[]');
     openApps = new Set(savedOpenApps);
 
     savedOpenApps.forEach(appId => {
@@ -1118,7 +1150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const lastApp = localStorage.getItem('EssentialApp.lastActiveApp');
+    const lastApp = localStorage.getItem('EssentialAPP.lastActiveApp');
 
     if (lastApp && lastApp !== 'home' && appConfig[lastApp] && openApps.has(lastApp)) {
         setTimeout(() => showApp(lastApp), 100);

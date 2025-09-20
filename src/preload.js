@@ -118,10 +118,15 @@ contextBridge.exposeInMainWorld('electron', {
 // Titlebar API Bridge
 contextBridge.exposeInMainWorld('titlebarAPI', {
     setTheme: (theme) => {
-        ipcRenderer.send('titlebar-theme-change', theme);
+        document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('app_theme', theme);
+        ipcRenderer.send('titlebar-theme-change', theme);
     },
-    getCurrentTheme: () => localStorage.getItem('app_theme') || 'dark'
+    getInitialTheme: () => {
+        const savedTheme = localStorage.getItem('app_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        return savedTheme;
+    }
 });
 
 // Security: Clean up global objects

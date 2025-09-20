@@ -33,8 +33,7 @@ const closeDropdown = () => {
             langDropdown.classList.remove('show');
         }, 300);
     }
-}
-;
+};
 document.addEventListener('click', closeDropdown);
 
 // Handle language selection
@@ -69,15 +68,15 @@ document.querySelectorAll('.lang-option').forEach(card => {
         isPressed = true;
         ripple = document.createElement('div');
         ripple.className = 'ripple ripple-quick';
-        ripple.style.left = `${e.clientX - this.getBoundingClientRect().left}px`;
-        ripple.style.top = `${e.clientY - this.getBoundingClientRect().top}px`;
-        this.appendChild(ripple);
+        ripple.style.left = `${e.clientX - card.getBoundingClientRect().left}px`;
+        ripple.style.top = `${e.clientY - card.getBoundingClientRect().top}px`;
+        card.appendChild(ripple);
     });
 
     card.addEventListener('mouseup', () => {
         if (ripple) {
             isPressed = false;
-            const href = this.getAttribute('data-href');
+            const href = card.getAttribute('data-href');
             ripple.addEventListener('animationend', () => {
                 ripple.remove();
                 if (href) window.location.href = href;
@@ -101,15 +100,15 @@ document.querySelectorAll('.AllmenuLinks li').forEach(card => {
         isPressed = true;
         ripple = document.createElement('div');
         ripple.className = 'rippleSidebar';
-        ripple.style.left = `${e.clientX - this.getBoundingClientRect().left}px`;
-        ripple.style.top = `${e.clientY - this.getBoundingClientRect().top}px`;
-        this.appendChild(ripple);
+        ripple.style.left = `${e.clientX - card.getBoundingClientRect().left}px`;
+        ripple.style.top = `${e.clientY - card.getBoundingClientRect().top}px`;
+        card.appendChild(ripple);
     });
 
     card.addEventListener('mouseup', () => {
         if (ripple) {
             isPressed = false;
-            const href = this.getAttribute('data-href');
+            const href = card.getAttribute('data-href');
             ripple.addEventListener('animationend', () => {
                 ripple.remove();
                 if (href) window.location.href = href;
@@ -135,14 +134,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- State Management ---
-    let todos = JSON.parse(localStorage.getItem('todos_v2')) || [];
+    let todos = JSON.parse(localStorage.getItem('EssentialAPP.todos.v2')) || [];
     let categories = [];
     let currentCategoryFilter = 'All';
+    let dueDate = null;
 
     const defaultColors = ['#5DADE2', '#58D68D', '#F5B041', '#EC7063', '#AF7AC5', '#AAB7B8', '#48C9B0', '#FAD7A0'];
 
     const migrateAndLoadCategories = () => {
-        let storedCategories = JSON.parse(localStorage.getItem('categories_v2'));
+        let storedCategories = JSON.parse(localStorage.getItem('EssentialAPP.categories.v2'));
 
         // If new format exists, use it
         if (storedCategories && storedCategories.length > 0 && typeof storedCategories[0] === 'object' && storedCategories[0] !== null) {
@@ -150,25 +150,44 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Migration from old format (string array from 'categories')
         const oldStoredCategories = JSON.parse(localStorage.getItem('categories'));
         const initialCategories = oldStoredCategories || ['Default', 'Work', 'Personal'];
-        
+
         categories = initialCategories.map((catName, index) => ({
             name: catName,
             color: defaultColors[index % defaultColors.length]
         }));
-        saveCategories(); // Save in the new format
+        saveCategories(); 
     };
 
     const saveTodos = () => {
-        localStorage.setItem('todos_v2', JSON.stringify(todos));
+        localStorage.setItem('EssentialAPP.todos.v2', JSON.stringify(todos));
     };
     const saveCategories = () => {
-        localStorage.setItem('categories_v2', JSON.stringify(categories));
+        localStorage.setItem('EssentialAPP.categories.v2', JSON.stringify(categories));
     };
 
-    // --- Drag and Drop Handlers ---
+    // Utility functions
+    const filterTodos = (todosArray) => {
+        let filtered = todosArray;
+
+        // Filter by category
+        if (currentCategoryFilter !== 'All') {
+            filtered = filtered.filter(todo => todo.category === currentCategoryFilter);
+        }
+
+        return filtered;
+    };
+
+    const getPriorityColor = (priority) => {
+        switch (priority) {
+            case 'high': return '#ff4757';
+            case 'medium': return '#ffa502';
+            case 'low': return '#2ed573';
+            default: return '#ffa502';
+        }
+    };
+
     const handleDragStart = (e) => {
         e.target.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
@@ -176,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleDragOver = (e) => {
-        e.preventDefault(); // Necessary to allow dropping
+        e.preventDefault(); 
         e.dataTransfer.dropEffect = 'move';
     };
 
@@ -245,25 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryFiltersContainer.appendChild(button);
         });
 
-        // Add "New Category" button
-        const addCategoryBtn = document.createElement('button');
-        addCategoryBtn.className = 'filter-btn add-category-btn';
-        addCategoryBtn.textContent = '+ New Category';
-        addCategoryBtn.addEventListener('click', () => {
-            const newCategoryName = prompt('Enter new category name:');
-            if (newCategoryName && !categories.some(c => c.name === newCategoryName)) {
-                const usedColors = categories.map(c => c.color);
-                const availableColor = defaultColors.find(c => !usedColors.includes(c)) || defaultColors[Math.floor(Math.random() * defaultColors.length)];
-
-                categories.push({ name: newCategoryName, color: availableColor });
-                saveCategories();
-                render();
-            } else if (newCategoryName) {
-                alert('Category with this name already exists.');
-            }
-        });
-        categoryFiltersContainer.appendChild(addCategoryBtn);
-
     };
 
     const createContextMenu = (e, todo) => {
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         contentDiv.textContent = '';
         contentDiv.appendChild(inputField);
-        
+
         inputField.focus();
         inputField.select();
 
@@ -356,9 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderCategoryUI(); // Update filters and dropdown
 
-        let filteredTodos = currentCategoryFilter === 'All'
-            ? todos
-            : todos.filter(todo => todo.category === currentCategoryFilter);
+        let filteredTodos = filterTodos(todos);
 
         filteredTodos.forEach((todo, index) => {
             const originalIndex = todos.findIndex(t => t.id === todo.id);
@@ -367,11 +365,12 @@ document.addEventListener('DOMContentLoaded', () => {
             li.draggable = true;
             li.dataset.index = originalIndex;
             li.dataset.id = todo.id;
+            li.className = 'todo-item';
+
             if (todo.isNew) {
                 li.classList.add('new-item');
-                // Remove the flag after animation
                 li.addEventListener('animationend', () => li.classList.remove('new-item'));
-                delete todo.isNew; // Clean up the flag
+                delete todo.isNew;
             }
             if (todo.completed) {
                 li.classList.add('completed');
@@ -382,82 +381,166 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.checked = todo.completed;
             checkbox.addEventListener('change', () => {
                 todo.completed = checkbox.checked;
+                if (todo.completed) {
+                    todo.completedDate = new Date().toISOString();
+                }
                 saveTodos();
                 render();
             });
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'todo-item-content';
-            
+
             const textSpan = document.createElement('span');
             textSpan.className = 'todo-text';
             textSpan.textContent = todo.text;
             contentDiv.appendChild(textSpan);
 
+            // Progress bar for subtasks (if implemented)
+            if (todo.subtasks && todo.subtasks.length > 0) {
+                const progressContainer = document.createElement('div');
+                progressContainer.className = 'progress-container';
+                const completed = todo.subtasks.filter(st => st.completed).length;
+                const total = todo.subtasks.length;
+                const percentage = (completed / total) * 100;
+
+                progressContainer.innerHTML = `
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    <span class="progress-text">${completed}/${total}</span>
+                `;
+                contentDiv.appendChild(progressContainer);
+            }
+
             if (todo.dueDate) {
                 const dateSpan = document.createElement('span');
                 dateSpan.className = 'due-date';
-                const dueDate = new Date(todo.dueDate + 'T00:00:00'); // Ensure it's parsed as local time
+                const dueDate = new Date(todo.dueDate + 'T00:00:00');
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                dateSpan.textContent = dueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                if (dueDate < today && !todo.completed) {
+
+                const diffTime = dueDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays < 0 && !todo.completed) {
                     dateSpan.classList.add('overdue');
-                    dateSpan.title = 'Overdue';
+                    dateSpan.textContent = `${Math.abs(diffDays)} days overdue`;
+                } else if (diffDays === 0) {
+                    dateSpan.classList.add('due-today');
+                    dateSpan.textContent = 'Due today';
+                } else if (diffDays === 1) {
+                    dateSpan.textContent = 'Due tomorrow';
+                } else {
+                    dateSpan.textContent = dueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
                 }
                 contentDiv.appendChild(dateSpan);
             }
 
-            // Add double-click listener for editing
+            // Add tags if any
+            if (todo.tags && todo.tags.length > 0) {
+                const tagsContainer = document.createElement('div');
+                tagsContainer.className = 'tags-container';
+                todo.tags.forEach(tag => {
+                    const tagSpan = document.createElement('span');
+                    tagSpan.className = 'tag';
+                    tagSpan.textContent = `#${tag}`;
+                    tagsContainer.appendChild(tagSpan);
+                });
+                contentDiv.appendChild(tagsContainer);
+            }
+
             textSpan.addEventListener('dblclick', () => {
                 handleEdit(todo.id, li);
             });
 
-            // Category Badge (now a simple colored dot)
+            li.addEventListener('click', (e) => {
+                if (
+                    e.target.matches('input[type="checkbox"], .action-btn, .delete-btn, .delete-btn svg, .delete-btn path, .edit-input') ||
+                    e.target.closest('.todo-actions')
+                ) {
+                    return;
+                }
+
+                if (e.detail > 1) return;
+
+                checkbox.click();
+            });
+
+            // Category Badge
             const categoryBadge = document.createElement('span');
             categoryBadge.className = 'category-badge';
             const categoryData = categories.find(c => c.name === todo.category);
             categoryBadge.style.backgroundColor = categoryData ? categoryData.color : '#888';
             categoryBadge.title = todo.category || 'Uncategorized';
 
-            // Delete Button (icon, appears on hover)
+            // Action buttons container
+            const actionsContainer = document.createElement('div');
+            actionsContainer.className = 'todo-actions';
+
+            // Favorite button
+            const favoriteBtn = document.createElement('button');
+            favoriteBtn.className = `action-btn ${todo.favorite ? 'favorite' : ''}`;
+            favoriteBtn.innerHTML = todo.favorite ? '★' : '☆';
+            favoriteBtn.title = todo.favorite ? 'Remove from favorites' : 'Add to favorites';
+            favoriteBtn.addEventListener('click', () => {
+                todo.favorite = !todo.favorite;
+                saveTodos();
+                render();
+            });
+
+            // Delete Button
             const delBtn = document.createElement('button');
             delBtn.className = 'delete-btn';
-            delBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T720-120H280Z"/></svg>`;
+            delBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="m249-207-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z"/></svg>`;
             delBtn.title = 'Delete task';
             delBtn.addEventListener('click', () => {
                 const listItem = delBtn.closest('li');
                 if (listItem) {
                     listItem.classList.add('removing');
                 }
-
-                // Wait for the animation to mostly finish, then update data and re-render.
-                // This correctly re-syncs all listeners and the DOM after the visual effect.
                 setTimeout(() => {
                     todos = todos.filter(t => t.id !== todo.id);
                     saveTodos();
                     render();
-                }, 300); // Should be slightly less than or equal to animation duration
+                }, 300);
             });
+
+            actionsContainer.appendChild(favoriteBtn);
+            actionsContainer.appendChild(delBtn);
 
             // Add drag and drop event listeners
             li.addEventListener('dragstart', handleDragStart);
             li.addEventListener('dragover', handleDragOver);
             li.addEventListener('drop', handleDrop);
             li.addEventListener('dragend', handleDragEnd);
-
             li.addEventListener('contextmenu', (e) => createContextMenu(e, todo));
 
             li.appendChild(checkbox);
             li.appendChild(categoryBadge);
             li.appendChild(contentDiv);
-            li.appendChild(delBtn);
+            li.appendChild(actionsContainer);
             list.appendChild(li);
         });
 
+        // Show stats
+        const stats = document.createElement('div');
+        const totalTasks = todos.length;
+        const completedTasks = todos.filter(t => t.completed).length;
+        const pendingTasks = totalTasks - completedTasks;
+        stats.innerHTML = `
+            <span>Total: ${totalTasks}</span>
+            <span>Completed: ${completedTasks}</span>
+            <span>Pending: ${pendingTasks}</span>
+        `;
+
         // Send status update to parent window
         if (window.parent && typeof window.parent.iframeAction === 'function') {
-            window.parent.iframeAction('Todolist', 'updateStatus', { count: todos.length });
+            window.parent.iframeAction('Todolist', 'updateStatus', {
+                count: totalTasks,
+                completed: completedTasks,
+                pending: pendingTasks
+            });
         }
     };
 
@@ -471,20 +554,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 assignedCategory = categories[0].name;
             }
 
-            todos.push({
+            const newTodo = {
                 id: Date.now(),
                 text: text,
                 category: assignedCategory,
                 dueDate: dueDate || null,
+                priority: 'medium',
                 completed: false,
-                isNew: true // Flag for animation
-            });
+                favorite: false,
+                tags: extractTags(text),
+                subtasks: [],
+                createdDate: new Date().toISOString(),
+                isNew: true
+            };
+
+            todos.push(newTodo);
             saveTodos();
             render();
             input.value = '';
+            dueDate = null;
             input.focus();
         }
     });
+
+    // Extract hashtags from text
+    const extractTags = (text) => {
+        const tagRegex = /#(\w+)/g;
+        const tags = [];
+        let match;
+        while ((match = tagRegex.exec(text)) !== null) {
+            tags.push(match[1]);
+        }
+        return tags;
+    };
 
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -497,7 +599,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.parent.iframeAction('Todolist', 'loaded', { timestamp: new Date() });
     }
 
-    // Listen for commands from the parent window
     window.addEventListener('message', (event) => {
         // if (event.origin !== 'YOUR_EXPECTED_ORIGIN') return;
 
@@ -507,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (action === 'focusInput') {
             input.focus();
         } else if (action === 'addTask' && data && data.text) {
-            todos.unshift({ // Add to the top
+            todos.unshift({ 
                 id: Date.now(),
                 text: data.text,
                 category: 'Default',
@@ -542,9 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Forward keyboard shortcuts to parent
     document.addEventListener('keydown', (e) => {
-        // Only forward shortcuts, not regular typing
         if (e.ctrlKey || e.metaKey) {
             if (window.parent) {
                 window.parent.postMessage({
