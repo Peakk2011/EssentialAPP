@@ -3,13 +3,14 @@
 #shortDate {
     position: fixed;
     right: 1rem;
-    top: 20px;
+    top: 12px;
     font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
     font-weight: 300;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 4px; 
     transition: background 0.2s;
     line-height: 1.6;
+    font-size: 12.5px;  
 }
 
 #shortDate:hover {
@@ -145,7 +146,7 @@
 }
 
 #todo-list {
-    margin-top: 4.5rem;
+    margin-top: 3.5rem;
 }
 
 #todo-list li.new-item {
@@ -212,7 +213,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 0.5rem 0;
+    padding: 0.3rem 0;
     border-bottom: 1px solid var(--theme-border);
     transition: all 0.2s;
     position: relative;
@@ -327,7 +328,7 @@
     color: var(--theme-links);
     cursor: pointer;
     border-radius: 4px;
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     transition: all 0.2s;
     display: flex;
     align-items: center;
@@ -382,13 +383,13 @@ input[type="checkbox"] {
 
 .category-filters {
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
     margin-bottom: 1rem;
     flex-wrap: wrap;
 
     position: fixed;
-    left: 1rem;
-    top: 16px;
+    left: 0.75rem;
+    top: 6px;
 }
 
 .category-filters .filter-btn {
@@ -396,24 +397,20 @@ input[type="checkbox"] {
     border: 1px solid transparent;
     color: var(--theme-links);
     cursor: pointer;
-    padding: 0.3rem 0.5rem;
+    padding: 0.5rem 0rem;
     font-size: 0.85rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     transition: all 0.2s;
-    border-radius: 4px;
-}
-
-.category-filters .filter-btn:hover {
-    background: var(--HoverColor);
-    border-color: var(--theme-border);
-}
-
-.category-filters .filter-btn.active {
-    color: var(--theme-accent-text);
-    background: var(--theme-accent);
+    border-bottom: solid 1px transparent;
     font-weight: 500;
+}
+
+.category-filters .filter-btn:hover,
+.category-filters .filter-btn.active,
+.category-filters .filter-btn:focus {
+    border-bottom: solid 1px currentColor;
 }
 
 .category-color-swatch {

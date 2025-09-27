@@ -233,9 +233,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         categories.forEach(cat => {
             const button = document.createElement('button');
+            button.className = 'filter-btn';
             button.dataset.category = cat.name;
             if (currentCategoryFilter === cat.name) button.classList.add('active');
-            button.className = 'filter-btn';
 
             const colorSwatch = document.createElement('span');
             colorSwatch.className = 'category-color-swatch';
