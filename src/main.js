@@ -1,6 +1,5 @@
 /*
  * Copyright © 2025 Mint teams
- * Copyright © 2025 Peakk
  * This file is part of EssentialAPP.
  *
  * EssentialAPP is free software: you can redistribute it and/or modify
