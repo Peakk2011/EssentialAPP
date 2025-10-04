@@ -5,7 +5,7 @@ module.exports = {
   packagerConfig: {
     name: 'EssentialAPP',
     productName: 'EssentialAPP',
-    executableName: 'EssentialAPP',
+    executableName: 'essentialapp',
     asar: true,
   },
   rebuildConfig: {},
@@ -22,10 +22,10 @@ module.exports = {
       name: '@electron-forge/maker-deb',
       config: {},
     },
-    {
-      name: '@electron-forge/maker-rpm',
-      config: {},
-    },
+    // {
+    //   name: '@electron-forge/maker-rpm', 
+    //   config: {},
+    // },
   ],
   plugins: [
     {
