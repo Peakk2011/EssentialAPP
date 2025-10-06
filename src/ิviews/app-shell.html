@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading App</title>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color: #0f0f0f;
+            overflow: hidden;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Render the iframe -->
+    <script>
+        window.electronAPI.onInitializeShell(({ appId, appSrc, appTitle }) => {
+            if (document.getElementById(appId)) return;
+
+            document.title = appTitle;
+
+            const iframe = document.createElement('iframe');
+            iframe.id = appId;
+            iframe.src = appSrc;
+
+            document.body.innerHTML = '';
+            document.body.appendChild(iframe);
+        });
+
+        // ตัวอย่าง drag event
+        document.addEventListener('dragend', (e) => {
+            const appId = 'Todolist';
+            const appTitle = 'Todolist';
+            const appSrc = './views/todolist.html';
+
+            window.electronAPI.dragToNewWindow(appId, appTitle, appSrc)
+                .then(success => {
+                    if (!success) console.error('Failed to create detached window');
+                });
+        });
+    </script>
+
+
+</body>
+
+</html>

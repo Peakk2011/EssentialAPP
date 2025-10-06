@@ -75,7 +75,6 @@ class WindowManager {
                     win.setBackgroundColor(titlebarColor);
                 } catch (err) {
                     if (err.message !== 'Titlebar overlay is not enabled') {
-                        // This return seems to be intended to stop processing for this window on specific errors.
                         return;
                     }
                 }

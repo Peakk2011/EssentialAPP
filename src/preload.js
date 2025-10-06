@@ -67,7 +67,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
     onFullscreenChange: (callback) => {
         ipcRenderer.on('fullscreen-changed', (event, isFullscreen) => callback(isFullscreen));
-    }
+    },
+    dragToNewWindow: (appId, appTitle, appSrc, position) =>
+        ipcRenderer.invoke('drag-to-new-window', { appId, appTitle, appSrc, position }),
+    onInitializeShell: (callback) =>
+        ipcRenderer.on('initialize-shell', (event, args) => callback(args))
 });
 
 contextBridge.exposeInMainWorld('dev', {

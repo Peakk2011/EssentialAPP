@@ -28,6 +28,7 @@ const AppManager = require('./components/AppManager');
 const EventManager = require('./components/EventManager');
 const MenuManager = require('./components/MenuManager');
 const { ErrorHandler, handleError, createSafeModeWindow } = require('./components/errorHandler');
+const { setupDragToNewWindow } = require('./components/dragDrop');
 
 // Load Configuration
 const configManager = new ConfigManager();
@@ -245,6 +246,7 @@ const createMainWindow = async (systemInfo) => {
 
 // Main application
 (async () => {
+  setupDragToNewWindow();
   app.on('ready', () => {
     globalShortcut.register('Control+Shift+I', () => {
       const focusedWin = getFocusedWindow();

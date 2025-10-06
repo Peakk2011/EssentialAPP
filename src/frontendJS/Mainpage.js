@@ -754,6 +754,7 @@ const showApp = (appId, event) => {
     }
 
     if (!openApps.has(appId)) {
+        state.newlyAddedAppId = appId; // Flag the new app
         openApps.add(appId);
         localStorage.setItem('EssentialAPP.openApps', JSON.stringify(Array.from(openApps)));
     }
@@ -798,25 +799,34 @@ const closeApp = (appId, event) => {
     state.editingTabIndex = -1; // Reset editing state when closing an app
 
     openApps.delete(appId);
+
+    const tabElement = document.querySelector(`.app-tab[data-app-id="${appId}"]`);
+
+    if (tabElement) {
+        tabElement.classList.add('tab-closing-animation');
+        tabElement.addEventListener('animationend', () => {
+            finishCloseApp(appId);
+        }, { once: true });
+    } else {
+        // If tab not found, close immediately
+        finishCloseApp(appId);
+    }
+}
+
+const finishCloseApp = (appId) => {
     localStorage.setItem('EssentialAPP.openApps', JSON.stringify(Array.from(openApps)));
 
     const iframe = document.getElementById(appId);
     if (iframe) {
         iframe.classList.remove('active');
         iframe.classList.add('cached');
-        // Don't remove the iframe, just hide it to maintain state
-        // But clear the src to free memory if needed
-        // iframe.src = 'about:blank';
-        // appConfig[appId].loaded = false;
     }
 
     if (currentActiveApp === appId) {
-        const remainingApps = Array.from(openApps);
         const openAppsArray = Array.from(openApps);
-        const currentIndex = openAppsArray.indexOf(appId);
         if (openAppsArray.length > 0) {
-            const nextIndex = currentIndex > 0 ? currentIndex - 1 : 0;
-            showApp(openAppsArray[nextIndex]);
+            const lastApp = openAppsArray[openAppsArray.length - 1];
+            showApp(lastApp);
         } else {
             showHome();
         }
@@ -885,7 +895,15 @@ const updateNavbarLinks = (activeAppId) => {
 
     Array.from(openApps).forEach(appId => {
         const li = document.createElement('li');
+        li.draggable = true;
+        li.dataset.appId = appId;
         li.className = `app-tab app-tab-${appId}`;
+
+        // Add spawn animation
+        if (state.newlyAddedAppId === appId) {
+            li.classList.add('tab-merge-animation');
+            delete state.newlyAddedAppId; // Clear the flag
+        }
 
         const a = document.createElement('a');
         a.href = 'javascript:void(0)';
@@ -929,11 +947,139 @@ const updateNavbarLinks = (activeAppId) => {
             window.tabAPI.showContextMenu({ appId, pos: { x: e.clientX, y: e.clientY } });
         });
 
+        // Drag and Drop to new window
+        li.addEventListener('dragstart', (e) => {
+            e.stopPropagation();
+            e.dataTransfer.setData('text/plain', appId);
+            e.dataTransfer.effectAllowed = 'move';
+
+            // Create a ghost preview
+            const ghost = document.createElement('div');
+            ghost.id = 'drag-ghost-element';
+            ghost.className = 'drag-ghost';
+            ghost.innerHTML = li.querySelector('a').innerHTML;
+            ghost.querySelector('.navbar-tab-close-btn').remove();
+            document.body.appendChild(ghost);
+            e.dataTransfer.setDragImage(ghost, 20, 20);
+
+            setTimeout(() => {
+                li.style.opacity = '0.5';
+            }, 0);
+        });
+
+        li.addEventListener('dragend', (e) => {
+            e.stopPropagation();
+            li.style.opacity = '1';
+
+            const ghost = document.getElementById('drag-ghost-element');
+            if (ghost) {
+                ghost.remove();
+            }
+
+            if (e.dataTransfer.dropEffect === 'none') {
+                const position = { x: e.screenX, y: e.screenY };
+                window.electronAPI.dragToNewWindow(appId, appId, appConfig[appId].src, position);
+                closeApp(appId);
+            }
+        });
+
+        // Drag to reorder
+        li.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const targetTab = e.currentTarget;
+            const rect = targetTab.getBoundingClientRect();
+            const isAfter = e.clientX > rect.left + rect.width / 2;
+
+            document.querySelectorAll('.app-tab-placeholder').forEach(p => p.remove());
+            const placeholder = document.createElement('li');
+            placeholder.className = 'app-tab-placeholder';
+
+            if (isAfter) {
+                targetTab.parentNode.insertBefore(placeholder, targetTab.nextSibling);
+            } else {
+                targetTab.parentNode.insertBefore(placeholder, targetTab);
+            }
+        });
+
+        li.addEventListener('dragleave', (e) => {
+            setTimeout(() => {
+                if (!li.contains(e.relatedTarget)) {
+                    document.querySelectorAll('.app-tab-placeholder').forEach(p => p.remove());
+                }
+            }, 10);
+        });
+
+        li.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            document.querySelectorAll('.app-tab-placeholder').forEach(p => p.remove());
+            const draggedAppId = e.dataTransfer.getData('text/plain');
+            const targetAppId = e.currentTarget.dataset.appId;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const isAfter = e.clientX > rect.left + rect.width / 2;
+            reorderApps(draggedAppId, targetAppId, isAfter);
+        });
+
         navbarLinksContainer.appendChild(li);
     });
 
     createNewTabButton();
 }
+
+const reorderApps = (draggedAppId, targetAppId, isAfter) => {
+    if (draggedAppId === targetAppId) return;
+
+    const container = document.getElementById('MainLINKS');
+    const children = Array.from(container.children).filter(c => c.classList.contains('app-tab'));
+
+    const firstPositions = new Map();
+    children.forEach(child => {
+        firstPositions.set(child.dataset.appId, child.getBoundingClientRect());
+    });
+
+    let appOrder = Array.from(openApps);
+    const draggedIndex = appOrder.indexOf(draggedAppId);
+    if (draggedIndex === -1) return;
+
+    appOrder.splice(draggedIndex, 1);
+
+    const targetIndex = appOrder.indexOf(targetAppId);
+    if (targetIndex === -1) {
+        appOrder.push(draggedAppId);
+    } else {
+        const insertionIndex = isAfter ? targetIndex + 1 : targetIndex;
+        appOrder.splice(insertionIndex, 0, draggedAppId);
+    }
+
+    openApps = new Set(appOrder);
+    localStorage.setItem('EssentialAPP.openApps', JSON.stringify(appOrder));
+
+    updateNavbarLinks(currentActiveApp);
+
+    requestAnimationFrame(() => {
+        const newChildren = Array.from(container.children).filter(c => c.classList.contains('app-tab'));
+        newChildren.forEach(child => {
+            const appId = child.dataset.appId;
+            const firstPos = firstPositions.get(appId);
+            if (firstPos) {
+                const lastPos = child.getBoundingClientRect();
+                const deltaX = firstPos.left - lastPos.left;
+                const deltaY = firstPos.top - lastPos.top;
+
+                if (deltaX !== 0 || deltaY !== 0) {
+                    child.animate([
+                        { transform: `translate(${deltaX}px, ${deltaY}px)` },
+                        { transform: 'translate(0, 0)' }
+                    ], {
+                        duration: 300,
+                        easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                    });
+                }
+            }
+        });
+    });
+};
 
 const createNewTabButton = () => {
     const navbarLinksContainer = document.getElementById('MainLINKS');
