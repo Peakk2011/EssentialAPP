@@ -90,7 +90,7 @@
     pointer-events: all;
     position: relative;
     z-index: 12;
-    font-family: 'General Sans', "Segoe UI", sans-serif;
+    font-family: var(--font-primary);
     font-size: 14.5px;
     line-height: 0;
 }

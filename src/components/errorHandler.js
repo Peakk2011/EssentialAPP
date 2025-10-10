@@ -50,40 +50,40 @@ const createSafeModeWindow = (error) => {
 };
 
 function ErrorHandler(app, dialog) {
-    // The handleError function can be used elsewhere.
-    this.initialize = (links, appRef) => {
-        essentialLinks = links;
-        this.app = appRef;
-    };
+  // The handleError function can be used elsewhere.
+  this.initialize = (links, appRef) => {
+    essentialLinks = links;
+    this.app = appRef;
+  };
 
-    process.on('uncaughtException', (error) => {
-        console.error('[Uncaught Exception]', error);
+  process.on('uncaughtException', (error) => {
+    console.error('[Uncaught Exception]', error);
 
-        const errorLogPath = path.join(app.getPath('userData'), 'error.log');
-        const errorMessage = `[${new Date().toISOString()}] Uncaught Exception:\n${error.stack || error}\n\n`;
-        try {
-            fs.appendFileSync(errorLogPath, errorMessage);
-        } catch (logErr) {
-            console.error('Failed to write to error log:', logErr);
-        }
+    const errorLogPath = path.join(app.getPath('userData'), 'error.log');
+    const errorMessage = `[${new Date().toISOString()}] Uncaught Exception:\n${error.stack || error}\n\n`;
+    try {
+      fs.appendFileSync(errorLogPath, errorMessage);
+    } catch (logErr) {
+      console.error('Failed to write to error log:', logErr);
+    }
 
-        if (app.isReady()) {
-            const choice = dialog.showMessageBoxSync({
-                type: 'error',
-                title: 'EssentialAPP Error',
-                message: 'A critical error occurred.',
-                detail: `The application has encountered an unexpected error. You can try to relaunch the application or quit.\n\nError: ${error.message}`,
-                buttons: ['Relaunch', 'Quit'],
-                defaultId: 0,
-                cancelId: 1
-            });
+    if (app.isReady()) {
+      const choice = dialog.showMessageBoxSync({
+        type: 'error',
+        title: 'EssentialAPP Error',
+        message: 'A critical error occurred.',
+        detail: `The application has encountered an unexpected error. You can try to relaunch the application or quit.\n\nError: ${error.message}`,
+        buttons: ['Relaunch', 'Quit'],
+        defaultId: 0,
+        cancelId: 1
+      });
 
-            if (choice === 0) { // Relaunch
-                this.app.relaunch();
-            }
-        }
-        this.app.quit();
-    });
+      if (choice === 0) { // Relaunch
+        this.app.relaunch();
+      }
+    }
+    this.app.quit();
+  });
 }
 
 module.exports = { ErrorHandler, handleError, createSafeModeWindow };

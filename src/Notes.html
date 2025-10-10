@@ -9,10 +9,21 @@
     <link rel="stylesheet" href="./css/notes.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="./css/defaultComp.css" crossorigin="anonymous" />
 
-    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@1,2&f[]=satoshi@1,2&display=swap" rel="stylesheet">
     <!-- Material icons -->
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;
+        script-src * 'unsafe-inline' 'unsafe-eval';
+        style-src * 'unsafe-inline';
+        style-src-elem * 'unsafe-inline';
+        style-src-attr * 'unsafe-inline';
+        img-src * data: blob:;
+        connect-src *;
+        font-src * data:;
+        media-src *;
+        frame-src *;
+    ">
 </head>
 
 <body>

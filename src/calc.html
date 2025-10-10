@@ -15,57 +15,58 @@
 <body>
     <!-- <div class="content"> -->
 
-        <div class="calcContainer">
-            <div class="calculator">
-                <div class="display">
-                    <div id="history" style="font-size:28px;color:#aaa;text-align:right;min-height:32px; transform: translateY(15px);"></div>
-                    <div id="current"
-                        style="min-height:58px; font-size:100px;
+    <div class="calcContainer">
+        <div class="calculator">
+            <div class="display">
+                <div id="history"
+                    style="font-size:28px;color:#aaa;text-align:right;min-height:32px; transform: translateY(15px);">
+                </div>
+                <div id="current" style="min-height:58px; font-size:100px;
                         transition:font-size 0.1s;
                         overflow:hidden;
                         text-overflow:ellipsis;
                         white-space:nowrap;
                         font-family: var(--font-text), sans-serif;">
-                        0
-                    </div>
-                </div>
-                <div class="buttons">
-                    <button class="special" onclick="clearDisplay()">AC</button>
-                    <button class="special" onclick="toggleSign()">±</button>
-                    <button class="special" onclick="percentage()">%</button>
-                    <button class="operator" onclick="setOperator('÷')">
-                        <h1>÷</h1>
-                    </button>
-
-                    <button class="number" onclick="appendNumber(7)">7</button>
-                    <button class="number" onclick="appendNumber(8)">8</button>
-                    <button class="number" onclick="appendNumber(9)">9</button>
-                    <button class="operator" onclick="setOperator('×')">
-                        <h1>×</h1>
-                    </button>
-
-                    <button class="number" onclick="appendNumber(4)">4</button>
-                    <button class="number" onclick="appendNumber(5)">5</button>
-                    <button class="number" onclick="appendNumber(6)">6</button>
-                    <button class="operator" onclick="setOperator('-')">
-                        <h1>-</h1>
-                    </button>
-
-                    <button class="number" onclick="appendNumber(1)">1</button>
-                    <button class="number" onclick="appendNumber(2)">2</button>
-                    <button class="number" onclick="appendNumber(3)">3</button>
-                    <button class="operator" onclick="setOperator('+')">
-                        <h1>+</h1>
-                    </button>
-
-                    <button class="number zero" onclick="appendNumber(0)">0</button>
-                    <button class="number" onclick="appendDecimal()">.</button>
-                    <button class="operator" onclick="calculate()">
-                        <h1>=</h1>
-                    </button>
+                    0
                 </div>
             </div>
+            <div class="buttons">
+                <button class="special" onclick="clearDisplay()">AC</button>
+                <button class="special" onclick="toggleSign()">±</button>
+                <button class="special" onclick="percentage()">%</button>
+                <button class="operator" onclick="setOperator('÷')">
+                    <h1>÷</h1>
+                </button>
+
+                <button class="number" onclick="appendNumber(7)">7</button>
+                <button class="number" onclick="appendNumber(8)">8</button>
+                <button class="number" onclick="appendNumber(9)">9</button>
+                <button class="operator" onclick="setOperator('×')">
+                    <h1>×</h1>
+                </button>
+
+                <button class="number" onclick="appendNumber(4)">4</button>
+                <button class="number" onclick="appendNumber(5)">5</button>
+                <button class="number" onclick="appendNumber(6)">6</button>
+                <button class="operator" onclick="setOperator('-')">
+                    <h1>-</h1>
+                </button>
+
+                <button class="number" onclick="appendNumber(1)">1</button>
+                <button class="number" onclick="appendNumber(2)">2</button>
+                <button class="number" onclick="appendNumber(3)">3</button>
+                <button class="operator" onclick="setOperator('+')">
+                    <h1>+</h1>
+                </button>
+
+                <button class="number zero" onclick="appendNumber(0)">0</button>
+                <button class="number" onclick="appendDecimal()">.</button>
+                <button class="operator" onclick="calculate()">
+                    <h1>=</h1>
+                </button>
+            </div>
         </div>
+    </div>
 
     <!-- </div> -->
 

@@ -45,11 +45,11 @@ nav {
 
 .NavContenttext_Title {
     margin-left: 1rem;
-    font-family: 'General Sans', "Segoe UI", sans-serif;
+    font-family: var(--font-primary);
 }
 
 .NavContenttext_Title p {
-    font-family: 'Inter tight', sans-serif;
+    font-family: var(--font-text);
 }
 
 .NavContent h1 {
@@ -182,7 +182,7 @@ nav {
 
 .ContentUpperColorPicker h1 {
     transform: translateY(-21.5px);
-    font-family: "inter tight", sans-serif;
+    font-family: var(--font-text);
     font-weight: 580;
 }
 
@@ -231,7 +231,7 @@ nav {
 /* AppearanceSettings */
 
 #TitleName {
-    font-family: "inter tight", sans-serif;
+    font-family: var(--font-text);
     font-weight: 580;
     transform: translateY(-21.5px);
 }

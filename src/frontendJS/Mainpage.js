@@ -1,3 +1,7 @@
+import { TabsSystem } from './TabsSystem.js';
+import { KeyboardShortcutManager } from './KeyShortcut.js';
+import { IframeCommunicator } from './IframeCommunicator.js';
+
 // Global configurations
 const appConfig = {
     'Todolist': { src: 'Todolist.html', loaded: false },
@@ -6,11 +10,6 @@ const appConfig = {
     'Note': { src: 'Notes.html', loaded: false },
     'Paint': { src: 'Paint.html', loaded: false }
 };
-
-let openApps = new Set();
-let currentActiveApp = null;
-const cachedApps = new Set();
-
 const appIcons = {
     'Todolist': 'M360-200v-80h480v80H360Zm0-240v-80h480v80H360Zm0-240v-80h480v80H360ZM200-160q-33 0-56.5-23.5T120-240q0-33 23.5-56.5T200-320q33 0 56.5 23.5T280-240q0 33-23.5 56.5T200-160Zm0-240q-33 0-56.5-23.5T120-480q0-33 23.5-56.5T200-560q33 0 56.5 23.5T280-480q0 33-23.5 56.5T200-400Zm0-240q-33 0-56.5-23.5T120-720q0-33 23.5-56.5T200-800q33 0 56.5 23.5T280-720q0 33-23.5 56.5T200-640Z', // list
     'Clock': 'M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm-20-320v-160h80v128l108 108-56 56-132-132Z', // schedule
@@ -21,7 +20,8 @@ const appIcons = {
 };
 
 // DOM Elements (will be initialized on DOMContentLoaded)
-let container, canvasAreas, tabsContainer, zoomInfo, homeContent, sidebar, sidebarHomePage;
+let container, canvasAreas, tabsContainer, zoomInfo, homeContent, sidebar, sidebarHomePage, tabsSystem, keyboardManager, iframeCommunicator;
+
 
 // Global State
 const state = {
@@ -500,711 +500,19 @@ const loadFromMemory = () => {
 // container.addEventListener('mousedown', handleMouseDown);
 // document.addEventListener('mousemove', handleMouseMove);
 // document.addEventListener('mouseup', handleMouseUp);
-
-// Keyboard Shortcuts
-document.addEventListener('keydown', (e) => {
-    if (e.repeat) return;
-
-    if (e.isComposing) return;
-
-    const isTyping = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
-    const isInIframe = e.target && typeof e.target.closest === 'function' && e.target.closest('.canvas-area-iframe');
-
-    if (state.editingTabIndex !== -1 || isTyping || isInIframe) {
-        return;
+const handleEscape = () => {
+    if (state.selectedAreaId) {
+        document.querySelectorAll('.canvas-area').forEach(area => area.classList.remove('selected'));
+        state.selectedAreaId = null;
     }
-
-    const ctrlOrMeta = e.ctrlKey || e.metaKey;
-
-    // Shortcuts (Ctrl/Cmd) ---
-    if (ctrlOrMeta) {
-        switch (e.code) {
-            // Tab/App Management
-            case 'KeyT': // Ctrl+T
-                e.preventDefault();
-                showAppSelection();
-                break;
-            case 'KeyW': // Ctrl+W
-                e.preventDefault();
-                if (currentActiveApp) closeApp(currentActiveApp);
-                else if (state.canvases.length > 1) closeCanvas(state.activeCanvasIndex);
-                break;
-            case 'Tab': // Ctrl+Tab & Ctrl+Shift+Tab
-                e.preventDefault();
-                const openAppsArray = Array.from(openApps);
-                if (openAppsArray.length > 1) {
-                    const currentIndex = openAppsArray.indexOf(currentActiveApp);
-                    if (e.shiftKey) { // Previous tab
-                        const prevIndex = currentIndex <= 0 ? openAppsArray.length - 1 : currentIndex - 1;
-                        showApp(openAppsArray[prevIndex]);
-                    } else { // Next tab
-                        const nextIndex = (currentIndex + 1) % openAppsArray.length;
-                        showApp(openAppsArray[nextIndex]);
-                    }
-                }
-                break;
-            // (1-9)
-            case 'Digit1': case 'Digit2': case 'Digit3': case 'Digit4': case 'Digit5': case 'Digit6': case 'Digit7': case 'Digit8': case 'Digit9':
-                e.preventDefault();
-                const tabIndex = parseInt(e.key) - 1;
-                const apps = Array.from(openApps);
-                if (tabIndex < apps.length) {
-                    showApp(apps[tabIndex]);
-                }
-                break;
-
-            // Canvas/Area Management
-            case 'KeyN': // Ctrl+N
-                e.preventDefault();
-                showNewAreaModal();
-                break;
-
-            case 'Equal': case 'NumpadAdd': case 'Minus': case 'NumpadSubtract': case 'Digit0': case 'Numpad0':
-                e.preventDefault(); // Prevent browser zoom
-                break;
-        }
-    }
-
-    switch (e.code) {
-        case 'Delete':
-        case 'NumpadDecimal': // Delete on numpad
-            if (state.selectedAreaId) {
-                e.preventDefault();
-                closeArea(state.selectedAreaId, e);
-            }
-            break;
-
-        case 'Escape':
-            if (state.selectedAreaId) {
-                document.querySelectorAll('.canvas-area').forEach(area => area.classList.remove('selected'));
-                state.selectedAreaId = null;
-            }
-            const popover = document.getElementById('app-popover');
-            if (popover && popover.style.display === 'block') {
-                popover.style.display = 'none';
-            }
-            break;
-
-        default:
-    }
-});
-
-window.addEventListener('message', (event) => {
-    const { appId, action, data } = event.data;
-    if (!appId || !action) return;
-
-    if (appId === 'Todolist' && action === 'updateStatus') {
-        const statusTextElement = document.getElementById('todolist-status-text');
-        if (!statusTextElement) return;
-        const count = data.count !== undefined ? data.count : 0;
-        statusTextElement.textContent = `${count} Task${count !== 1 ? 's' : ''}`;
-    } else if (appId === 'Note' && action === 'addToTodo' && data.text) {
-        showApp('Todolist');
-        setTimeout(() => sendCommandToIframe('Todolist', 'addTask', { text: data.text }), 250);
-    } else if (action === 'forwardKeydown') {
-        const keyboardEvent = new KeyboardEvent('keydown', {
-            key: data.key,
-            code: data.code,
-            ctrlKey: data.ctrlKey,
-            metaKey: data.metaKey,
-            shiftKey: data.shiftKey
-        });
-        document.dispatchEvent(keyboardEvent);
-    }
-});
-
-const updateNavbar = () => {
-    const navbarLinksContainer = document.getElementById('MainLINKS');
-    navbarLinksContainer.innerHTML = '';
-}
-
-function updateSidebarStatus(appName) {
-    const statusTextElement = document.getElementById('CurrentLinksText');
-    const statusSvgElement = document.getElementById('CurrentLinksSvg');
-
-    if (statusTextElement) {
-        statusTextElement.textContent = appName;
-    }
-
-    if (statusSvgElement && appIcons[appName]) {
-        const svgPath = statusSvgElement.querySelector('path');
-        if (svgPath) {
-            svgPath.setAttribute('d', appIcons[appName]);
-        }
-    }
-}
-
-const updateAppControls = (activeAppId) => {
-    const allControlBlocks = document.querySelectorAll('#appStatus .app-controls');
-    allControlBlocks.forEach(block => {
-        const blockAppId = block.dataset.appControls;
-        const actionButtons = block.querySelectorAll('.app-action-button');
-
-        const shouldShowButtons = (blockAppId === activeAppId);
-
-        actionButtons.forEach(button => {
-            button.style.display = shouldShowButtons ? 'flex' : 'none';
-        });
-    });
-}
-
-const sendCommandToIframe = (appId, action, data = {}) => {
-    const iframe = document.getElementById(appId);
-    if (iframe && iframe.contentWindow) {
-        iframe.contentWindow.postMessage({ action, data }, '*');
-    } else {
-        console.error(`Could not find active iframe for ${appId}`);
-    }
-}
-
-// Function to show loading overlay
-const showLoading = () => {
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    loadingOverlay.style.display = 'block';
-}
-
-// Function to hide loading overlay
-const hideLoading = () => {
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    loadingOverlay.style.display = 'none';
-}
-
-const createIframe = (appId) => {
-    let iframe = document.getElementById(appId);
-
-    if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.id = appId;
-        iframe.frameBorder = '0';
-        iframe.src = appConfig[appId].src;
-
-        iframe.addEventListener('load', function () {
-            appConfig[appId].loaded = true;
-            cachedApps.add(appId);
-            hideLoading();
-        });
-
-        iframe.addEventListener('error', function () {
-            hideLoading();
-            console.error(`Failed to load ${appId}`);
-        });
-
-        document.querySelector('.appiclationDrawer').appendChild(iframe);
-    }
-
-    return iframe;
-}
-
-const ensureIframeReady = (appId) => {
-    let iframe = document.getElementById(appId);
-
-    if (!iframe) {
-        iframe = createIframe(appId);
-        return iframe;
-    }
-
-    if (!iframe.src || iframe.src === 'about:blank') {
-        iframe.src = appConfig[appId].src;
-        appConfig[appId].loaded = false; // Reset loaded state
-    }
-
-    return iframe;
-}
-
-
-// Function to hide all iframes
-const hideAllIframes = () => {
-    const iframes = document.querySelectorAll('.appiclationDrawer iframe');
-    iframes.forEach(iframe => {
-        if (iframe.id !== 'loadingOverlay') {
-            iframe.classList.remove('active');
-        }
-    });
-
-    const navLinks = document.querySelectorAll('#MainLINKS a');
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-    });
-}
-
-const showApp = (appId, event) => {
-    if (event) event.preventDefault();
-
-    state.editingTabIndex = -1; // Reset editing state when switching apps
-
     const popover = document.getElementById('app-popover');
     if (popover && popover.style.display === 'block') {
         popover.style.display = 'none';
     }
-
-    const focusableApps = ['Todolist', 'Note'];
-
-    // If app is already open and active, just focus
-    if (openApps.has(appId) && currentActiveApp === appId) {
-        const iframe = document.getElementById(appId);
-        if (iframe && iframe.contentWindow) {
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                if (focusableApps.includes(appId)) {
-                    sendCommandToIframe(appId, 'focusInput');
-                }
-            }, 50);
-        }
-        return;
-    }
-
-    if (!openApps.has(appId)) {
-        state.newlyAddedAppId = appId; // Flag the new app
-        openApps.add(appId);
-        localStorage.setItem('EssentialAPP.openApps', JSON.stringify(Array.from(openApps)));
-    }
-
-    localStorage.setItem('EssentialAPP.lastActiveApp', appId);
-
-    hideAllIframes();
-
-    let iframe = ensureIframeReady(appId);
-
-    if (!appConfig[appId].loaded) {
-        showLoading();
-    } else {
-        hideLoading();
-    }
-
-    if (iframe) {
-        iframe.classList.remove('cached');
-        iframe.classList.add('active');
-        currentActiveApp = appId;
-        updateUIForActiveApp(appId);
-
-        setTimeout(() => {
-            if (iframe.contentWindow) {
-                iframe.contentWindow.focus();
-                if (focusableApps.includes(appId)) {
-                    sendCommandToIframe(appId, 'focusInput');
-                }
-            }
-        }, appConfig[appId].loaded ? 50 : 500); // Longer delay if still loading
-    } else {
-        console.error(`Failed to create iframe for ${appId}`);
-    }
-}
-
-const closeApp = (appId, event) => {
-    if (event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
-
-    state.editingTabIndex = -1; // Reset editing state when closing an app
-
-    openApps.delete(appId);
-
-    const tabElement = document.querySelector(`.app-tab[data-app-id="${appId}"]`);
-
-    if (tabElement) {
-        tabElement.classList.add('tab-closing-animation');
-        tabElement.addEventListener('animationend', () => {
-            finishCloseApp(appId);
-        }, { once: true });
-    } else {
-        // If tab not found, close immediately
-        finishCloseApp(appId);
-    }
-}
-
-const finishCloseApp = (appId) => {
-    localStorage.setItem('EssentialAPP.openApps', JSON.stringify(Array.from(openApps)));
-
-    const iframe = document.getElementById(appId);
-    if (iframe) {
-        iframe.classList.remove('active');
-        iframe.classList.add('cached');
-    }
-
-    if (currentActiveApp === appId) {
-        const openAppsArray = Array.from(openApps);
-        if (openAppsArray.length > 0) {
-            const lastApp = openAppsArray[openAppsArray.length - 1];
-            showApp(lastApp);
-        } else {
-            showHome();
-        }
-    }
-
-    updateUIForActiveApp(currentActiveApp);
-}
-
-const updateUIForActiveApp = (activeAppId) => {
-    updateSidebarStatus(activeAppId || 'All Apps');
-    updateAppControls(activeAppId);
-
-    updateNavbarLinks(activeAppId);
-
-    const isAppActive = !!activeAppId;
-
-    if (homeContent) {
-        homeContent.style.display = isAppActive ? 'none' : 'block';
-    }
-    if (sidebar) {
-        sidebar.classList.toggle('hidden', isAppActive);
-    }
-
-    const contentElement = document.querySelector('.content');
-    if (contentElement) {
-        contentElement.classList.toggle('full-width', isAppActive);
-    }
-
-    if (sidebarHomePage) {
-        sidebarHomePage.classList.toggle('while-open-anotherapp', isAppActive)
-    }
-
-    const navbar_ul = document.querySelector('nav ul');
-    if (navbar_ul) {
-        navbar_ul.classList.toggle('while-open-othersapp', isAppActive);
-    }
-
-    const contentTextH1 = document.querySelector('.contentTEXT h1');
-    if (contentTextH1) {
-        contentTextH1.textContent = activeAppId || 'EssentialAPP';
-    }
-
-    setTimeout(() => {
-        ensureCreateButtonExists();
-    }, 50);
-}
-
-const ensureCreateButtonExists = () => {
-    const existingBtn = document.getElementById('create-new-tab-btn');
-    const mainLinks = document.getElementById('MainLINKS');
-
-    if (mainLinks && !existingBtn) {
-        createNewTabButton();
-    }
-}
-
-
-const updateNavbarLinks = (activeAppId) => {
-    const navbarLinksContainer = document.getElementById('MainLINKS');
-
-    if (!navbarLinksContainer) {
-        return;
-    }
-
-    navbarLinksContainer.innerHTML = '';
-
-    Array.from(openApps).forEach(appId => {
-        const li = document.createElement('li');
-        li.draggable = true;
-        li.dataset.appId = appId;
-        li.className = `app-tab app-tab-${appId}`;
-
-        // Add spawn animation
-        if (state.newlyAddedAppId === appId) {
-            li.classList.add('tab-merge-animation');
-            delete state.newlyAddedAppId; // Clear the flag
-        }
-
-        const a = document.createElement('a');
-        a.href = 'javascript:void(0)';
-        a.onclick = () => showApp(appId);
-
-        if (appId === activeAppId) {
-            li.classList.add('active');
-            a.classList.add('active');
-        }
-
-        if (appIcons[appId]) {
-            const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            iconSvg.setAttribute('height', '20px');
-            iconSvg.setAttribute('viewBox', '0 -960 960 960');
-            iconSvg.setAttribute('width', '20px');
-            iconSvg.setAttribute('fill', 'currentColor');
-            iconSvg.innerHTML = `<path d="${appIcons[appId]}"/>`;
-            a.appendChild(iconSvg);
-        }
-
-        const textSpan = document.createElement('span');
-        textSpan.textContent = appId;
-        // textSpan.style.marginRight = '8px';
-
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'navbar-tab-close-btn';
-        closeBtn.innerHTML = '&times;';
-        closeBtn.title = `Close ${appId}`;
-        closeBtn.onclick = (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            closeApp(appId, e);
-        };
-
-        a.appendChild(textSpan);
-        a.appendChild(closeBtn);
-        li.appendChild(a);
-
-        li.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            window.tabAPI.showContextMenu({ appId, pos: { x: e.clientX, y: e.clientY } });
-        });
-
-        // Drag and Drop to new window
-        li.addEventListener('dragstart', (e) => {
-            e.stopPropagation();
-            e.dataTransfer.setData('text/plain', appId);
-            e.dataTransfer.effectAllowed = 'move';
-
-            // Create a ghost preview
-            const ghost = document.createElement('div');
-            ghost.id = 'drag-ghost-element';
-            ghost.className = 'drag-ghost';
-            ghost.innerHTML = li.querySelector('a').innerHTML;
-            ghost.querySelector('.navbar-tab-close-btn').remove();
-            document.body.appendChild(ghost);
-            e.dataTransfer.setDragImage(ghost, 20, 20);
-
-            setTimeout(() => {
-                li.style.opacity = '0.5';
-            }, 0);
-        });
-
-        li.addEventListener('dragend', (e) => {
-            e.stopPropagation();
-            li.style.opacity = '1';
-
-            const ghost = document.getElementById('drag-ghost-element');
-            if (ghost) {
-                ghost.remove();
-            }
-
-            if (e.dataTransfer.dropEffect === 'none') {
-                const position = { x: e.screenX, y: e.screenY };
-                window.electronAPI.dragToNewWindow(appId, appId, appConfig[appId].src, position);
-                closeApp(appId);
-            }
-        });
-
-        // Drag to reorder
-        li.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            const targetTab = e.currentTarget;
-            const rect = targetTab.getBoundingClientRect();
-            const isAfter = e.clientX > rect.left + rect.width / 2;
-
-            document.querySelectorAll('.app-tab-placeholder').forEach(p => p.remove());
-            const placeholder = document.createElement('li');
-            placeholder.className = 'app-tab-placeholder';
-
-            if (isAfter) {
-                targetTab.parentNode.insertBefore(placeholder, targetTab.nextSibling);
-            } else {
-                targetTab.parentNode.insertBefore(placeholder, targetTab);
-            }
-        });
-
-        li.addEventListener('dragleave', (e) => {
-            setTimeout(() => {
-                if (!li.contains(e.relatedTarget)) {
-                    document.querySelectorAll('.app-tab-placeholder').forEach(p => p.remove());
-                }
-            }, 10);
-        });
-
-        li.addEventListener('drop', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            document.querySelectorAll('.app-tab-placeholder').forEach(p => p.remove());
-            const draggedAppId = e.dataTransfer.getData('text/plain');
-            const targetAppId = e.currentTarget.dataset.appId;
-            const rect = e.currentTarget.getBoundingClientRect();
-            const isAfter = e.clientX > rect.left + rect.width / 2;
-            reorderApps(draggedAppId, targetAppId, isAfter);
-        });
-
-        navbarLinksContainer.appendChild(li);
-    });
-
-    createNewTabButton();
-}
-
-const reorderApps = (draggedAppId, targetAppId, isAfter) => {
-    if (draggedAppId === targetAppId) return;
-
-    const container = document.getElementById('MainLINKS');
-    const children = Array.from(container.children).filter(c => c.classList.contains('app-tab'));
-
-    const firstPositions = new Map();
-    children.forEach(child => {
-        firstPositions.set(child.dataset.appId, child.getBoundingClientRect());
-    });
-
-    let appOrder = Array.from(openApps);
-    const draggedIndex = appOrder.indexOf(draggedAppId);
-    if (draggedIndex === -1) return;
-
-    appOrder.splice(draggedIndex, 1);
-
-    const targetIndex = appOrder.indexOf(targetAppId);
-    if (targetIndex === -1) {
-        appOrder.push(draggedAppId);
-    } else {
-        const insertionIndex = isAfter ? targetIndex + 1 : targetIndex;
-        appOrder.splice(insertionIndex, 0, draggedAppId);
-    }
-
-    openApps = new Set(appOrder);
-    localStorage.setItem('EssentialAPP.openApps', JSON.stringify(appOrder));
-
-    updateNavbarLinks(currentActiveApp);
-
-    requestAnimationFrame(() => {
-        const newChildren = Array.from(container.children).filter(c => c.classList.contains('app-tab'));
-        newChildren.forEach(child => {
-            const appId = child.dataset.appId;
-            const firstPos = firstPositions.get(appId);
-            if (firstPos) {
-                const lastPos = child.getBoundingClientRect();
-                const deltaX = firstPos.left - lastPos.left;
-                const deltaY = firstPos.top - lastPos.top;
-
-                if (deltaX !== 0 || deltaY !== 0) {
-                    child.animate([
-                        { transform: `translate(${deltaX}px, ${deltaY}px)` },
-                        { transform: 'translate(0, 0)' }
-                    ], {
-                        duration: 300,
-                        easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
-                    });
-                }
-            }
-        });
-    });
 };
 
-const createNewTabButton = () => {
-    const navbarLinksContainer = document.getElementById('MainLINKS');
-
-    if (!navbarLinksContainer) {
-        return;
-    }
-
-    const existingBtn = document.getElementById('create-new-tab-btn');
-    if (existingBtn) {
-        existingBtn.remove();
-    }
-
-    const createBtnLi = document.createElement('li');
-    createBtnLi.className = 'create-new-btn-container';
-    createBtnLi.id = 'create-new-tab-btn';
-
-    const createBtnA = document.createElement('a');
-    createBtnA.href = 'javascript:void(0)';
-    createBtnA.className = 'create-new-btn';
-    createBtnA.title = 'New Tab';
-    createBtnA.onclick = () => showAppSelection();
-
-    createBtnA.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
-        </svg>`;
-
-    createBtnLi.appendChild(createBtnA);
-    navbarLinksContainer.appendChild(createBtnLi);
-}
-
-const showAppSelection = () => {
-    const popover = document.getElementById('app-popover');
-    const isVisible = popover.style.display === 'block';
-
-    if (isVisible) {
-        popover.style.display = 'none';
-    } else {
-        popover.style.display = 'block';
-        const closeOnClickOutside = (event) => {
-            // Ensure event.target is a valid element before calling closest()
-            if (!event || !event.target || !(event.target instanceof Element)) {
-                return;
-            }
-            if (!popover.contains(event.target) && !event.target.closest('.create-new-btn')) {
-                popover.style.display = 'none';
-                document.removeEventListener('click', closeOnClickOutside, true);
-            }
-        };
-        document.addEventListener('click', closeOnClickOutside, true);
-    }
-}
-
-// Show home/all apps view
-const showHome = () => {
-    hideAllIframes();
-    hideLoading();
-    state.editingTabIndex = -1; // Reset editing state when going home
-    hideLoading();
-    currentActiveApp = null;
-    updateUIForActiveApp(null);
-    localStorage.setItem('EssentialAPP.lastActiveApp', 'home');
-}
-
-const showAllApps = () => {
-    hideAllIframes();
-    hideLoading();
-    showHome();
-}
-
-// Preload function for better performance
-const preloadApp = (appId) => {
-    if (!appConfig[appId].loaded && !document.getElementById(appId)) {
-        createIframe(appId);
-    }
-}
-
-const reloadApp = (appId) => {
-    const iframe = document.getElementById(appId);
-    if (iframe) {
-        appConfig[appId].loaded = false;
-        cachedApps.delete(appId);
-        iframe.src = iframe.src;
-        if (currentActiveApp === appId) {
-            showLoading();
-        }
-    }
-}
-
-const closeOtherApps = (appIdToKeep) => {
-    Array.from(openApps).filter(id => id !== appIdToKeep).forEach(id => closeApp(id));
-}
-
-const closeAppsToTheRight = (appId) => {
-    const appIds = Array.from(openApps);
-    const currentAppIndex = appIds.indexOf(appId);
-    if (currentAppIndex > -1) {
-        const tabsToClose = appIds.slice(currentAppIndex + 1);
-        tabsToClose.forEach(id => closeApp(id));
-    }
-}
-
-const tabActionHandlers = {
-    'reload': reloadApp,
-    'duplicate': (appId) => {
-        console.log('[Tab Action] Duplicate called for:', appId);
-        if (window.electronAPI?.invoke && appConfig[appId]) {
-            // Send to relative path
-            let url = appConfig[appId].src;
-
-            if (url.includes('\\') || url.includes('/')) {
-                url = url.split(/[\\\/]/).pop();
-            }
-
-            console.log('[Tab Action] Sending filename:', url);
-            window.electronAPI.invoke('open-in-new-window', { url: url, title: appId })
-                .then(result => console.log('[Tab Action] Result:', result))
-                .catch(err => console.error('[Tab Action] Error:', err));
-        }
-    },
-    'close-others': closeOtherApps,
-    'close-right': closeAppsToTheRight,
-    'close': closeApp
-};
+window.showApp = (appId, event) => tabsSystem.showApp(appId, event);
+window.showHome = () => tabsSystem.showHome();
 
 // SVG Theme chenge content
 
@@ -1281,34 +589,31 @@ document.addEventListener('DOMContentLoaded', () => {
     sidebar = document.querySelector('.menu');
     sidebarHomePage = document.getElementById('GotoHomePage');
 
+    tabsSystem = new TabsSystem(appConfig, appIcons, homeContent, sidebar, sidebarHomePage);
+    tabsSystem.init();
+
+    const canvasManager = {
+        closeCanvas,
+        showNewAreaModal,
+        closeArea,
+        handleEscape
+    };
+    keyboardManager = new KeyboardShortcutManager(state, tabsSystem, canvasManager);
+    keyboardManager.init();
+
+    iframeCommunicator = new IframeCommunicator(tabsSystem);
+    iframeCommunicator.init();
+
     // Init SVG theme content
     usingThemeObserver();
-
-    hideAllIframes();
-
-    // Load saved open apps and ensure they're properly initialized
-    const savedOpenApps = JSON.parse(localStorage.getItem('EssentialAPP.openApps') || '[]');
-    openApps = new Set(savedOpenApps);
-
-    savedOpenApps.forEach(appId => {
-        if (appConfig[appId]) {
-            ensureIframeReady(appId);
-        }
-    });
-
-    const lastApp = localStorage.getItem('EssentialAPP.lastActiveApp');
-
-    if (lastApp && lastApp !== 'home' && appConfig[lastApp] && openApps.has(lastApp)) {
-        setTimeout(() => showApp(lastApp), 100);
-    } else {
-        showHome();
-    }
 
     // Toggle contextmenu while in titlbar (only tabs bar)
 
     if (window.tabAPI?.onTabAction) {
         window.tabAPI.onTabAction(({ action, appId }) => {
-            if (tabActionHandlers[action]) tabActionHandlers[action](appId);
+            if (tabsSystem.tabActionHandlers[action]) {
+                tabsSystem.tabActionHandlersaction;
+            }
         })
     }
 
@@ -1342,8 +647,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (action && appId) {
                         if (action === 'open-in-new-window' && href && title) {
                             window.electronAPI.invoke('open-in-new-window', { url: href, title: title });
-                        } else if (tabActionHandlers[action]) {
-                            tabActionHandlers[action](appId);
+                        } else if (tabsSystem.tabActionHandlers[action]) {
+                            tabsSystem.tabActionHandlersaction;
                         }
                     }
                     menu.remove();
@@ -1368,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (onclick && onclick.includes('showApp')) {
                 const appId = onclick.match(/showApp\('(.+?)'\)/)?.[1];
                 if (appId && !appConfig[appId].loaded) {
-                    setTimeout(() => preloadApp(appId), 200);
+                    setTimeout(() => tabsSystem.preloadApp(appId), 200);
                 }
             }
         });
@@ -1393,8 +698,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.data.type === 'tab-action') {
             const { action, appId } = event.data;
             console.log('[Message] Tab action received:', action, appId);
-            if (tabActionHandlers[action]) {
-                tabActionHandlers[action](appId);
+            if (tabsSystem.tabActionHandlers[action]) {
+                tabsSystem.tabActionHandlersaction;
             } else {
                 console.error('[Message] Unknown action:', action);
             }

@@ -334,17 +334,17 @@ class ContextMenuEvents {
                 // console.log('ESNTL: Creating new window with title:', title);
 
                 const newWindow = await this.createWindowWithPromise({
-                    width: 640,
-                    height: 480,
+                    width: 360,
+                    height: 600,
                     titleBarStyle: 'default',
                     minWidth: 350,
-                    minHeight: 300,
+                    minHeight: 200,
                     title: `${title} - ${this.Essential.name}`,
                     center: true,
                     icon: this.getThemeIcon(),
                     webPreferences: {
                         ...this.BASE_WEB_PREFERENCES,
-                        preload: path.join(__dirname, 'preload.js')
+                        preload: path.join(__dirname, '..', 'preload.js')
                     }
                 });
 

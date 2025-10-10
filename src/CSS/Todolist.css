@@ -7,10 +7,10 @@
     font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
     font-weight: 300;
     cursor: pointer;
-    border-radius: 4px; 
+    border-radius: 4px;
     transition: background 0.2s;
     line-height: 1.6;
-    font-size: 12.5px;  
+    font-size: 12.5px;
 }
 
 #shortDate:hover {
@@ -523,13 +523,13 @@ input[type="checkbox"] {
 }
 
 @media (max-width: 350px) {
-    
+
     #shortDate {
         display: none;
     }
 
     #todo-input {
         width: 230px;
-    }    
+    }
 
 }
