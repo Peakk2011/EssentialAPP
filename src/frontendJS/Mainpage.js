@@ -122,8 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (action && appId) {
                         if (action === 'open-in-new-window' && href && title) {
                             window.electronAPI.invoke('open-in-new-window', { url: href, title: title });
-                        } else if (tabActionHandlers[action]) {
-                            tabActionHandlers[action](appId);
+                        } else if (tabsSystem.tabActionHandlers[action]) {
+                            tabsSystem.tabActionHandlersaction;
                         }
                     }
                     menu.remove();
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (onclick && onclick.includes('showApp')) {
                 const appId = onclick.match(/showApp\('(.+?)'\)/)?.[1];
                 if (appId && !appConfig[appId].loaded) {
-                    setTimeout(() => preloadApp(appId), 200);
+                    setTimeout(() => tabsSystem.preloadApp(appId), 200);
                 }
             }
         });

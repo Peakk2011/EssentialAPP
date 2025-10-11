@@ -44,8 +44,7 @@
   opacity: 0;
   animation: none;
   will-change: transform, opacity, filter, max-height;
-  /* font-family: 'Inter Tight', 'IBM Plex Sans Thai', sans-serif; */
-  font-family: 'Inter Tight', 'Leelawadee UI', sans-serif;
+  font-family: var(--font-text);
   overflow: hidden;
   transition: var(--ctx-menu-transition),
     max-height 1400ms ease-in-out;

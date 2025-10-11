@@ -122,7 +122,10 @@ const createMainWindow = async (systemInfo) => {
       icon: config.getThemeIcon(),
       minWidth: WINDOW_CONFIG.min.width,
       minHeight: WINDOW_CONFIG.min.height,
-      webPreferences: { ...BASE_WEB_PREFERENCES }
+      webPreferences: {
+        ...BASE_WEB_PREFERENCES,
+        preload: path.join(__dirname, 'preload.js'),
+      }
     }).catch(async (err) => {
       await handleError(null, err, 'window-creation');
       throw err;

@@ -53,8 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadWasm() {
         const response = await fetch('clockstopwatch.wasm');
-        const buffer = await response.arrayBuffer();
-        const { instance } = await WebAssembly.instantiate(buffer);
+        const { instance } = await WebAssembly.instantiateStreaming(response);
         exports = instance.exports;
         if (exports.stopwatch_create) exports.stopwatch_create();
         setupEvents();

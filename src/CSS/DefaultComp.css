@@ -1,11 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap');
 /* Inter tight: for text fonts */
 @import url('https://fonts.googleapis.com/css2?family=Hind:wght@300&family=IBM+Plex+Sans+Thai:wght@300&family=Inter+Tight:wght@300&family=Noto+Sans+SC:wght@300&display=swap');
 /* Date font for other lang that complatible with intertight */
 @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@100..700&display=swap');
 /* Default fonts fallback for Notes app: => font-family: "Anuphan", sans-serif; */
+
+@font-face {
+    font-family: "General Sans";
+    src: url("../assets/typeface/GeneralSans-Variable.woff2") format("woff2");
+    font-display: swap;
+}
 
 :where(li, a) {
     text-decoration: none;
@@ -29,21 +34,31 @@
 
 :root {
     /* HSL Theme Colors - Dark Mode */
-    --theme-bg: hsl(0, 0%, 6%);           /* #0F0F0F */
-    --theme-fg: hsl(0, 0%, 100%);         /* #ffffff */
-    --theme-primary: hsl(0, 0%, 3%);      /* #080808 */
-    --theme-accent: hsl(0, 32%, 85%);     
-    --theme-border: hsl(0, 0%, 20%);      
-    --theme-card: hsl(0, 0%, 8%);         /* #141414 */
-    --theme-titlebar: hsl(0, 0%, 6%);     /* #0f0f0f */
-    --theme-links: hsl(0, 0%, 77%);       /* #C4C4C4 */
-    --HoverColor: hsl(0, 0%, 19%);        /* #313131 */
-    --SoftHoverColor: hsl(0, 0%, 12%);    /* #1e1e1e */
-    --NameColorSvg: hsl(0, 0%, 100%);     /* #fff */
+    --theme-bg: hsl(0, 0%, 6%);
+    /* #0F0F0F */
+    --theme-fg: hsl(0, 0%, 100%);
+    /* #ffffff */
+    --theme-primary: hsl(0, 0%, 3%);
+    /* #080808 */
+    --theme-accent: hsl(0, 32%, 85%);
+    --theme-border: hsl(0, 0%, 20%);
+    --theme-card: hsl(0, 0%, 8%);
+    /* #141414 */
+    --theme-titlebar: hsl(0, 0%, 6%);
+    /* #0f0f0f */
+    --theme-links: hsl(0, 0%, 77%);
+    /* #C4C4C4 */
+    --HoverColor: hsl(0, 0%, 19%);
+    /* #313131 */
+    --SoftHoverColor: hsl(0, 0%, 12%);
+    /* #1e1e1e */
+    --NameColorSvg: hsl(0, 0%, 100%);
+    /* #fff */
 
     /* Typography */
-    --font-primary: "Manrope", sans-serif;
-    --font-text: "Inter Tight", system-ui, sans-serif;
+    --font-primary: "General Sans", "Leelawadee UI", sans-serif;
+    --font-text: "Inter Tight", "Leelawadee UI", system-ui, sans-serif;
+    --font-primary-thai-anuphan: "General Sans", "Anuphan", "system-ui", sans-serif;
     --font-size-base: 14px;
     --font-scale: 1.2;
     --line-height: 1.5;
@@ -71,32 +86,39 @@
     --ColorHighlight: var(--theme-accent);
     --CardMainColor: var(--theme-card);
     --accent: var(--theme-accent);
-    --HRborder: solid 1px hsl(0, 0%, 18%);        /* #2f2f2f */
-    --RippleEffectColor: hsla(0, 0%, 100%, 0.27); /* rgba(255, 255, 255, 0.270) */
+    --HRborder: solid 1px hsl(0, 0%, 18%);
+    /* #2f2f2f */
+    --RippleEffectColor: hsla(0, 0%, 100%, 0.27);
+    /* rgba(255, 255, 255, 0.270) */
 
     /* Titlebar */
-    --TitlebarColor: hsl(0, 0%, 6%);      
-    --TitlebarColorButton: hsl(0, 0%, 100%);      /* #fff */
+    --TitlebarColor: hsl(0, 0%, 6%);
+    --TitlebarColorButton: hsl(0, 0%, 100%);
+    /* #fff */
     --TitlebarColorBorder: solid 1px var(--theme-border);
     --TitlebarColorHover: var(--SoftHoverColor);
     /* Toolbar */
     --toolbar-bg: hsl(0, 0%, 3%);
 
     /* Context Menu */
-    --ctx-menu-bg: hsla(0, 0%, 8.5%, 0.820);               
-    --ctx-menu-hover: hsl(0, 0%, 17.5%);           
-    --ctx-menu-active: hsl(0, 0%, 5%);            /* #0c0c0c */
-    --ctx-menu-text: hsl(0, 0%, 89%);             /* #e3e3e3 */
-    --ctx-menu-text-hover: hsl(0, 0%, 100%);      /* #ffffff */
+    --ctx-menu-bg: hsla(0, 0%, 8.5%, 0.820);
+    --ctx-menu-hover: hsl(0, 0%, 17.5%);
+    --ctx-menu-active: hsl(0, 0%, 5%);
+    /* #0c0c0c */
+    --ctx-menu-text: hsl(0, 0%, 89%);
+    /* #e3e3e3 */
+    --ctx-menu-text-hover: hsl(0, 0%, 100%);
+    /* #ffffff */
 
     /* Shadows */
-    --ctx-menu-shadow: 
+    --ctx-menu-shadow:
         0px 24px 38px hsla(0, 0%, 0%, 0.14),
         0px 9px 46px hsla(0, 0%, 0%, 0.12),
         0px 11px 15px hsla(0, 0%, 0%, 0.20);
 
     /* Buttons */
-    --PrimaryButtonsColors: hsl(0, 0%, 13%);      /* #222 */
+    --PrimaryButtonsColors: hsl(0, 0%, 13%);
+    /* #222 */
     --PrimaryButtonsColors: var(--HoverColor);
 
     /* Toggle States */
@@ -104,7 +126,8 @@
     --DarkmodeToggleButtons: block;
 
     /* Background Blur */
-    --BackgroundBlurColor: hsla(0, 0%, 6%, 0.92); /* rgba(15, 15, 15, 0.920) */
+    --BackgroundBlurColor: hsla(0, 0%, 6%, 0.92);
+    /* rgba(15, 15, 15, 0.920) */
 }
 
 /* Dark Theme (Default) */
@@ -131,7 +154,7 @@
     --ctx-menu-active: hsl(0, 0%, 5%);
     --ctx-menu-text: hsl(0, 0%, 89%);
     --ctx-menu-text-hover: hsl(0, 0%, 100%);
-    --ctx-menu-shadow: 
+    --ctx-menu-shadow:
         0px 32px 48px hsla(0, 0%, 0%, 0.25),
         0px 16px 56px hsla(0, 0%, 0%, 0.20),
         0px 20px 24px hsla(0, 0%, 0%, 0.30);
@@ -146,37 +169,59 @@
 }
 
 /* Light Theme */
-:root[data-theme="light"], html.light, body.light {
-    --theme-bg: hsl(50, 40%, 96.5%);             
-    --theme-fg: hsl(0, 0%, 6%);                  /* #0f0f0f */
-    --theme-primary: hsl(0, 0%, 100%);           /* #ffffff */
-    --theme-card: hsl(0, 0%, 99%);               /* #fcfcfc */
-    --theme-titlebar: hsl(0, 0%, 94%);           /* #f0f0f0 */
-    --theme-border: hsl(40, 15%, 82.5%);           
-    --HoverColor: hsl(40, 10%, 85%);             
-    --SoftHoverColor: hsl(40, 15%, 91.25%);         
-    --theme-links: hsl(0, 0%, 13%);              /* #222 */
-    --NameColorSvg: hsl(0, 0%, 0%);              /* #000 */
+:root[data-theme="light"],
+html.light,
+body.light {
+    --theme-bg: hsl(50, 40%, 96.5%);
+    --theme-fg: hsl(0, 0%, 6%);
+    /* #0f0f0f */
+    --theme-primary: hsl(0, 0%, 100%);
+    /* #ffffff */
+    --theme-card: hsl(0, 0%, 99%);
+    /* #fcfcfc */
+    --theme-titlebar: hsl(0, 0%, 94%);
+    /* #f0f0f0 */
+    --theme-border: hsl(40, 15%, 82.5%);
+    --HoverColor: hsl(40, 10%, 85%);
+    --SoftHoverColor: hsl(40, 15%, 91.25%);
+    --theme-links: hsl(0, 0%, 13%);
+    /* #222 */
+    --NameColorSvg: hsl(0, 0%, 0%);
+    /* #000 */
     --theme-accent: hsl(0, 15%, 80%);
-    --HRborder: solid 1px hsl(0, 0%, 90%);       /* #e6e6e6 */
-    --RippleEffectColor: hsla(0, 0%, 0%, 0.27);  /* rgba(0, 0, 0, 0.27) */
-    --TitlebarColor: hsl(50, 40%, 96.5%);          /* #f3f2f0 */
-    --TitlebarColorButton: hsl(0, 0%, 19%);      /* #303030 */
+    --HRborder: solid 1px hsl(0, 0%, 90%);
+    /* #e6e6e6 */
+    --RippleEffectColor: hsla(0, 0%, 0%, 0.27);
+    /* rgba(0, 0, 0, 0.27) */
+    --TitlebarColor: hsl(50, 40%, 96.5%);
+    /* #f3f2f0 */
+    --TitlebarColorButton: hsl(0, 0%, 19%);
+    /* #303030 */
     --TitlebarColorBorder: var(--theme-border) solid 1px;
-    --TitlebarColorHover: hsl(40, 10%, 92.5%);   
-    --ctx-menu-bg: hsla(60, 11%, 96%, 0.900);             /* #f6f6f5 */
-    --ctx-menu-hover: hsl(40, 15%, 90%);           /* #e4e4e4 */
-    --ctx-menu-active: hsl(0, 0%, 91%);          /* #e8e8e8 */
-    --ctx-menu-text: hsl(0, 0%, 0%);             /* #000 */
-    --ctx-menu-text-hover: hsl(0, 0%, 0%);       /* #000000 */
-    --ctx-menu-shadow: 
-        0px 4px 12px hsla(0, 0%, 0%, 0.06),      /* Subtle main shadow */
-        0px 8px 24px hsla(0, 0%, 0%, 0.08),      /* Soft secondary spread */
-        0px 16px 32px hsla(0, 0%, 0%, 0.10);     /* long shadow */
-    --PrimaryButtonsColors: hsl(45, 8%, 90%);    /* #cecdc6 */
+    --TitlebarColorHover: hsl(40, 10%, 92.5%);
+    --ctx-menu-bg: hsla(60, 11%, 96%, 0.900);
+    /* #f6f6f5 */
+    --ctx-menu-hover: hsl(40, 15%, 90%);
+    /* #e4e4e4 */
+    --ctx-menu-active: hsl(0, 0%, 91%);
+    /* #e8e8e8 */
+    --ctx-menu-text: hsl(0, 0%, 0%);
+    /* #000 */
+    --ctx-menu-text-hover: hsl(0, 0%, 0%);
+    /* #000000 */
+    --ctx-menu-shadow:
+        0px 4px 12px hsla(0, 0%, 0%, 0.06),
+        /* Subtle main shadow */
+        0px 8px 24px hsla(0, 0%, 0%, 0.08),
+        /* Soft secondary spread */
+        0px 16px 32px hsla(0, 0%, 0%, 0.10);
+    /* long shadow */
+    --PrimaryButtonsColors: hsl(45, 8%, 90%);
+    /* #cecdc6 */
     --LightmodeToggleButtons: block;
     --DarkmodeToggleButtons: none;
-    --BackgroundBlurColor: hsla(45, 43%, 96%, 0.765); /* rgba(250, 248, 240, 0.765) */
+    --BackgroundBlurColor: hsla(45, 43%, 96%, 0.765);
+    /* rgba(250, 248, 240, 0.765) */
     color-scheme: light;
     background: var(--theme-bg);
     color: var(--theme-fg);
@@ -199,6 +244,18 @@
     -webkit-user-select: none;
     user-select: none;
     transition: 0s;
+}
+
+@media not all and (min--moz-device-pixel-ratio: 0) {
+    body {
+        font-family: var(--font-primary);
+    }
+}
+
+@supports (-webkit-appearance: none) {
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    }
 }
 
 html {

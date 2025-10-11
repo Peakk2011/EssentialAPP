@@ -1,5 +1,4 @@
 // ./components/dragDrop.js
-
 const { BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -128,7 +127,6 @@ const setupDragToNewWindow = (config = {}) => {
             const display = screen.getDisplayNearestPoint({ x: position.x, y: position.y });
             const workArea = display.workArea;
 
-            // Calculate window position to center
             let x = position ? Math.round(position.x - width / 2) : undefined;
             let y = position ? Math.round(position.y - height / 2) : undefined;
 

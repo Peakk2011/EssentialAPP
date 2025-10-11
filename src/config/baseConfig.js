@@ -29,6 +29,7 @@ const FIRST_TIME_CONFIG = {
     height: 420,
     frame: false,
     titleBarStyle: 'default',
+    resizable: false,
     trafficLightPosition: { x: 12, y: 11.25 },
     center: true,
     show: false,
