@@ -24,7 +24,6 @@ class ConfigManager {
 
     saveTheme(theme) {
         try {
-            
             // Create directory
             fs.mkdirSync(path.dirname(this.configPath), { recursive: true });
             // Read

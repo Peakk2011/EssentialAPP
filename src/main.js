@@ -246,7 +246,16 @@ const createMainWindow = async (systemInfo) => {
 
 // Main application
 (async () => {
-  setupDragToNewWindow();
+  setupDragToNewWindow({
+    safeLoad: safeLoad,                           // Add safeLoad
+    handleError: handleError,                     // Add handleError
+    BASE_WEB_PREFERENCES: BASE_WEB_PREFERENCES,
+    getThemeIcon: config.getThemeIcon,
+    Essential: {
+      name: 'EssentialAPP',
+      version: app.getVersion()
+    }
+  });
   app.on('ready', () => {
     globalShortcut.register('Control+Shift+I', () => {
       const focusedWin = getFocusedWindow();

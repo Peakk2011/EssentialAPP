@@ -372,34 +372,6 @@ export const MintUtils = {
     }
 };
 
-import PerformanceMonitor from './performanceMonitor.js';
-
-export const ReloadPerformanceTracker = {
-    enabled: false,
-    history: [],
-
-    recordReload(duration) {
-        if (this.enabled) {
-            this.history.push({ duration, timestamp: Date.now() });
-            if (this.history.length > 10) this.history.shift();
-        }
-    },
-
-    getStats() {
-        if (!this.history.length) return null;
-        const durations = this.history.map(h => h.duration);
-        return {
-            totalReloads: this.history.length,
-            averageTime: durations.reduce((a, b) => a + b) / durations.length,
-            minTime: Math.min(...durations),
-            maxTime: Math.max(...durations)
-        };
-    },
-
-    enable() { this.enabled = true; },
-    disable() { this.enabled = false; }
-};
-
 export function clearInjectionCache() {
     cssCache.clear();
 }

@@ -1,3 +1,5 @@
+// ./components/eventContextmenu.js
+
 const { ipcMain, BrowserWindow, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -333,18 +335,23 @@ class ContextMenuEvents {
 
                 // console.log('ESNTL: Creating new window with title:', title);
 
+                const width = 350;
+                const height = 600;
+                const minWidth = 350;
+                const minHeight = 200;
+
                 const newWindow = await this.createWindowWithPromise({
-                    width: 640,
-                    height: 480,
+                    width: width,
+                    height: height,
                     titleBarStyle: 'default',
-                    minWidth: 350,
-                    minHeight: 300,
+                    minWidth: minWidth,
+                    minHeight: minHeight,
                     title: `${title} - ${this.Essential.name}`,
                     center: true,
                     icon: this.getThemeIcon(),
                     webPreferences: {
                         ...this.BASE_WEB_PREFERENCES,
-                        preload: path.join(__dirname, 'preload.js')
+                        preload: path.join(__dirname, '..', 'preload.js')
                     }
                 });
 
