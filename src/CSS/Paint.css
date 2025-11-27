@@ -41,6 +41,8 @@
     height: 100%;
     overflow: hidden;
     background: var(--canvas-bg);
+    will-change: transform;
+    contain: layout style paint;
 }
 
 #canvas {
@@ -53,6 +55,8 @@
     transform-origin: 0 0;
     background-color: var(--canvas-bg);
     transition: background-color 0.3s, color 0.3s;
+    will-change: transform;
+    image-rendering: crisp-edges;
 }
 
 .toolbar {
@@ -70,6 +74,8 @@
     display: flex;
     align-items: center;
     border-radius: 100vmax;
+    will-change: auto;
+    contain: layout style;
 }
 
 .control {

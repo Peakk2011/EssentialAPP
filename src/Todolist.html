@@ -2,41 +2,41 @@
 <html>
 
 <head>
-  <meta charset="UTF-8" />
-  <title>Todolist</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./css/defaultComp.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="./css/todolist.css" crossorigin="anonymous" />
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <meta charset="UTF-8" />
+    <title>Todolist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/defaultComp.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="./css/todolist.css" crossorigin="anonymous" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
 </head>
 
 <body>
 
-  <div class="content">
-    <div id="shortDate"></div>
-    <div class="lang-dropdown" id="langDropdown">
-      <div class="lang-option" data-lang="en-EN">English</div>
-      <div class="lang-option" data-lang="th-TH">ไทย</div>
-      <div class="lang-option" data-lang="hi-IN">हिंदी</div>
-      <div class="lang-option" data-lang="zh-CN">中文</div>
-    </div>
-
-    <div id="todo-app">
-      <div class="todolist-menu">
-        <input id="todo-input" type="text" placeholder="Add a new task..." />
-        <div class="add-task-wrapper">
-          <button id="add-btn">Add</button>
+    <div class="content">
+        <div id="shortDate"></div>
+        <div class="lang-dropdown" id="langDropdown">
+            <div class="lang-option" data-lang="en-EN">English</div>
+            <div class="lang-option" data-lang="th-TH">ไทย</div>
+            <div class="lang-option" data-lang="hi-IN">हिंदी</div>
+            <div class="lang-option" data-lang="zh-CN">中文</div>
         </div>
-      </div>
-      <ul id="todo-list"></ul>
+
+        <div id="todo-app">
+            <div class="todolist-menu">
+                <input id="todo-input" type="text" placeholder="Add a new task..." />
+                <div class="add-task-wrapper">
+                    <button id="add-btn">Add</button>
+                </div>
+            </div>
+            <ul id="todo-list"></ul>
+        </div>
+
     </div>
 
-  </div>
-
-  <script src="./Featured/TodoList.js" type="module" defer></script>
-  <script src="./frontendJS/PUBLICscripts.js" type="module" defer></script>
+    <script src="./Featured/TodoList.js" type="module" defer></script>
+    <script src="./frontendJS/PUBLICscripts.js" type="module" defer></script>
 </body>
 
 </html>

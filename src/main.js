@@ -44,104 +44,104 @@ app.commandLine.appendSwitch('enable-accelerated-video');
 app.commandLine.appendSwitch('disable-autofill');
 
 if (require('electron-squirrel-startup')) {
-  app.quit();
+    app.quit();
 }
 
 let mainWindow;
 
 // Core Functions
 const getFocusedWindow = () => {
-  return BrowserWindow.getFocusedWindow();
+    return BrowserWindow.getFocusedWindow();
 };
 
 const createWindowWithPromise = (config) => {
-  return new Promise((resolve, reject) => {
-    try {
-      const window = new BrowserWindow(config);
-      resolve(window);
-    } catch (err) {
-      reject(err);
-    }
-  });
+    return new Promise((resolve, reject) => {
+        try {
+            const window = new BrowserWindow(config);
+            resolve(window);
+        } catch (err) {
+            reject(err);
+        }
+    });
 };
 
 const safeLoad = async (win, filePath) => {
-  try {
-    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
-      await win.loadURL(filePath);
-      return true;
-    }
+    try {
+        if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+            await win.loadURL(filePath);
+            return true;
+        }
 
-    if (path.isAbsolute(filePath) && fs.existsSync(filePath)) {
-      await win.loadFile(filePath);
-      return true;
-    }
+        if (path.isAbsolute(filePath) && fs.existsSync(filePath)) {
+            await win.loadFile(filePath);
+            return true;
+        }
 
-    const resolvedPath = path.resolve(__dirname, filePath);
-    if (fs.existsSync(resolvedPath)) {
-      await win.loadFile(resolvedPath);
-      return true;
-    } else {
-      console.warn(`ESNTL: ${filePath} not found`);
-      await win.loadFile(path.resolve(__dirname, Essential_links.Error.ErrorPage));
-      return false;
+        const resolvedPath = path.resolve(__dirname, filePath);
+        if (fs.existsSync(resolvedPath)) {
+            await win.loadFile(resolvedPath);
+            return true;
+        } else {
+            console.warn(`ESNTL: ${filePath} not found`);
+            await win.loadFile(path.resolve(__dirname, Essential_links.Error.ErrorPage));
+            return false;
+        }
+    } catch (err) {
+        console.error('ESNTL Error: Safeload error:', err);
+        await win.loadFile(path.resolve(__dirname, Essential_links.Error.ErrorPage));
+        return false;
     }
-  } catch (err) {
-    console.error('ESNTL Error: Safeload error:', err);
-    await win.loadFile(path.resolve(__dirname, Essential_links.Error.ErrorPage));
-    return false;
-  }
 };
 
 const loadFileWithCheck = async (window, filePath, context) => {
-  try {
-    if (typeof filePath === 'string' && (filePath.startsWith('http://') || filePath.startsWith('https://'))) {
-      // URL
-      await window.loadURL(filePath);
-      return true;
-    } else {
-      const fullPath = path.resolve(__dirname, filePath);
-      if (fs.existsSync(fullPath)) {
-        await window.loadFile(fullPath);
-        return true;
-      }
-      throw new Error(`File not found: ${filePath}`);
+    try {
+        if (typeof filePath === 'string' && (filePath.startsWith('http://') || filePath.startsWith('https://'))) {
+            // URL
+            await window.loadURL(filePath);
+            return true;
+        } else {
+            const fullPath = path.resolve(__dirname, filePath);
+            if (fs.existsSync(fullPath)) {
+                await window.loadFile(fullPath);
+                return true;
+            }
+            throw new Error(`File not found: ${filePath}`);
+        }
+    } catch (err) {
+        await handleError(window, err, context);
+        return false;
     }
-  } catch (err) {
-    await handleError(window, err, context);
-    return false;
-  }
 };
 
 const createMainWindow = async (systemInfo) => {
-  try {
-    let originalBounds = null;
-    mainWindow = await createWindowWithPromise({
-      ...WINDOW_CONFIG.default,
-      center: true,
-      icon: config.getThemeIcon(),
-      minWidth: WINDOW_CONFIG.min.width,
-      minHeight: WINDOW_CONFIG.min.height,
-      webPreferences: {
-        ...BASE_WEB_PREFERENCES,
-        preload: path.join(__dirname, 'preload.js'),
-      }
-    }).catch(async (err) => {
-      await handleError(null, err, 'window-creation');
-      throw err;
-    });
+    try {
+        let originalBounds = null;
+        mainWindow = await createWindowWithPromise({
+            ...WINDOW_CONFIG.default,
+            center: true,
+            icon: config.getThemeIcon(),
+            minWidth: WINDOW_CONFIG.min.width,
+            minHeight: WINDOW_CONFIG.min.height,
+            webPreferences: {
+                ...BASE_WEB_PREFERENCES,
+                preload: path.join(__dirname, 'preload.js'),
+            }
+        }).catch(async (err) => {
+            await handleError(null, err, 'window-creation');
+            throw err;
+        });
 
-    // Listen for theme changes
-    ipcMain.on('titlebar-theme-change', (event, theme) => {
-      configManager.saveTheme(theme);
-    });
+        // Listen for theme changes
+        ipcMain.on('titlebar-theme-change', (event, theme) => {
+            configManager.saveTheme(theme);
+        });
 
-    // Open DevTools While Boot up
-    mainWindow.webContents.openDevTools({ mode: 'undocked' });
+        // Open DevTools While Boot up
+        mainWindow.webContents.openDevTools({ mode: 'undocked' });
 
-    // Start load from localstroage
-    mainWindow.webContents.on('dom-ready', () => {
-      mainWindow.webContents.executeJavaScript(`
+        // Start load from localstroage
+        mainWindow.webContents.on('dom-ready', () => {
+            mainWindow.webContents.executeJavaScript(`
           try {
               const savedTheme = localStorage.getItem('app_theme');
               if (savedTheme && window.titlebarAPI) {
@@ -152,8 +152,8 @@ const createMainWindow = async (systemInfo) => {
           }
       `);
 
-      // Lazy load images
-      mainWindow.webContents.executeJavaScript(`
+            // Lazy load images
+            mainWindow.webContents.executeJavaScript(`
         (function() {
           if ('IntersectionObserver' in window) {
             const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
@@ -182,112 +182,112 @@ const createMainWindow = async (systemInfo) => {
         })();
       `);
 
-      // To execute the lazy load image <img data-src="path/to/your/image.png">
-    });
+            // To execute the lazy load image <img data-src="path/to/your/image.png">
+        });
 
-    if (process.platform === 'darwin') {
-      mainWindow.on('enter-full-screen', () => {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('fullscreen-changed', true);
+        if (process.platform === 'darwin') {
+            mainWindow.on('enter-full-screen', () => {
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('fullscreen-changed', true);
+                }
+            });
+
+            mainWindow.on('leave-full-screen', () => {
+                if (originalBounds) {
+                    setTimeout(() => {
+                        mainWindow.setBounds(originalBounds);
+                        originalBounds = null;
+                    }, 100);
+                }
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('fullscreen-changed', false);
+                }
+            });
         }
-      });
 
-      mainWindow.on('leave-full-screen', () => {
-        if (originalBounds) {
-          setTimeout(() => {
-            mainWindow.setBounds(originalBounds);
-            originalBounds = null;
-          }, 100);
+        if (process.platform === 'win32') {
+            app.setAppUserModelId('com.mintteams.essentialapp');
         }
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('fullscreen-changed', false);
-        }
-      });
-    }
 
-    if (process.platform === 'win32') {
-      app.setAppUserModelId('com.mintteams.essentialapp');
-    }
+        mainWindow.webContents.on('did-fail-load', async (event, errorCode) => {
+            await handleError(mainWindow, new Error(`Navigation failed`), 'page-load');
+        });
 
-    mainWindow.webContents.on('did-fail-load', async (event, errorCode) => {
-      await handleError(mainWindow, new Error(`Navigation failed`), 'page-load');
-    });
+        mainWindow.webContents.on('did-finish-load', () => {
+            mainWindow.webContents.send('system-info', systemInfo);
+        });
 
-    mainWindow.webContents.on('did-finish-load', () => {
-      mainWindow.webContents.send('system-info', systemInfo);
-    });
+        mainWindow.webContents.setZoomFactor(1);
+        mainWindow.webContents.setVisualZoomLevelLimits(1, 1);
+        mainWindow.webContents.setBackgroundThrottling(false);
 
-    mainWindow.webContents.setZoomFactor(1);
-    mainWindow.webContents.setVisualZoomLevelLimits(1, 1);
-    mainWindow.webContents.setBackgroundThrottling(false);
+        await loadFileWithCheck(mainWindow, Essential_links.home, 'main-window-creation')
+            .catch(async (err) => {
+                await handleError(mainWindow, err, 'initial-load');
+                throw err;
+            });
 
-    await loadFileWithCheck(mainWindow, Essential_links.home, 'main-window-creation')
-      .catch(async (err) => {
-        await handleError(mainWindow, err, 'initial-load');
+        mainWindow.on('page-title-updated', async () => {
+            try {
+                await mainWindow.setIcon(config.getThemeIcon());
+            } catch (err) {
+                await handleError(mainWindow, err, 'icon-update');
+            }
+        });
+
+        // console.log("Electron version:", process.versions.electron);
+
+        mainWindow.on('closed', () => {
+            mainWindow = null;
+        });
+
+    } catch (err) {
+        await handleError(null, err, 'window-creation');
         throw err;
-      });
-
-    mainWindow.on('page-title-updated', async () => {
-      try {
-        await mainWindow.setIcon(config.getThemeIcon());
-      } catch (err) {
-        await handleError(mainWindow, err, 'icon-update');
-      }
-    });
-
-    // console.log("Electron version:", process.versions.electron);
-
-    mainWindow.on('closed', () => {
-      mainWindow = null;
-    });
-
-  } catch (err) {
-    await handleError(null, err, 'window-creation');
-    throw err;
-  }
+    }
 };
 
 // Main application
 (async () => {
-  setupDragToNewWindow({
-    safeLoad: safeLoad,                           // Add safeLoad
-    handleError: handleError,                     // Add handleError
-    BASE_WEB_PREFERENCES: BASE_WEB_PREFERENCES,
-    getThemeIcon: config.getThemeIcon,
-    Essential: {
-      name: 'EssentialAPP',
-      version: app.getVersion()
-    }
-  });
-  app.on('ready', () => {
-    globalShortcut.register('Control+Shift+I', () => {
-      const focusedWin = getFocusedWindow();
-      if (focusedWin) focusedWin.webContents.toggleDevTools();
+    setupDragToNewWindow({
+        safeLoad: safeLoad,                           // Add safeLoad
+        handleError: handleError,                     // Add handleError
+        BASE_WEB_PREFERENCES: BASE_WEB_PREFERENCES,
+        getThemeIcon: config.getThemeIcon,
+        Essential: {
+            name: 'EssentialAPP',
+            version: app.getVersion()
+        }
     });
-  });
+    app.on('ready', () => {
+        globalShortcut.register('Control+Shift+I', () => {
+            const focusedWin = getFocusedWindow();
+            if (focusedWin) focusedWin.webContents.toggleDevTools();
+        });
+    });
 
-  const mainFunctions = {
-    createMainWindow,
-    createWindowWithPromise,
-    safeLoad,
-    loadFileWithCheck,
-    handleError,
-    getFocusedWindow,
-    getMainWindow: () => mainWindow,
-  };
+    const mainFunctions = {
+        createMainWindow,
+        createWindowWithPromise,
+        safeLoad,
+        loadFileWithCheck,
+        handleError,
+        getFocusedWindow,
+        getMainWindow: () => mainWindow,
+    };
 
-  const appManager = new AppManager(createMainWindow);
-  appManager.initialize();
+    const appManager = new AppManager(createMainWindow);
+    appManager.initialize();
 
-  const eventManager = new EventManager({ handleError, getFocusedWindow });
-  eventManager.initialize();
+    const eventManager = new EventManager({ handleError, getFocusedWindow });
+    eventManager.initialize();
 
-  const startupManager = new StartupManager(config, { ...mainFunctions, createMainWindow: () => createMainWindow(systemInfo) });
-  await startupManager.run();
+    const startupManager = new StartupManager(config, { ...mainFunctions, createMainWindow: () => createMainWindow(systemInfo) });
+    await startupManager.run();
 
-  const menuManager = new MenuManager(config);
-  menuManager.initialize();
+    const menuManager = new MenuManager(config);
+    menuManager.initialize();
 
-  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setTitle("EssentialAPP");
-  process.title = "EssentialAPP";
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setTitle("EssentialAPP");
+    process.title = "EssentialAPP";
 })();

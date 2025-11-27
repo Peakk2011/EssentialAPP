@@ -42,7 +42,7 @@
     "@electron-forge/plugin-fuses": "^7.8.0",
     "@electron-forge/publisher-github": "^7.8.0",
     "@electron/fuses": "^1.8.0",
-    "electron": "^38.1.2"
+    "electron": "^39.2.4"
   },
   "productName": "EssentialAPP",
   "config": {

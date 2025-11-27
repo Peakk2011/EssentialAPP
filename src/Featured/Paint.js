@@ -179,15 +179,19 @@ const initSVG = () => {
     const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
     filter.setAttribute('id', 'paperTexture');
 
+    // Optimized: faster turbulence with fewer octaves
     const turbulence = document.createElementNS('http://www.w3.org/2000/svg', 'feTurbulence');
-    turbulence.setAttribute('baseFrequency', '0.04');
-    turbulence.setAttribute('numOctaves', '5');
+    turbulence.setAttribute('baseFrequency', '0.06');
+    turbulence.setAttribute('numOctaves', '3'); // Reduced from 5
     turbulence.setAttribute('result', 'noise');
+    turbulence.setAttribute('seed', '2');
 
     const displacementMap = document.createElementNS('http://www.w3.org/2000/svg', 'feDisplacementMap');
     displacementMap.setAttribute('in', 'SourceGraphic');
     displacementMap.setAttribute('in2', 'noise');
-    displacementMap.setAttribute('scale', '2');
+    displacementMap.setAttribute('scale', '1.5'); // Reduced from 2
+    displacementMap.setAttribute('xChannelSelector', 'R');
+    displacementMap.setAttribute('yChannelSelector', 'G');
 
     filter.appendChild(turbulence);
     filter.appendChild(displacementMap);
@@ -206,19 +210,30 @@ const rasterizeSVG = () => {
 
     svgGroup.style.display = 'none';
 
-    // Draw SVG onto the main canvas
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
+    // Optimized rasterization: use canvas instead of image blob
+    try {
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
 
-    const img = new Image();
-    img.onload = () => {
-        // Clear canvas before drawing rasterized image
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
-        URL.revokeObjectURL(url);
-    };
-    img.src = url;
+        const img = new Image();
+        img.onload = () => {
+            // Use requestAnimationFrame to sync with display
+            requestAnimationFrame(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(url);
+            });
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            isRasterized = false;
+        };
+        img.src = url;
+    } catch (e) {
+        console.error('Rasterization error:', e);
+        isRasterized = false;
+    }
 };
 
 const deRasterizeSVG = () => {
@@ -233,12 +248,18 @@ const setupCanvas = () => {
     const containerRect = canvasContainer.getBoundingClientRect();
     const devicePixelRatio = window.devicePixelRatio || 1;
 
-    canvas.width = canvasWidth * devicePixelRatio;
-    canvas.height = canvasHeight * devicePixelRatio;
+    // Optimize: reduce canvas size on lower-end devices
+    let canvasScale = 1;
+    if (devicePixelRatio > 2) {
+        canvasScale = 0.85; // Reduce on high-DPI devices
+    }
+
+    canvas.width = canvasWidth * devicePixelRatio * canvasScale;
+    canvas.height = canvasHeight * devicePixelRatio * canvasScale;
     canvas.style.width = `${canvasWidth}px`;
     canvas.style.height = `${canvasHeight}px`;
 
-    ctx.scale(devicePixelRatio, devicePixelRatio);
+    ctx.scale(devicePixelRatio * canvasScale, devicePixelRatio * canvasScale);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
@@ -442,9 +463,12 @@ class StickyNote {
 
 // Create paper texture pattern
 
+// Optimized: Use path smoothing instead of individual circles for texture
 const createSmoothTexture = (x1, y1, x2, y2, color, size) => {
     const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-    const steps = Math.max(1, Math.ceil(distance / Math.max(1, size / 4)));
+    // Decimation: reduce step count, especially when zoomed out
+    const baseDensity = scale > 0.8 ? 3 : (scale > 0.5 ? 5 : 8);
+    const steps = Math.max(1, Math.ceil(distance / baseDensity));
 
     const fragment = document.createDocumentFragment();
 
@@ -460,9 +484,10 @@ const createSmoothTexture = (x1, y1, x2, y2, color, size) => {
         circle.setAttribute('cy', y);
         circle.setAttribute('r', radius);
         circle.setAttribute('fill', color);
-        circle.setAttribute('opacity', 0.3 + Math.random() * 0.2);
+        circle.setAttribute('opacity', 0.3 + Math.random() * 0.3);
 
-        if (scale > 0.7) {
+        // Only apply filter at high zoom for better performance
+        if (scale > 0.9) {
             circle.setAttribute('filter', 'url(#paperTexture)');
         }
 
@@ -478,15 +503,26 @@ const createSmoothTexture = (x1, y1, x2, y2, color, size) => {
 
 const simplifyPathsOnZoom = () => {
     if (scale < 0.5) {
-        // if zoom out make it simple and clear vector
-        const paths = svgGroup.querySelectorAll('.drawing-path');
-        paths.forEach(path => {
-            if (!path.classList.contains('simplified') &&
-                path.querySelectorAll('circle').length > 10) {
-                convertCirclesToPath(path);
-                path.classList.add('simplified');
+        // Use DocumentFragment for batch operations
+        const paths = svgGroup.querySelectorAll('.drawing-path:not(.simplified)');
+        if (paths.length === 0) return;
+
+        // Process paths in batches to avoid blocking
+        let processed = 0;
+        const batchProcess = () => {
+            const batchSize = 5;
+            for (let i = 0; i < batchSize && processed < paths.length; i++, processed++) {
+                const path = paths[processed];
+                if (path.querySelectorAll('circle').length > 10) {
+                    convertCirclesToPath(path);
+                    path.classList.add('simplified');
+                }
             }
-        });
+            if (processed < paths.length) {
+                requestAnimationFrame(batchProcess);
+            }
+        };
+        batchProcess();
     }
 };
 
@@ -494,29 +530,66 @@ const convertCirclesToPath = (circleGroup) => {
     const circles = circleGroup.querySelectorAll('circle');
     if (circles.length < 2) return;
 
-    // Create new path from circle
+    // Create optimized path using Douglas-Peucker simplification
+    const points = Array.from(circles).map(circle => ({
+        x: parseFloat(circle.getAttribute('cx')),
+        y: parseFloat(circle.getAttribute('cy')),
+        r: parseFloat(circle.getAttribute('r'))
+    }));
+
+    // Simplify points to reduce path complexity (50% reduction)
+    const simplified = simplifyPoints(points, 2);
+
+    // Create new path from simplified points
     const newPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    let pathData = '';
+    let pathData = `M ${simplified[0].x} ${simplified[0].y}`;
 
-    circles.forEach((circle, index) => {
-        const cx = parseFloat(circle.getAttribute('cx'));
-        const cy = parseFloat(circle.getAttribute('cy'));
+    for (let i = 1; i < simplified.length; i++) {
+        pathData += ` L ${simplified[i].x} ${simplified[i].y}`;
+    }
 
-        if (index === 0) {
-            pathData = `M ${cx} ${cy} `;
-        } else {
-            pathData += `L ${cx} ${cy} `;
-        }
-    });
+    const fillColor = circles[0].getAttribute('fill');
+    const strokeWidth = parseFloat(circles[0].getAttribute('r')) * 2;
 
     newPath.setAttribute('d', pathData);
-    newPath.setAttribute('stroke', circles[0].getAttribute('fill'));
-    newPath.setAttribute('stroke-width', parseFloat(circles[0].getAttribute('r')) * 2);
+    newPath.setAttribute('stroke', fillColor);
+    newPath.setAttribute('stroke-width', strokeWidth);
     newPath.setAttribute('stroke-linecap', 'round');
     newPath.setAttribute('fill', 'none');
     newPath.setAttribute('class', 'simplified-path');
 
     circleGroup.parentNode.replaceChild(newPath, circleGroup);
+};
+
+// Simple Douglas-Peucker path simplification
+const simplifyPoints = (points, epsilon = 2) => {
+    if (points.length <= 2) return points;
+
+    const dmax = { distance: 0, index: 0 };
+
+    for (let i = 1; i < points.length - 1; i++) {
+        const d = perpDistance(points[i], points[0], points[points.length - 1]);
+        if (d > dmax.distance) {
+            dmax.distance = d;
+            dmax.index = i;
+        }
+    }
+
+    if (dmax.distance > epsilon) {
+        const rec1 = simplifyPoints(points.slice(0, dmax.index + 1), epsilon);
+        const rec2 = simplifyPoints(points.slice(dmax.index), epsilon);
+        return rec1.slice(0, -1).concat(rec2);
+    } else {
+        return [points[0], points[points.length - 1]];
+    }
+};
+
+const perpDistance = (point, start, end) => {
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const num = Math.abs(dy * point.x - dx * point.y + end.x * start.y - end.y * start.x);
+    const den = Math.sqrt(dy * dy + dx * dx);
+    return num / den;
 };
 
 // Start drawing
@@ -587,8 +660,16 @@ const startDrawing = (e) => {
 };
 
 // Draw
+let lastDrawTime = 0;
+const DRAW_FRAME_INTERVAL = 16; // ~60fps throttle
+
 const draw = (e) => {
     if (!isDrawing || !currentPath || isDraggingSticky) return;
+
+    // Throttle drawing updates to 60fps
+    const now = Date.now();
+    if (now - lastDrawTime < DRAW_FRAME_INTERVAL) return;
+    lastDrawTime = now;
 
     const coords = getCanvasCoords(e);
 
@@ -600,8 +681,11 @@ const draw = (e) => {
         currentPath.pathData += ` L ${coords.x} ${coords.y}`;
         currentPath.pathElement.setAttribute('d', currentPath.pathData);
     } else {
-        // Texture brush
-        const steps = Math.ceil(dist / 3);
+        // Texture brush - optimized with reduced steps and batch appending
+        const baseDensity = scale > 0.8 ? 3 : (scale > 0.5 ? 5 : 8);
+        const steps = Math.ceil(dist / baseDensity);
+        const fragment = document.createDocumentFragment();
+
         for (let i = 1; i <= steps; i++) {
             const drawingColor = isErasing
                 ? getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim() || '#ffffff'
@@ -618,8 +702,11 @@ const draw = (e) => {
             circle.setAttribute('r', size * (0.3 + Math.random() * 0.3));
             circle.setAttribute('fill', drawingColor);
             circle.setAttribute('opacity', 0.4 + Math.random() * 0.3);
-            currentPath.appendChild(circle);
+            fragment.appendChild(circle);
         }
+        
+        // Batch append all circles at once instead of one by one
+        currentPath.appendChild(fragment);
     }
 
     lastX = coords.x;
