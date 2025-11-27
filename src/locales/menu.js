@@ -1,7 +1,7 @@
 // For language settings
 // Applyed on Right click menu
 
-module.exports = {
+export default {
     // Rightclickmenu
     'en-US': {
         home: 'Go to Home Page',

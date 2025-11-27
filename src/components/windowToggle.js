@@ -1,5 +1,5 @@
-const { ipcMain, BrowserWindow, screen } = require('electron');
-const path = require('path');
+import { ipcMain, BrowserWindow, screen } from 'electron';
+import path from 'path';
 
 let aboutWindow = null;
 let SettingsWindows = null;
@@ -171,4 +171,4 @@ class WindowToggler {
 }
 
 // new WindowToggler(); 
-module.exports = WindowToggler;
+export default WindowToggler;

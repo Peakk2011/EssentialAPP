@@ -42,8 +42,8 @@ const forwardKeydown = (data) => {
     document.dispatchEvent(keyboardEvent);
 };
 
-const handleTabAction = (action, appId) => {
-    const { tabActionHandlers } = require('../Mainpage.js');
+const handleTabAction = async (action, appId) => {
+    const { tabActionHandlers } = await import('../Mainpage.js');
     console.log('[Message] Tab action received:', action, appId);
     if (tabActionHandlers[action]) {
         tabActionHandlers[action](appId);

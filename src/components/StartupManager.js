@@ -1,16 +1,20 @@
-const { app, session, dialog } = require('electron');
-const path = require('node:path');
-const fs = require('fs');
+import { app, session, dialog } from 'electron';
+import path from 'node:path';
+import fs from 'fs';
+import { fileURLToPath } from 'node:url';
+import { EventEmitter } from 'events';
 
-const CacheManager = require('./cacheManager');
-const FirstLaunchManager = require('./firstLaunchManager');
-const IpcManager = require('./ipcManager');
-const ProtocolHandler = require('./protocolHandler');
-const WindowToggler = require('./windowToggle');
-const WindowManager = require('./windowManager');
-const MintputsWindowManager = require('./mintputsWindow');
-const ContextMenuEvents = require('./eventContextmenu');
-const { ErrorHandler, createSafeModeWindow } = require('./errorHandler');
+import CacheManager from './cacheManager.js';
+import FirstLaunchManager from './firstLaunchManager.js';
+import IpcManager from './ipcManager.js';
+import ProtocolHandler from './protocolHandler.js';
+import WindowToggler from './windowToggle.js';
+import WindowManager from './windowManager.js';
+import MintputsWindowManager from './mintputsWindow.js';
+import ContextMenuEvents from './eventContextmenu.js';
+import { ErrorHandler, createSafeModeWindow } from './errorHandler.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 class StartupManager {
     constructor(config, mainFunctions) {
@@ -26,7 +30,7 @@ class StartupManager {
         const cacheManager = new CacheManager();
         cacheManager.initialize();
 
-        require('events').EventEmitter.defaultMaxListeners = 20;
+        EventEmitter.defaultMaxListeners = 20;
 
         // Setup global error handling
         const errorHandler = new ErrorHandler(app, dialog);
@@ -97,4 +101,4 @@ class StartupManager {
     }
 }
 
-module.exports = StartupManager;
+export default StartupManager;

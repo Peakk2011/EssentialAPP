@@ -14,7 +14,7 @@
   },
   "license": "MIT",
   "author": "Peakk2011 <peakk3984@gmail.com>",
-  "type": "commonjs",
+  "type": "module",
   "main": "src/main.js",
   "scripts": {
     "start": "electron-forge start",

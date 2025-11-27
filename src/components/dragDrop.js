@@ -1,10 +1,13 @@
 // ./components/dragDrop.js
-const { BrowserWindow, ipcMain, screen } = require('electron');
-const path = require('path');
-const fs = require('fs');
+import { BrowserWindow, ipcMain, screen } from 'electron';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // using resolve path
-const resolveAppPath = (url) => {
+export const resolveAppPath = (url) => {
     if (!url || url === '#') {
         console.error('ESNTL: Invalid URL provided:', url);
         return null;
@@ -69,7 +72,7 @@ const resolveAppPath = (url) => {
     return finalUrl;
 }
 
-const setupDragToNewWindow = (config = {}) => {
+export const setupDragToNewWindow = (config = {}) => {
     // Set modules
     const handleError = config.handleError;
     const BASE_WEB_PREFERENCES = config.BASE_WEB_PREFERENCES || {
@@ -192,5 +195,3 @@ const setupDragToNewWindow = (config = {}) => {
         }
     });
 }
-
-module.exports = { setupDragToNewWindow, resolveAppPath };

@@ -16,36 +16,26 @@
  * along with EssentialAPP. If not, see <https://www.gnu.org/licenses/>.
  */
 
-const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron');
-const path = require('node:path');
-const fs = require('fs');
-require('dotenv').config();
+import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
+import path from 'node:path';
+import fs from 'fs';
+import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
 
 // Core Managers
-const ConfigManager = require('./components/ConfigManager');
-const StartupManager = require('./components/StartupManager');
-const AppManager = require('./components/AppManager');
-const EventManager = require('./components/EventManager');
-const MenuManager = require('./components/MenuManager');
-const { ErrorHandler, handleError, createSafeModeWindow } = require('./components/errorHandler');
-const { setupDragToNewWindow } = require('./components/dragDrop');
+import ConfigManager from './components/ConfigManager.js';
+import StartupManager from './components/StartupManager.js';
+import AppManager from './components/AppManager.js';
+import EventManager from './components/EventManager.js';
+import MenuManager from './components/MenuManager.js';
+import { ErrorHandler, handleError, createSafeModeWindow } from './components/errorHandler.js';
+import { setupDragToNewWindow } from './components/dragDrop.js';
 
-// Load Configuration
-const configManager = new ConfigManager();
-const config = configManager.load();
-const { Essential_links, WINDOW_CONFIG, BASE_WEB_PREFERENCES, systemInfo } = config;
+dotenv.config();
 
-
-app.commandLine.appendSwitch('enable-features', 'NetworkServiceInProcess,ParallelDownloading,CanvasOopRasterization');
-app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors,MediaRouter');
-app.commandLine.appendSwitch('use-gl', 'desktop');
-app.commandLine.appendSwitch('enable-accelerated-mjpeg-decode');
-app.commandLine.appendSwitch('enable-accelerated-video');
-app.commandLine.appendSwitch('disable-autofill');
-
-if (require('electron-squirrel-startup')) {
-    app.quit();
-}
+// ES Module compatibility
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let mainWindow;
 
@@ -65,7 +55,7 @@ const createWindowWithPromise = (config) => {
     });
 };
 
-const safeLoad = async (win, filePath) => {
+const safeLoad = async (win, filePath, essentialLinks) => {
     try {
         if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
             await win.loadURL(filePath);
@@ -83,12 +73,16 @@ const safeLoad = async (win, filePath) => {
             return true;
         } else {
             console.warn(`ESNTL: ${filePath} not found`);
-            await win.loadFile(path.resolve(__dirname, Essential_links.Error.ErrorPage));
+            await win.loadFile(path.resolve(
+                __dirname,
+                essentialLinks.Error.ErrorPage
+            ));
+
             return false;
         }
     } catch (err) {
         console.error('ESNTL Error: Safeload error:', err);
-        await win.loadFile(path.resolve(__dirname, Essential_links.Error.ErrorPage));
+        await win.loadFile(path.resolve(__dirname, essentialLinks.Error.ErrorPage));
         return false;
     }
 };
@@ -113,7 +107,7 @@ const loadFileWithCheck = async (window, filePath, context) => {
     }
 };
 
-const createMainWindow = async (systemInfo) => {
+const createMainWindow = async (systemInfo, config, WINDOW_CONFIG, BASE_WEB_PREFERENCES, Essential_links, configManager) => {
     try {
         let originalBounds = null;
         mainWindow = await createWindowWithPromise({
@@ -136,8 +130,8 @@ const createMainWindow = async (systemInfo) => {
             configManager.saveTheme(theme);
         });
 
-        // Open DevTools While Boot up
-        mainWindow.webContents.openDevTools({ mode: 'undocked' });
+        // DevTools only in development (slower startup)
+        // mainWindow.webContents.openDevTools({ mode: 'undocked' });
 
         // Start load from localstroage
         mainWindow.webContents.on('dom-ready', () => {
@@ -249,9 +243,38 @@ const createMainWindow = async (systemInfo) => {
 
 // Main application
 (async () => {
+    // Load Configuration
+    const configManager = new ConfigManager();
+    const config = await configManager.load();
+    const { Essential_links, WINDOW_CONFIG, BASE_WEB_PREFERENCES, systemInfo } = config;
+
+    // App configuration
+    app.commandLine.appendSwitch('enable-features', 'NetworkServiceInProcess,ParallelDownloading,CanvasOopRasterization');
+    app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors,MediaRouter');
+    app.commandLine.appendSwitch('use-gl', 'angle');
+    app.commandLine.appendSwitch('enable-accelerated-mjpeg-decode');
+    app.commandLine.appendSwitch('enable-accelerated-video');
+    app.commandLine.appendSwitch('disable-autofill');
+    app.commandLine.appendSwitch('disable-dev-shm-usage');
+
+    // Handle squirrel startup
+    try {
+        const squirrelStartup = (await import('electron-squirrel-startup')).default;
+        if (squirrelStartup) {
+            app.quit();
+            return;
+        }
+    } catch (err) {
+        // Squirrel not available on this platform, continue normally
+    }
+
+    // Set user data path to avoid cache permission issues
+    const userDataPath = app.getPath('userData');
+    app.setPath('cache', path.join(userDataPath, 'cache'));
+
     setupDragToNewWindow({
-        safeLoad: safeLoad,                           // Add safeLoad
-        handleError: handleError,                     // Add handleError
+        safeLoad: (win, url) => safeLoad(win, url, Essential_links),
+        handleError: handleError,
         BASE_WEB_PREFERENCES: BASE_WEB_PREFERENCES,
         getThemeIcon: config.getThemeIcon,
         Essential: {
@@ -267,22 +290,48 @@ const createMainWindow = async (systemInfo) => {
     });
 
     const mainFunctions = {
-        createMainWindow,
+        createMainWindow: () => createMainWindow(
+            systemInfo,
+            config,
+            WINDOW_CONFIG,
+            BASE_WEB_PREFERENCES,
+            Essential_links,
+            configManager
+        ),
+
         createWindowWithPromise,
-        safeLoad,
+        safeLoad: (win, url) => safeLoad(win, url, Essential_links),
         loadFileWithCheck,
         handleError,
         getFocusedWindow,
         getMainWindow: () => mainWindow,
     };
 
-    const appManager = new AppManager(createMainWindow);
+    const appManager = new AppManager(() => createMainWindow(
+        systemInfo,
+        config,
+        WINDOW_CONFIG,
+        BASE_WEB_PREFERENCES,
+        Essential_links,
+        configManager
+    ));
+
     appManager.initialize();
 
     const eventManager = new EventManager({ handleError, getFocusedWindow });
     eventManager.initialize();
 
-    const startupManager = new StartupManager(config, { ...mainFunctions, createMainWindow: () => createMainWindow(systemInfo) });
+    const startupManager = new StartupManager(config, {
+        ...mainFunctions,
+        createMainWindow: () => createMainWindow(
+            systemInfo,
+            config,
+            WINDOW_CONFIG,
+            BASE_WEB_PREFERENCES,
+            Essential_links,
+            configManager
+        )
+    });
     await startupManager.run();
 
     const menuManager = new MenuManager(config);

@@ -1,7 +1,7 @@
-const { app, session } = require('electron');
-const path = require('node:path');
-const fs = require('fs');
-const { execSync } = require('child_process');
+import { app, session } from 'electron';
+import path from 'node:path';
+import fs from 'fs';
+import { execSync } from 'child_process';
 
 class CacheManager {
     constructor() {
@@ -54,4 +54,4 @@ class CacheManager {
     }
 }
 
-module.exports = CacheManager;
+export default CacheManager;

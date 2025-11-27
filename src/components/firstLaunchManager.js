@@ -1,6 +1,9 @@
-const { app, ipcMain, dialog } = require('electron');
-const path = require('node:path');
-const fs = require('fs');
+import { app, ipcMain, dialog } from 'electron';
+import path from 'node:path';
+import fs from 'fs';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 class FirstLaunchManager {
     constructor(config) {
@@ -148,4 +151,4 @@ class FirstLaunchManager {
     }
 }
 
-module.exports = FirstLaunchManager;
+export default FirstLaunchManager;

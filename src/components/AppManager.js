@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+import { app, BrowserWindow, globalShortcut } from 'electron';
 
 class AppManager {
     constructor(createMainWindow) {
@@ -24,9 +24,8 @@ class AppManager {
     }
 
     onWillQuit() {
-        const { globalShortcut } = require('electron');
         globalShortcut.unregisterAll();
     }
 }
 
-module.exports = AppManager;
+export default AppManager;

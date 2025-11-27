@@ -1,28 +1,31 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 class ContextMenu {
-  constructor(translations, links, cssPath) {
-    this.translations = translations ?? {};
-    this.links = links ?? {};
-    this.cssPath = cssPath;
-    // Pre-read the CSS file to avoid reading it on every menu creation.
-    this.cssContentPromise = fs.promises.readFile(this.cssPath, 'utf8');
-  }
+    constructor(translations, links, cssPath) {
+        this.translations = translations ?? {};
+        this.links = links ?? {};
+        this.cssPath = cssPath;
+        // Pre-read the CSS file to avoid reading it on every menu creation.
+        this.cssContentPromise = fs.promises.readFile(this.cssPath, 'utf8');
+    }
 
-  async create(pos) {
-    const cssContent = await this.cssContentPromise;
+    async create(pos) {
+        const cssContent = await this.cssContentPromise;
 
-    const menuItems = [
-      { label: this.translations.home || 'Home', action: 'show-home-and-close-others', icon: 'home' },
-      { label: this.translations.todolist || 'Todo List', href: this.links.todolist || 'todolist.html', icon: 'list' },
-      { label: this.translations.clock || 'Clock', href: this.links.clock || 'clock.html', icon: 'schedule' },
-      { label: this.translations.calc || 'Calculator', href: this.links.calc || 'calc.html', icon: 'Function' },
-      { label: this.translations.notes || 'Notes', href: this.links.notes || 'Notes.html', icon: 'note' },
-      { label: this.translations.paint || 'Paint', href: this.links.paint || 'paint.html', icon: 'brush' },
-    ];
+        const menuItems = [
+            { label: this.translations.home || 'Home', action: 'show-home-and-close-others', icon: 'home' },
+            { label: this.translations.todolist || 'Todo List', href: this.links.todolist || 'todolist.html', icon: 'list' },
+            { label: this.translations.clock || 'Clock', href: this.links.clock || 'clock.html', icon: 'schedule' },
+            { label: this.translations.calc || 'Calculator', href: this.links.calc || 'calc.html', icon: 'Function' },
+            { label: this.translations.notes || 'Notes', href: this.links.notes || 'Notes.html', icon: 'note' },
+            { label: this.translations.paint || 'Paint', href: this.links.paint || 'paint.html', icon: 'brush' },
+        ];
 
-    const menuHTML = `
+        const menuHTML = `
       <div class="context-menu" id="contextMenu" style="left: ${pos.x}px; top: ${pos.y}px;">
         ${menuItems.map(item => `
           <div 
@@ -37,47 +40,47 @@ class ContextMenu {
       </div>
     `;
 
-    return { menuHTML, cssContent };
-  }
-
-  async createForTab(appId, pos) {
-    const cssContent = await this.cssContentPromise;
-
-    let appUrl;
-    const lowerCaseAppId = appId.toLowerCase();
-
-    for (const key in this.links) {
-      if (key.toLowerCase().startsWith(lowerCaseAppId)) {
-        appUrl = this.links[key];
-        break;
-      }
+        return { menuHTML, cssContent };
     }
 
-    // If file not found
-    if (!appUrl) {
-      appUrl = `${lowerCaseAppId}.html`;
-    }
+    async createForTab(appId, pos) {
+        const cssContent = await this.cssContentPromise;
 
-    const menuItems = [
-      { label: 'Reload', action: 'reload', icon: 'refresh' },
-      {
-        label: 'Duplicate',
-        action: 'open-in-new-window',
-        icon: 'content_copy',
-        href: appUrl,
-        title: appId
-      },
-      { type: 'separator' },
-      { label: 'Close Tab', action: 'close', icon: 'close' },
-      { label: 'Close Other Tabs', action: 'close-others', icon: 'tab_close' },
-      { label: 'Close Tabs to the Right', action: 'close-right', icon: 'keyboard_tab_rtl' }
-    ];
+        let appUrl;
+        const lowerCaseAppId = appId.toLowerCase();
 
-    const menuHTML = `
+        for (const key in this.links) {
+            if (key.toLowerCase().startsWith(lowerCaseAppId)) {
+                appUrl = this.links[key];
+                break;
+            }
+        }
+
+        // If file not found
+        if (!appUrl) {
+            appUrl = `${lowerCaseAppId}.html`;
+        }
+
+        const menuItems = [
+            { label: 'Reload', action: 'reload', icon: 'refresh' },
+            {
+                label: 'Duplicate',
+                action: 'open-in-new-window',
+                icon: 'content_copy',
+                href: appUrl,
+                title: appId
+            },
+            { type: 'separator' },
+            { label: 'Close Tab', action: 'close', icon: 'close' },
+            { label: 'Close Other Tabs', action: 'close-others', icon: 'tab_close' },
+            { label: 'Close Tabs to the Right', action: 'close-right', icon: 'keyboard_tab_rtl' }
+        ];
+
+        const menuHTML = `
       <div class="context-menu" id="tabContextMenu" style="left: ${pos.x}px; top: ${pos.y}px;">
         ${menuItems.map(item => {
-      if (item.type === 'separator') return '<div class="menu-separator"></div>';
-      return `
+            if (item.type === 'separator') return '<div class="menu-separator"></div>';
+            return `
             <div 
               class="menu-item" 
               data-action="${item.action}" 
@@ -87,12 +90,12 @@ class ContextMenu {
               <span class="material-symbols-outlined">${item.icon}</span>
               <span class="menu-label">${item.label}</span>
             </div>`;
-    }).join('')}
+        }).join('')}
       </div>
     `;
 
-    return { menuHTML, cssContent };
-  }
+        return { menuHTML, cssContent };
+    }
 }
 
-module.exports = ContextMenu;
+export default ContextMenu;

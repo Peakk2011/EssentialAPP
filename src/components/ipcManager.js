@@ -1,4 +1,4 @@
-const { ipcMain } = require('electron');
+import { ipcMain } from 'electron';
 
 class IpcManager {
     constructor(config) {
@@ -71,4 +71,4 @@ class IpcManager {
     }
 }
 
-module.exports = IpcManager;
+export default IpcManager;

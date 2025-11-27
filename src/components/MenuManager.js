@@ -1,4 +1,4 @@
-const { Menu } = require('electron');
+import { Menu } from 'electron';
 
 class MenuManager {
     constructor(config) {
@@ -42,4 +42,4 @@ class MenuManager {
     }
 }
 
-module.exports = MenuManager;
+export default MenuManager;

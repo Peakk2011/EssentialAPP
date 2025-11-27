@@ -1,4 +1,4 @@
-const { app } = require('electron');
+import { app } from 'electron';
 
 class EventManager {
     constructor(config) {
@@ -36,4 +36,4 @@ class EventManager {
     }
 }
 
-module.exports = EventManager;
+export default EventManager;

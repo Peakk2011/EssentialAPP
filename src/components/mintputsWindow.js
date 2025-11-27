@@ -1,5 +1,8 @@
-const { ipcMain, BrowserWindow } = require('electron');
-const path = require('path');
+import { ipcMain, BrowserWindow } from 'electron';
+import path from 'path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 class MintputsWindowManager {
     constructor(config) {
@@ -59,4 +62,4 @@ class MintputsWindowManager {
     }
 }
 
-module.exports = MintputsWindowManager;
+export default MintputsWindowManager;

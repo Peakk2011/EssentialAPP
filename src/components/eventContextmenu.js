@@ -1,9 +1,12 @@
 // ./components/eventContextmenu.js
 
-const { ipcMain, BrowserWindow, shell } = require('electron');
-const path = require('path');
-const fs = require('fs');
-const ContextMenu = require('./ContextMenu');
+import { ipcMain, BrowserWindow, shell } from 'electron';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'node:url';
+import ContextMenu from './ContextMenu.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 class ContextMenuEvents {
     constructor(config) {
@@ -380,4 +383,4 @@ class ContextMenuEvents {
     }
 }
 
-module.exports = ContextMenuEvents;
+export default ContextMenuEvents;

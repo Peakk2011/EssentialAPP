@@ -1,5 +1,8 @@
-const path = require('node:path');
-const { nativeTheme } = require('electron');
+import path from 'node:path';
+import { nativeTheme } from 'electron';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const BASE_WEB_PREFERENCES = {
   preload: path.join(__dirname, '..', 'preload.js'),
@@ -124,4 +127,4 @@ const WINDOW_CONFIG = {
 };
 
 
-module.exports = { BASE_WEB_PREFERENCES, BASE_WINDOW_CONFIG, FIRST_TIME_CONFIG, Essential_links, getThemeIcon, PLATFORM_CONFIG, DialogWindows_Config, DialogWindowsName, WINDOW_CONFIG };
+export { BASE_WEB_PREFERENCES, BASE_WINDOW_CONFIG, FIRST_TIME_CONFIG, Essential_links, getThemeIcon, PLATFORM_CONFIG, DialogWindows_Config, DialogWindowsName, WINDOW_CONFIG };

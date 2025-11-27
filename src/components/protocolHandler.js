@@ -1,4 +1,4 @@
-const { app } = require('electron');
+import { app } from 'electron';
 
 class ProtocolHandler {
     constructor(config) {
@@ -38,4 +38,4 @@ class ProtocolHandler {
     }
 }
 
-module.exports = ProtocolHandler;
+export default ProtocolHandler;

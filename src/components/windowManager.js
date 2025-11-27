@@ -1,4 +1,4 @@
-const { globalShortcut, BrowserWindow, ipcMain } = require('electron');
+import { globalShortcut, BrowserWindow, ipcMain } from 'electron';
 
 class WindowManager {
     constructor(config) {
@@ -111,4 +111,4 @@ class WindowManager {
     }
 }
 
-module.exports = WindowManager;
+export default WindowManager;
