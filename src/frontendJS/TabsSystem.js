@@ -109,7 +109,7 @@ export class TabsSystem {
         if (event) event.preventDefault();
 
         const popover = document.getElementById('app-popover');
-        if (popover) popover.style.display = 'none';
+        if (popover) popover.classList.remove('app-popover-open');
 
         const focusableApps = ['Todolist', 'Note'];
 
@@ -411,13 +411,17 @@ export class TabsSystem {
         const popover = document.getElementById('app-popover');
         if (!popover) return;
 
-        const isVisible = popover.style.display === 'block';
-        popover.style.display = isVisible ? 'none' : 'block';
+        const isVisible = popover.classList.contains('app-popover-open');
+        if (isVisible) {
+            popover.classList.remove('app-popover-open');
+        } else {
+            popover.classList.add('app-popover-open');
+        }
 
         if (!isVisible) {
             const closeOnClickOutside = (event) => {
                 if (!event.target.closest('#app-popover') && !event.target.closest('.create-new-btn')) {
-                    popover.style.display = 'none';
+                    popover.classList.remove('app-popover-open');
                     document.removeEventListener('click', closeOnClickOutside, true);
                 }
             };

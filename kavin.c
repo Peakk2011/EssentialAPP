@@ -1,5 +1,5 @@
 /*
-    Copyright © 2025 Mint teams
+    Copyright © 2026 Mint teams
 
     Kavin
     The generic Node.js process watcher

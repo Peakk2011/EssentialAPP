@@ -65,6 +65,8 @@ nav ul li a {
     pointer-events: all;
     position: relative;
     z-index: 1002;
+    font-weight: 500;
+    letter-spacing: -0.25px;
 
     border-left: solid 1px transparent;
     border-right: solid 1px transparent;
@@ -122,10 +124,6 @@ nav ul li a:hover {
     border-bottom: solid 1px transparent;
     border-right: solid 1px transparent;
     background-color: var(--theme-bg);
-}
-
-#GotoHomePage a:hover {
-    background-color: var(--color-primary) !important;
 }
 
 #GotoHomePage span {
@@ -190,6 +188,7 @@ nav ul li a:hover {
     background-color: var(--SoftHoverColor);
     color: var(--theme-fg);
     border-bottom: var(--TitlebarColorBorder);
+    font-weight: 500;
 }
 
 .create-new-btn {

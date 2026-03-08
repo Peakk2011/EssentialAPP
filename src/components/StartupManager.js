@@ -10,7 +10,6 @@ import IpcManager from './ipcManager.js';
 import ProtocolHandler from './protocolHandler.js';
 import WindowToggler from './windowToggle.js';
 import WindowManager from './windowManager.js';
-import MintputsWindowManager from './mintputsWindow.js';
 import ContextMenuEvents from './eventContextmenu.js';
 import { ErrorHandler, createSafeModeWindow } from './errorHandler.js';
 
@@ -83,9 +82,6 @@ class StartupManager {
 
         const windowManager = new WindowManager({ ...this.config, ...this.mainFunctions });
         windowManager.initialize();
-
-        const mintputsManager = new MintputsWindowManager({ safeLoad: this.mainFunctions.safeLoad });
-        mintputsManager.initialize();
 
         // Run First Launch sequence
         try {

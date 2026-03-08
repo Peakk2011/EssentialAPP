@@ -46,7 +46,7 @@
         </ul>
     </nav>
 
-    <div id="app-popover" style="display: none;">
+    <div id="app-popover">
         <h4>Open a new app</h4>
         <div class="app-grid-popover">
             <a href="javascript:void(0)" onclick="showApp('Todolist', event)">Todolist</a>
@@ -75,158 +75,76 @@
                             d="M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z" />
                     </svg><span id="CurrentLinksText">All Applications</span></a></li>
             <div id="EssentialappLinks">
-                <!-- App selection will be dynamically added here -->
-                <!-- <ul id="app-selection-list">
-                    <li><a href="javascript:void(0)" onclick="showApp('Todolist', event)">Todolist</a></li>
-                    <li><a href="javascript:void(0)" onclick="showApp('Clock', event)">Clock</a></li>
-                    <li><a href="javascript:void(0)" onclick="showApp('Calculator', event)">Calculator</a></li>
-                    <li><a href="javascript:void(0)" onclick="showApp('Note', event)">Notes</a></li>
-                    <li><a href="javascript:void(0)" onclick="showApp('Paint', event)">Paint</a></li>
-                </ul>
-                -->
-                <li><a href="javascript:void(0)" id="NewWindow_Mintputs">
-                        <svg width="20" height="20" viewBox="0 0 384 383" fill="none" xmlns="http://www.w3.org/2000/svg"
-                            style="translate: 2.25px -1px;">
-                            <rect x="153" y="343" width="79" height="40" fill="currentColor" />
-                            <rect x="153" width="79" height="40" fill="currentColor" />
-                            <rect x="230" y="305" width="41" height="40" fill="currentColor" />
-                            <rect x="307" y="229" width="39" height="40" fill="currentColor" />
-                            <rect x="269" y="267" width="40" height="40" fill="currentColor" />
-                            <rect x="344" y="154" width="40" height="76" fill="currentColor" />
-                            <rect y="153" width="40" height="77" fill="currentColor" />
-                            <rect x="306" y="116" width="40" height="39" fill="currentColor" />
-                            <rect width="40" height="39" transform="matrix(-1 0 0 1 78 116)" fill="currentColor" />
-                            <rect width="40" height="39" transform="matrix(-1 0 0 1 78 229)" fill="currentColor" />
-                            <rect width="40" height="39" transform="matrix(-1 0 0 1 116 268)" fill="currentColor" />
-                            <rect width="40" height="39" transform="matrix(-1 0 0 1 153 306)" fill="currentColor" />
-                            <rect x="268" y="77" width="41" height="40" fill="currentColor" />
-                            <rect width="41" height="40" transform="matrix(-1 0 0 1 116 77)" fill="currentColor" />
-                            <rect x="230" y="40" width="41" height="39" fill="currentColor" />
-                            <rect width="41" height="39" transform="matrix(-1 0 0 1 154 40)" fill="currentColor" />
-                            <path d="M172.5 268.5H211V229.5H230.5V191.5H209.5V213H177.5V191.5H153V229.5H172.5V268.5Z"
-                                fill="currentColor" stroke="currentColor" />
-                            <path d="M152.5 153.5H114.5V191.5H152.5V153.5Z" fill="currentColor" />
-                            <path d="M230.5 191.5H269.5V153.5H230.5V191.5Z" fill="currentColor" />
-                            <path d="M230.5 153.5V116H152.5V153.5H230.5Z" fill="currentColor" />
-                            <path
-                                d="M230.5 153.5H269.5V191.5H230.5V153.5ZM230.5 153.5V116H152.5V153.5M230.5 153.5H152.5M152.5 153.5H114.5V191.5H152.5V153.5Z"
-                                stroke="currentColor" />
-                        </svg>
-                        Try Mintputs</a>
-                </li>
-                <!-- <ul id="open-apps-tabs"></ul> -->
-                <div id="appStatus">
-                    <!-- Todolist Controls -->
-                    <div class="app-controls" data-app-controls="Todolist" style="display: none;">
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Todolist', 'focusInput')"
-                            class="app-action-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-                            </svg>
-                            Add Task
-                        </a>
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Todolist', 'deleteLast')"
-                            class="app-action-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path
-                                    d="M360-240h310v-80H360l120-120-56-56-204 204 204 204 56-56-120-120Zm400-40v-400q0-33-23.5-56.5T680-760H280q-33 0-56.5 23.5T200-680v400q0 33 23.5 56.5T280-200h400q33 0 56.5-23.5T760-280Z" />
-                            </svg>
-                            Delete Last
-                        </a>
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Todolist', 'clearAll')"
-                            class="app-action-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path
-                                    d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T720-120H280Zm150-180h80v-360h-80v360Zm160 0h80v-360h-80v360Z" />
-                            </svg>
-                            Clear All
-                        </a>
-                        <a class="app-status-info">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path
-                                    d="M435.33-227 678-469.67 621.67-526 436-340.33l-99-99-57 57L435.33-227ZM224-58.67q-33.73 0-58.86-25.13Q140-108.94 140-142.67v-674.66q0-33.73 25.14-58.87 25.13-25.13 58.86-25.13h342l254 253v505.66q0 33.73-25.14 58.87Q769.73-58.67 736-58.67H224ZM524.67-608v-209.33H224v674.66h512V-608H524.67ZM224-817.33V-608v-209.33 674.66-674.66Z" />
-                            </svg><span id="todolist-status-text">0 Remaining tasks left</span>
-                        </a>
-                    </div>
-                    <!-- Note Controls -->
-                    <div class="app-controls" data-app-controls="Note" style="display: none;">
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Note', 'save')">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path
-                                    d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160v440q0 33-23.5 56.5T760-120H200Zm360-560v-160H200v560h560v-400H560ZM200-720v160-160 560-560Z" />
-                            </svg>
-                            Save Note
-                        </a>
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Note', 'addSelectedToTodo')"
-                            class="app-action-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path
-                                    d="M240-160v-80h280v80H240Zm0-160v-80h480v80H240Zm0-160v-80h480v80H240Zm520 480v-160h-80v-80h80v-80h80v80h80v80h-80v160h-80Z" />
-                            </svg>
-                            Add to Todolist
-                        </a>
-                    </div>
-                    <!-- Paint Controls -->
-                    <div class="app-controls" data-app-controls="Paint" style="display: none;">
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Paint', 'clearCanvas')">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path
-                                    d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T720-120H280Zm440-600H240v520h480v-520ZM360-200h80v-400h-80v400Zm160 0h80v-400h-80v400ZM240-720v520-520Z" />
-                            </svg>
-                            Clear Canvas
-                        </a>
-                    </div>
-                    <!-- Calculator Controls -->
-                    <div class="app-controls" data-app-controls="Calculator" style="display: none;">
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Calculator', 'clear')">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path
-                                    d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T720-120H280Zm440-600H240v520h480v-520Z" />
-                            </svg>
-                            Clear (AC)
-                        </a>
-                    </div>
-                    <!-- Clock Controls -->
-                    <div class="app-controls" data-app-controls="Clock" style="display: none;">
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Clock', 'start')">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path d="M320-200v-560l440 280-440 280Z" />
-                            </svg>
-                            Start
-                        </a>
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Clock', 'stop')">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path d="M280-280v-400h400v400H280Z" />
-                            </svg>
-                            Stop
-                        </a>
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Clock', 'reset')">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path
-                                    d="M480-160q-134 0-227-93t-93-227h80q0 100 70.5 170.5T480-240q100 0 170.5-70.5T720-480q0-100-70.5-170.5T480-720v-80q134 0 227 93t93 227q0 134-93 227t-227 93Z" />
-                            </svg>
-                            Reset
-                        </a>
-                        <a href="javascript:void(0)" onclick="sendCommandToIframe('Clock', 'lap')">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                                fill="currentColor">
-                                <path
-                                    d="M440-280h80v-160h120v-80H520v-120h-80v120H320v80h120v160ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Z" />
-                            </svg>
-                            Lap
-                        </a>
-                    </div>
+                <div class="menu-section">
+                    <!-- <h5>Applications</h5> -->
+                    <ul>
+                        <li><a href="javascript:void(0)" onclick="showApp('Paint', event)">
+                                <svg height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                    <path
+                                        d="M360-80q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35Zm179-139q-6-55-41-97t-87-57l106-107H236q-32 0-54-22t-22-54q0-20 10.5-37.5T198-622l486-291q18-11 38-5.5t31 23.5q11 18 5.5 37.5T736-827L360-600h364q32 0 54 22t22 54q0 18-4.5 35.5T778-458L539-219Z">
+                                    </path>
+                                </svg>
+                                Paint
+                            </a></li>
+                        <li><a href="javascript:void(0)" onclick="showApp('Todolist', event)">
+                                <svg height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                    <path
+                                        d="M360-200v-80h480v80H360Zm0-240v-80h480v80H360Zm0-240v-80h480v80H360ZM200-160q-33 0-56.5-23.5T120-240q0-33 23.5-56.5T200-320q33 0 56.5 23.5T280-240q0 33-23.5 56.5T200-160Zm0-240q-33 0-56.5-23.5T120-480q0-33 23.5-56.5T200-560q33 0 56.5 23.5T280-480q0 33-23.5 56.5T200-400Zm0-240q-33 0-56.5-23.5T120-720q0-33 23.5-56.5T200-800q33 0 56.5 23.5T280-720q0 33-23.5 56.5T200-640Z">
+                                    </path>
+                                </svg>
+                                Todolist
+                            </a></li>
+                        <li><a href="javascript:void(0)" onclick="showApp('Clock', event)">
+                                <svg height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                    <path
+                                        d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm-20-320v-160h80v128l108 108-56 56-132-132Z">
+                                    </path>
+                                </svg>
+                                Clock
+                            </a></li>
+                        <li><a href="javascript:void(0)" onclick="showApp('Calculator', event)">
+                                <svg height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                    <path
+                                        d="M400-240v-80h62l105-120-105-120h-66l-64 344q-8 45-37 70.5T221-120q-45 0-73-24t-28-64q0-32 17-51.5t43-19.5q25 0 42.5 17t17.5 41q0 5-.5 9t-1.5 9q5-1 8.5-5.5T252-221l62-339H200v-80h129l21-114q7-38 37.5-62t72.5-24q44 0 72 26t28 65q0 30-17 49.5T500-680q-25 0-42.5-17T440-739q0-5 .5-9t1.5-9q-6 2-9 6t-5 12l-17 99h189v80h-32l52 59 52-59h-32v-80h200v80h-62L673-440l105 120h62v80H640v-80h32l-52-60-52 60h32v80H400Z">
+                                    </path>
+                                </svg>
+                                Calculator
+                            </a></li>
+                        <li><a href="javascript:void(0)" onclick="showApp('Note', event)">
+                                <svg height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                    <path
+                                        d="M280-160v-441q0-33 24-56t57-23h439q33 0 56.5 23.5T880-600v320L680-80H360q-33 0-56.5-23.5T280-160ZM81-710q-6-33 13-59.5t52-32.5l434-77q33-6 59.5 13t32.5 52l10 54h-82l-7-40-433 77 40 226v279q-16-9-27.5-24T158-276L81-710Zm279 110v440h280v-160h160v-280H360Zm220 220Z">
+                                    </path>
+                                </svg>
+                                Notes
+                            </a></li>
+                    </ul>
+                </div>
+                <div class="menu-section">
+                    <h5>Another App</h5>
+                    <ul>
+                        <li><a href="https://github.com/Peakk2011/Fascinate-Note" target="_blank">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M9.61934 12.9269L3 10.9841L4.00824 7.72464L10.6276 10.1423L10.529 6.42949L10.4329 3H12.1071H13.7812L13.6742 6.48345L13.5646 10.2502L19.9918 7.72464L21 10.9841L14.3525 12.9269L18.6935 18.9709L15.9757 21L12.1071 14.5845L7.95354 20.8489L5.21375 18.8846L9.61934 12.9269Z"
+                                        fill="var(--theme-links)" />
+                                </svg>
+                                Fascinate Notes
+                            </a></li>
+                        <li><a href="https://mint-teams.web.app/runtime-consider/docs/" target="_blank">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15.2031 20V3H12.2804V20H15.2031Z" fill="var(--theme-links)" />
+                                    <path d="M19.1016 20V3H16.1789V20H19.1016Z" fill="var(--theme-links)" />
+                                    <path d="M23 20V3H20.0773V20H23Z" fill="var(--theme-links)" />
+                                    <path
+                                        d="M0.998742 10.3529H8.60071L4.09744 6.59659L5.72292 4.99609L12.6895 11.4961L5.72292 17.9961L4.09744 16.3956L8.60071 12.6393H0.998742V10.3529Z"
+                                        fill="var(--theme-links)" />
+                                </svg>
+                                Runtime Consider
+                            </a></li>
+                    </ul>
                 </div>
             </div>
         </div>

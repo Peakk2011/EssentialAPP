@@ -47,7 +47,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createNewWindow: (url) => ipcRenderer.invoke('create-new-window', url),
     openAboutWindow: () => ipcRenderer.invoke('open-about-window'),
     openSettingsWindow: () => ipcRenderer.invoke('open-settings-window'),
-    openMintputsWindow: (url) => ipcRenderer.invoke('open-mintputs-window', url),
     toggleDevTools: () => ipcRenderer.send('toggle-devtools'),
     send: (channel, data) => ipcRenderer.send(channel, data),
     on: (channel, callback) => {

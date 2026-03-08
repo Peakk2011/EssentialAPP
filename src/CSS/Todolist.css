@@ -51,6 +51,27 @@
     }
 }
 
+.lang-option {
+    padding: 8px 16px;
+    color: var(--ctx-menu-text);
+    cursor: pointer;
+    transition: background 0.2s;
+    min-width: 120px;
+    font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    position: relative;
+    overflow: hidden;
+}
+
+.lang-option:hover {
+    background: var(--HoverColor);
+}
+
+
+/* 
+   RIPPLE EFFECTS
+ */
 .ripple {
     position: absolute;
     background: var(--RippleEffectColor);
@@ -99,106 +120,16 @@
     }
 }
 
-.lang-option {
-    padding: 8px 16px;
-    color: var(--ctx-menu-text);
-    cursor: pointer;
-    transition: background 0.2s;
-    min-width: 120px;
-    font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
-    font-weight: 300;
-    line-height: 1.6;
-    position: relative;
-    overflow: hidden;
-}
 
-.lang-option:hover {
-    background: var(--HoverColor);
-}
-
+/* 
+   HIDDEN LEGACY ELEMENTS
+ */
 .date-wrapper,
 .date-box,
 .lang-selector,
-.lang-btn {
-    display: none;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeOutAndShrink {
-    to {
-        opacity: 0;
-        height: 0;
-        margin: 0;
-        padding: 0;
-        border: 0;
-    }
-}
-
-#todo-list {
-    margin-top: 3.5rem;
-}
-
-#todo-list li.new-item {
-    animation: fadeIn 0.3s ease-out;
-}
-
-#todo-list li.removing {
-    animation: fadeOutAndShrink 0.3s ease-out forwards;
-    pointer-events: none;
-}
-
-#todo-list li.dragging {
-    opacity: 0.5;
-}
-
-.context-menu {
-    position: absolute;
-    border: 1px solid var(--theme-border, #444);
-    border-radius: 6px;
-    z-index: 1000;
-    padding: 5px 0;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    min-width: 150px;
-    background: var(--ctx-menu-bg);
-}
-
-.context-menu-item {
-    padding: 8px 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--ctx-menu-text);
-}
-
-.context-menu-item:hover {
-    background: var(--theme-accent, #5DADE2);
-    color: white;
-}
-
-.context-menu-item .category-color-swatch {
-    flex-shrink: 0;
-}
-
-.control-buttons {
-    display: none;
-}
-
-.search-container {
-    display: none;
-}
-
+.lang-btn,
+.control-buttons,
+.search-container,
 .search-input,
 .clear-search-btn,
 .due-date-input,
@@ -208,30 +139,712 @@
     display: none;
 }
 
-.todo-item {
+input[type="checkbox"] {
+    display: none;
+}
+
+/* 
+   CONTEXT MENU  — same animation as lang-dropdown
+ */
+.context-menu {
+    position: fixed;
+    background: var(--ctx-menu-bg);
+    backdrop-filter: blur(20px);
+    border-radius: 4px;
+    box-shadow: var(--ctx-menu-shadow);
+    z-index: 9999;
+    padding: 0.25rem 0;
+    min-width: 150px;
+    animation: DropDownToggle 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ctx-menu-text);
+    font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    transition: background 0.2s;
+}
+
+.context-menu-item:hover {
+    background: var(--HoverColor);
+}
+
+.context-menu-item .category-color-swatch {
+    flex-shrink: 0;
+}
+
+
+/* 
+   CATEGORY FILTERS
+ */
+.category-filters {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    position: fixed;
+    left: 0.75rem;
+    top: 6px;
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition:
+        max-height 0.4s cubic-bezier(0.19, 1, 0.22, 1),
+        opacity 0.3s ease;
+}
+
+.category-filters.visible {
+    max-height: 200px;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.category-filters .filter-btn {
+    background: none;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--theme-links);
+    cursor: pointer;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: border-bottom-color 0.2s;
+    font-weight: 500;
+}
+
+.category-filters .filter-btn:hover,
+.category-filters .filter-btn.active {
+    border-bottom-color: currentColor;
+}
+
+.category-color-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.hidden-color-input {
+    visibility: hidden;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+
+/* 
+   APP CONTAINER
+ */
+#todo-app {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+#todo-list {
+    margin-top: 3.5rem;
+}
+
+
+/* 
+   BOTTOM MENU BAR
+   — centred vertically when list is empty (JS adds body.todo-empty)
+ */
+.todolist-menu {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-65%);
+    height: 44px;
+    border-radius: 100vmax;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    z-index: 400;
+    transition: bottom 0.5s cubic-bezier(0.34, 1.4, 0.64, 1),
+        left 0.5s cubic-bezier(0.34, 1.4, 0.64, 1),
+        transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1),
+        height 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* When no tasks: float to true viewport centre */
+body.todo-empty .todolist-menu {
+    bottom: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    height: auto;
+    align-items: flex-end;
+}
+
+.add-task-wrapper {
+    display: flex;
+    gap: 8px;
+    height: 44px;
+    border-radius: 100vmax;
+    padding: 0.35rem 0.5rem;
+    background: var(--toolbar-bg);
+    outline: var(--theme-border) solid 1.5px;
+    align-items: center;
+    transition: border-radius 0.4s cubic-bezier(0.34, 1.4, 0.64, 1),
+        height 0.4s cubic-bezier(0.34, 1.4, 0.64, 1),
+        padding 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* Expanded wrapper when empty */
+body.todo-empty .add-task-wrapper {
+    border-radius: 12px;
+    height: auto;
+    align-items: flex-end;
+    padding: 0.5rem;
+}
+
+#todo-input {
+    flex-grow: 1;
+    border: 1px solid var(--theme-border);
+    padding: 0.75rem 1rem;
+    border-radius: 100vmax;
+    color: var(--theme-fg);
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    width: 280px;
+    background-color: var(--toolbar-bg);
+    resize: none;
+    overflow: hidden;
+    line-height: 1.5;
+    display: block;
+    box-sizing: border-box;
+    /* smooth morph between pill and textarea */
+    transition: border-color 0.2s,
+        border-radius 0.4s cubic-bezier(0.34, 1.4, 0.64, 1),
+        height 0.4s cubic-bezier(0.34, 1.4, 0.64, 1),
+        padding 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+#todo-input:focus {
+    border-color: var(--theme-accent);
+}
+
+/* Expanded input — textarea feel */
+body.todo-empty #todo-input {
+    border-radius: 8px;
+    height: 200px;
+    padding: 0.85rem 1rem;
+    overflow-y: auto;
+    align-self: stretch;
+}
+
+#add-btn {
+    padding: 0.75rem 1rem;
+    border-radius: 100vmax;
+    border: none;
+    background-color: var(--theme-accent);
+    color: var(--theme-accent-text);
+    cursor: pointer;
+    font-weight: 500;
+    transition: filter 0.2s, border-radius 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+    align-self: flex-end;
+    flex-shrink: 0;
+}
+
+body.todo-empty #add-btn {
+    border-radius: 8px;
+}
+
+#add-btn:hover {
+    filter: brightness(1.1);
+}
+
+/* Hamburger popup — positioned by JS relative to todolist-menu,
+   so CSS just needs to be position:fixed with no default bottom/left */
+.hamburger-menu {
+    position: fixed;
+    background: var(--ctx-menu-bg);
+    backdrop-filter: blur(24px);
+    border-radius: 4px;
+    box-shadow: var(--ctx-menu-shadow);
+    padding: 0.25rem 0;
+    min-width: 180px;
+    z-index: 500;
+    display: none;
+    /* bottom/left set dynamically by JS */
+}
+
+.hamburger-menu.show {
+    display: block;
+    animation: hamburgerMenuOpen 0.22s ease-out both;
+}
+
+@keyframes hamburgerMenuOpen {
+    0% {
+        opacity: 0;
+        filter: blur(4px);
+        transform: translateY(8px);
+    }
+
+    100% {
+        opacity: 1;
+        filter: blur(0px);
+        transform: translateY(0);
+    }
+}
+
+.hamburger-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    color: var(--theme-links);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 36px;
+    height: 36px;
+    transition: background 0.2s, transform 0.3s;
+}
+
+.hamburger-btn:hover {
+    background: var(--HoverColor);
+}
+
+.hamburger-btn.open {
+    transform: rotate(90deg);
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 16px;
+    height: 1.5px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    transform-origin: center;
+}
+
+.hamburger-btn.open span:nth-child(1) {
+    transform: translateY(5.5px) rotate(45deg);
+}
+
+.hamburger-btn.open span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+
+.hamburger-btn.open span:nth-child(3) {
+    transform: translateY(-5.5px) rotate(-45deg);
+}
+
+
+
+.hmenu-section-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--theme-links);
+    opacity: 0.5;
+    padding: 0.5rem 0.75rem 0.2rem;
+}
+
+.hmenu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--ctx-menu-text);
+    font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    transition: background 0.2s;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.hmenu-item:hover {
+    background: var(--HoverColor);
+}
+
+.hmenu-item.active {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text, #fff);
+}
+
+.hmenu-divider {
+    height: 1px;
+    background: var(--theme-border);
+    margin: 0.3rem 0;
+    opacity: 0.4;
+}
+
+
+/* 
+   VIEW SWITCH ANIMATION — blur + opacity only, no scale, fast
+ */
+@keyframes viewEnter {
+    0% {
+        opacity: 0;
+        filter: blur(6px);
+    }
+
+    100% {
+        opacity: 1;
+        filter: blur(0px);
+    }
+}
+
+#todo-list.view-enter {
+    animation: viewEnter 0.18s ease-out both;
+}
+
+
+/* 
+   VIEW: LIST
+ */
+#todo-list.view-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#todo-list.view-list .todo-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
     padding: 0.3rem 0;
     border-bottom: 1px solid var(--theme-border);
-    transition: all 0.2s;
     position: relative;
+    cursor: grab;
+    user-select: none;
 }
 
-.todo-item:last-child {
+#todo-list.view-list .todo-item:last-child {
     border-bottom: none;
 }
 
-.todo-item:hover {
+#todo-list.view-list .todo-item:hover {
     background: var(--SoftHoverColor);
 }
 
+/* Source item fades while being dragged */
+.todo-item.list-src-ghost {
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+/* Drop insertion-line indicators */
+.todo-item.list-drop-above::before,
+.todo-item.list-drop-below::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--theme-accent);
+    border-radius: 2px;
+    z-index: 3;
+}
+
+.todo-item.list-drop-above::before {
+    top: -1px;
+}
+
+.todo-item.list-drop-below::after {
+    bottom: -1px;
+}
+
+/* Floating clone that follows the pointer in list mode */
+.list-drag-clone {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    background: var(--ctx-menu-bg);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--theme-accent);
+    border-radius: 8px;
+    padding: 0.4rem 0.9rem;
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.45);
+    font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
+    font-size: 0.9rem;
+    color: var(--theme-fg);
+    max-width: 320px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* no rotation — as requested */
+}
+
+
+/* 
+   VIEW: GRID
+   — min 240×320, max 4 cols, wrap, gap 0, radius 0
+ */
+#todo-list.view-grid {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 1100px;
+}
+
+#todo-list.view-grid .todo-item {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 1rem 0.75rem;
+    border-radius: 0;
+    border: 1px solid var(--theme-border);
+    background: var(--toolbar-bg);
+    min-width: 240px;
+    min-height: 320px;
+    flex: 1 1 calc(25%);
+    max-width: 25%;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    cursor: grab;
+    user-select: none;
+}
+
+#todo-list.view-grid .todo-item:hover {
+    box-shadow: inset 0 0 0 1.5px var(--theme-accent);
+    z-index: 2;
+}
+
+/* Header row inside each grid tile: badge left, actions right */
+.grid-tile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* Delete / remove animation: opacity + blur */
+#todo-list.view-grid .todo-item.removing {
+    animation: gridRemove 0.35s ease forwards;
+    pointer-events: none;
+}
+
+@keyframes gridRemove {
+    0% {
+        opacity: 1;
+        filter: blur(0px);
+    }
+
+    100% {
+        opacity: 0;
+        filter: blur(8px);
+    }
+}
+
+/* The element being dragged — lifted to fixed, no pointer events */
+#todo-list.view-grid .todo-item.grid-dragging {
+    cursor: grabbing;
+    z-index: 9000;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+/* Spacer that holds the grid slot */
+.grid-drag-spacer {
+    visibility: hidden;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+/* Drop target: outline only, no transform */
+#todo-list.view-grid .todo-item.grid-drop-target {
+    outline: 2px solid var(--theme-accent);
+    outline-offset: -2px;
+    z-index: 3;
+}
+
+/* Resize handle (bottom-right corner) */
+.grid-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    cursor: se-resize;
+    z-index: 10;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 4px;
+    opacity: 0.2;
+    transition: opacity 0.15s;
+    color: var(--theme-links);
+}
+
+.todo-item:hover .grid-resize-handle {
+    opacity: 0.7;
+}
+
+
+/* 
+   VIEW: WINDOW — floating OS-style windows
+ */
+
+/* Dot-grid backdrop */
+#window-dotgrid {
+    display: none;
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: radial-gradient(circle,
+            var(--window-dot-color, rgba(255, 255, 255, 0.1)) 1.5px,
+            transparent 1.5px);
+    background-size: 36px 36px;
+}
+
+body.view-window-active #window-dotgrid {
+    display: block;
+}
+
+#todo-list.view-window {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    min-height: 60vh;
+}
+
+/* Window card base */
+.todo-item.window-card {
+    position: fixed !important;
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+    min-height: 120px;
+    border-radius: 10px;
+    border: 1px solid var(--theme-border);
+    background: var(--ctx-menu-bg, rgba(18, 18, 22, 0.94));
+    backdrop-filter: blur(18px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+    z-index: 10;
+    user-select: none;
+    animation: windowCardEnter 0.22s ease-out both;
+    transition: box-shadow 0.2s;
+}
+
+@keyframes windowCardEnter {
+    0% {
+        opacity: 0;
+        filter: blur(8px);
+    }
+
+    100% {
+        opacity: 1;
+        filter: blur(0px);
+    }
+}
+
+/* Close animation */
+.todo-item.window-card.wnd-closing {
+    animation: windowCardExit 0.18s ease-in forwards !important;
+    pointer-events: none;
+}
+
+@keyframes windowCardExit {
+    0% {
+        opacity: 1;
+        filter: blur(0px);
+    }
+
+    100% {
+        opacity: 0;
+        filter: blur(8px);
+    }
+}
+
+.todo-item.window-card.wnd-focused {
+    box-shadow: 0 16px 52px rgba(0, 0, 0, 0.45);
+    z-index: 20;
+}
+
+.todo-item.window-card.wnd-dragging {
+    box-shadow: 0 24px 72px rgba(0, 0, 0, 0.6);
+    z-index: 100;
+    transition: none;
+}
+
+/* Title bar — inherits card bg, pure drag handle */
+.window-titlebar {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    cursor: grab;
+    flex-shrink: 0;
+}
+
+.window-titlebar:active {
+    cursor: grabbing;
+}
+
+.window-titlebar-text {
+    flex: 1;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--theme-links);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}
+
+.window-body {
+    padding: 0 0.9rem 0.7rem;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.todo-item.window-card .todo-actions {
+    justify-content: flex-end;
+    padding: 0 0.5rem 0.45rem;
+    flex-shrink: 0;
+}
+
+.todo-item.window-card.wnd-minimised .window-body,
+.todo-item.window-card.wnd-minimised .todo-actions {
+    display: none;
+}
+
+.todo-item.window-card.wnd-minimised {
+    min-height: unset;
+}
+
+
+/* 
+   SHARED ITEM COMPONENTS
+ */
 .todo-item-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.35rem;
     min-width: 0;
 }
 
@@ -287,7 +900,7 @@
     height: 100%;
     background: var(--theme-accent);
     border-radius: 2px;
-    transition: width 0.3s ease;
+    transition: width 0.3s;
 }
 
 .progress-text {
@@ -295,8 +908,6 @@
     color: var(--theme-links);
     min-width: fit-content;
 }
-
-/* Tags Container */
 
 .tags-container {
     display: flex;
@@ -314,12 +925,10 @@
     border: 1px solid rgba(93, 173, 226, 0.3);
 }
 
-/* Action Buttons */
 .todo-actions {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    transition: opacity 0.2s;
 }
 
 .action-btn {
@@ -349,7 +958,6 @@
     color: #ffed4a;
 }
 
-/* Delete Button */
 .delete-btn {
     background: none;
     border: none;
@@ -368,133 +976,11 @@
     color: #ff4757;
 }
 
-/* Category Badge */
-
 .category-badge {
     width: 12px;
     height: 12px;
     border-radius: 50%;
     flex-shrink: 0;
-}
-
-input[type="checkbox"] {
-    display: none;
-}
-
-.category-filters {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-
-    position: fixed;
-    left: 0.75rem;
-    top: 6px;
-}
-
-.category-filters .filter-btn {
-    background: none;
-    border: 1px solid transparent;
-    color: var(--theme-links);
-    cursor: pointer;
-    padding: 0.5rem 0rem;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s;
-    border-bottom: solid 1px transparent;
-    font-weight: 500;
-}
-
-.category-filters .filter-btn:hover,
-.category-filters .filter-btn.active,
-.category-filters .filter-btn:focus {
-    border-bottom: solid 1px currentColor;
-}
-
-.category-color-swatch {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.hidden-color-input {
-    visibility: hidden;
-    width: 0;
-    height: 0;
-    position: absolute;
-}
-
-#todo-app {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-}
-
-.add-task-wrapper {
-    display: flex;
-    gap: 8px;
-    position: fixed;
-    left: 102.5%;
-    height: 44px;
-    border-radius: 100vmax;
-    width: fit-content;
-    padding: 0.35rem 0.5rem;
-    background: var(--toolbar-bg);
-    outline: var(--theme-border) solid 1.5px;
-}
-
-.todolist-menu {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-65%);
-    height: 44px;
-    border-radius: 100vmax;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#todo-input {
-    flex-grow: 1;
-    border: 1px solid var(--theme-border);
-    padding: 0.75rem 1rem;
-    border-radius: 100vmax;
-    color: var(--theme-fg);
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 280px;
-    background-color: var(--toolbar-bg);
-}
-
-#todo-input:focus {
-    border-color: var(--theme-accent);
-}
-
-#add-btn {
-    padding: 0.75rem 1rem;
-    border-radius: 100vmax;
-    border: none;
-    background-color: var(--theme-accent);
-    color: var(--theme-accent-text);
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.2s;
-}
-
-#add-btn:hover {
-    filter: brightness(1.1);
-}
-
-.todo-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
 }
 
 .edit-input {
@@ -508,28 +994,67 @@ input[type="checkbox"] {
     outline: none;
 }
 
-@media (max-width: 768px) {
-    .control-buttons {
-        flex-direction: column;
-        align-items: stretch;
+
+/* 
+   ITEM ENTER / REMOVE ANIMATIONS
+ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
     }
 
-    .due-date-input,
-    .priority-select,
-    .sort-select,
-    .toggle-btn {
-        width: 100%;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-@media (max-width: 350px) {
+#todo-list li.new-item {
+    animation: fadeIn 0.3s ease-out;
+}
+
+#todo-list.view-list li.removing,
+#todo-list.view-window li.removing {
+    animation: gridRemove 0.3s ease forwards;
+    pointer-events: none;
+}
+
+
+/* 
+   RESPONSIVE
+ */
+@media (max-width: 1100px) {
+    #todo-list.view-grid {
+        max-width: 80%;
+    }
+}
+
+@media (max-width: 960px) {
+    #todo-list.view-grid .todo-item {
+        flex: 1 1 calc(33.33%);
+        max-width: 33.33%;
+    }
+}
+
+@media (max-width: 720px) {
+    #todo-list.view-grid .todo-item {
+        flex: 1 1 calc(50%);
+        max-width: 50%;
+    }
+}
+
+@media (max-width: 480px) {
+    #todo-list.view-grid .todo-item {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
 
     #shortDate {
         display: none;
     }
 
     #todo-input {
-        width: 230px;
+        width: 200px;
     }
-
 }

@@ -199,7 +199,6 @@ const homePageHandler = e => {
 const createWindows = {
   Aboutus: {
     AboutEssential: document.getElementById("NewWindow_AboutMint"),
-    Mintputs: document.getElementById("NewWindow_Mintputs"),
   },
   Settings: {
     SettingsEssential: document.getElementById("NewWindow_Settings"),
@@ -219,12 +218,6 @@ const setupWindowOpeners = () => {
     Settings.SettingsEssential.addEventListener('click', async (e) => {
       e.preventDefault();
       await window.electronAPI.openSettingsWindow();
-    });
-  }
-  if (Aboutus.Mintputs) {
-    Aboutus.Mintputs.addEventListener('click', async (e) => {
-      e.preventDefault();
-      await window.electronAPI.openMintputsWindow('openMintputs.html');
     });
   }
 };

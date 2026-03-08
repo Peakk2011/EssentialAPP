@@ -119,12 +119,11 @@ const WINDOW_CONFIG = {
   default: {
     ...BASE_WINDOW_CONFIG,
     ...(PLATFORM_CONFIG[process.platform]?.window || PLATFORM_CONFIG.win32.window),
-    width: 740,
-    height: 760,
+    width: 1024,
+    height: 768,
     center: true,
   },
   alwaysOnTop: { width: 340, height: 570 }
 };
-
 
 export { BASE_WEB_PREFERENCES, BASE_WINDOW_CONFIG, FIRST_TIME_CONFIG, Essential_links, getThemeIcon, PLATFORM_CONFIG, DialogWindows_Config, DialogWindowsName, WINDOW_CONFIG };

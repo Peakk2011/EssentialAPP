@@ -29,6 +29,7 @@
     display: flex;
     align-items: center;
     border-radius: 100vmax;
+    box-shadow: var(--ctx-menu-shadow);
 }
 
 .contentBTN button {
@@ -46,6 +47,7 @@
 
 .contentBTN #start {
     background: var(--theme-accent);
+    box-shadow: var(--ctx-menu-shadow);
     color: var(--theme-accent-text);
 }
 
@@ -63,17 +65,22 @@
     top: 10px;
     right: 20px;
     text-align: right;
+    padding: 0.5rem;
+    background: var(--ctx-menu-bg);
+    outline: var(--theme-border) solid 1.5px;
+    border-radius: 6px;
+    box-shadow: var(--ctx-menu-shadow);
 }
 
 #laps li {
     font-family: var(--font-text), sans-serif;
-    border-bottom: solid 1px var(--theme-border);
-    padding: 0.65rem 0rem;
+    padding: 0.4rem 0.5rem;
+    transition: opacity var(--ctx-menu-transition);
+    display: block;
+    width: fit-content;
 }
 
 @media (max-width: 350px) {
-
-    /* Sorry for my hardcode */
     button {
         padding: 0.5rem 0.8rem;
     }

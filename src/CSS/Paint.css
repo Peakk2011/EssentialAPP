@@ -68,6 +68,7 @@
     width: fit-content;
     background: var(--toolbar-bg);
     outline: var(--theme-border) solid 1.5px;
+    box-shadow: var(--ctx-menu-shadow);
     z-index: 1000;
     padding: 8px;
     gap: 2px;

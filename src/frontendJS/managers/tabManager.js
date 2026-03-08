@@ -217,16 +217,20 @@ export const createNewTabButton = () => {
 
 export const showAppSelection = () => {
     const popover = document.getElementById('app-popover');
-    const isVisible = popover.style.display === 'block';
+    if (!popover) return;
 
+    const isVisible = popover.classList.contains('app-popover-open');
     if (isVisible) {
-        popover.style.display = 'none';
+        popover.classList.remove('app-popover-open');
     } else {
-        popover.style.display = 'block';
+        popover.classList.add('app-popover-open');
+    }
+
+    if (!isVisible) {
         const closeOnClickOutside = (event) => {
             if (!event || !event.target || !(event.target instanceof Element)) return;
             if (!popover.contains(event.target) && !event.target.closest('.create-new-btn')) {
-                popover.style.display = 'none';
+                popover.classList.remove('app-popover-open');
                 document.removeEventListener('click', closeOnClickOutside, true);
             }
         };

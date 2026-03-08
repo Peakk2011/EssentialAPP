@@ -104,7 +104,7 @@ const handleEscapeKey = () => {
     }
 
     const popover = document.getElementById('app-popover');
-    if (popover && popover.style.display === 'block') {
-        popover.style.display = 'none';
+    if (popover) {
+        popover.classList.remove('app-popover-open');
     }
 };
