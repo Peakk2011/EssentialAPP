@@ -25,9 +25,41 @@
 
         <div id="todo-app">
             <div class="todolist-menu">
+                <svg width="75" height="16" viewBox="0 0 75 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    id="todolist-icons">
+                    <path d="M74.6809 0V4.40949H72.1809V15.8289H67.9809V4.40949H65.4609V0H74.6809Z"
+                        fill="var(--theme-accent)" />
+                    <path
+                        d="M57.7619 14.7005V13.0034H62.5584V14.7005H57.7619ZM56.1602 13.0034V11.3062H57.7619V13.0034H56.1602ZM62.5584 13.0034V9.61844H64.1602V13.0034H62.5584ZM60.9566 9.61844V7.92131H62.5584V9.61844H60.9566ZM57.7619 7.92131V6.22419H60.9566V7.92131H57.7619ZM56.1602 6.22419V2.82994H57.7619V6.22419H56.1602ZM62.5584 4.52706V2.82994H64.1602V4.52706H62.5584ZM57.7619 2.82994V1.13281H62.5584V2.82994H57.7619Z"
+                        fill="var(--theme-accent)" />
+                    <path
+                        d="M57.7619 13.0034V14.7005H62.5584V13.0034M57.7619 13.0034H62.5584M57.7619 13.0034V11.3062H56.1602V13.0034H57.7619ZM62.5584 13.0034V9.61844M62.5584 13.0034H64.1602V9.61844H62.5584M62.5584 9.61844V7.92131H60.9566M62.5584 9.61844H60.9566V7.92131M60.9566 7.92131V6.22419H57.7619M60.9566 7.92131H57.7619V6.22419M57.7619 6.22419V2.82994M57.7619 6.22419H56.1602V2.82994H57.7619M57.7619 2.82994V1.13281H62.5584V2.82994M57.7619 2.82994H62.5584M62.5584 2.82994V4.52706H64.1602V2.82994H62.5584Z"
+                        stroke="var(--theme-accent)" stroke-width="2" />
+                    <path d="M50.6602 0H54.8602V15.8289H50.6602V0Z" fill="var(--theme-accent)" />
+                    <path d="M42.3398 0H46.5398V11.4421H50.1598V15.8516H42.3398V0Z" fill="var(--theme-accent)" />
+                    <path
+                        d="M24.0207 0C28.0807 0 31.3407 3.34669 31.3407 7.89186C31.3407 12.4823 28.0807 15.8289 24.0207 15.8289H20.2207V0H24.0207ZM24.4207 11.3742C25.9607 11.1255 27.1407 9.7235 27.1407 7.91448C27.1407 6.10545 25.9607 4.70346 24.4207 4.45472V11.3742Z"
+                        fill="var(--theme-accent)" />
+                    <rect x="9.7207" width="10" height="15.8289" fill="var(--theme-accent)" />
+                    <rect x="31.8398" width="10" height="15.8289" fill="var(--theme-accent)" />
+                    <path d="M9.22 0V4.40949H6.72V15.8289H2.52V4.40949H0V0H9.22Z" fill="var(--theme-accent)" />
+                </svg>
                 <input id="todo-input" type="text" placeholder="Add a new task..." />
                 <div class="add-task-wrapper">
-                    <button id="add-btn">Add</button>
+                    <button id="add-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_1658_54)">
+                                <path
+                                    d="M20 13.1429H13.1429V20H10.8571V13.1429H4V10.8571H10.8571V4H13.1429V10.8571H20V13.1429Z"
+                                    fill="currentColor" />
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_1658_54">
+                                    <rect width="24" height="24" fill="white" />
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </button>
                 </div>
             </div>
             <ul id="todo-list"></ul>

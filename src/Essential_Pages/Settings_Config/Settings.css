@@ -213,19 +213,13 @@ nav {
     color: var(--theme-accent-text);
     text-align: center;
     width: fit-content;
-    font-weight: bold;
+    font-weight: 500;
     border-radius: 10rem;
     position: absolute;
     bottom: 0;
     left: 1.5rem;
-    letter-spacing: -0.25px;
 
     transition: all 400ms cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-#ResetColor:hover,
-#ResetColor:focus {
-    filter: brightness(80%);
 }
 
 /* AppearanceSettings */

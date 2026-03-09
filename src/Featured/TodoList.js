@@ -1,6 +1,3 @@
-
-// DATE / LANGUAGE  (original logic — unchanged
-
 const dateElement = document.getElementById('shortDate');
 const langDropdown = document.getElementById('langDropdown');
 
@@ -104,23 +101,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const hamburgerBtn = document.createElement('button');
     hamburgerBtn.className = 'hamburger-btn';
     hamburgerBtn.title = 'Menu';
-    hamburgerBtn.innerHTML = '<span></span><span></span><span></span>';
+    hamburgerBtn.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 5H5V7H19V5Z" fill="currentColor"/>
+            <path d="M19 11H5V13H19V11Z" fill="currentColor"/>
+            <path d="M19 17H5V19H19V17Z" fill="currentColor"/>
+        </svg>
+    `;
 
     // Hamburger popup
     const hamburgerMenu = document.createElement('div');
     hamburgerMenu.className = 'hamburger-menu';
     hamburgerMenu.id = 'hamburger-menu';
     hamburgerMenu.innerHTML = `
-        <div class="hmenu-section-label">Categories</div>
+        <!-- 
         <div class="hmenu-item" id="hmenu-toggle-cats">
-            <span>🏷️</span>
-            <span id="hmenu-cats-label">Show Category Filters</span>
+            <span id="hmenu-cats-label">Category Filters</span>
         </div>
         <div class="hmenu-divider"></div>
-        <div class="hmenu-section-label">View</div>
-        <div class="hmenu-item" data-view="list">  <span>☰</span> List   </div>
-        <div class="hmenu-item" data-view="grid">  <span>⊞</span> Grid   </div>
-        <div class="hmenu-item" data-view="window"><span>▦</span> Window </div>
+        -->
+        <div class="hmenu-item" data-view="list">  <span><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M360-200v-80h480v80H360Zm0-240v-80h480v80H360Zm0-240v-80h480v80H360ZM200-160q-33 0-56.5-23.5T120-240q0-33 23.5-56.5T200-320q33 0 56.5 23.5T280-240q0 33-23.5 56.5T200-160Zm0-240q-33 0-56.5-23.5T120-480q0-33 23.5-56.5T200-560q33 0 56.5 23.5T280-480q0 33-23.5 56.5T200-400Zm-56.5-263.5Q120-687 120-720t23.5-56.5Q167-800 200-800t56.5 23.5Q280-753 280-720t-23.5 56.5Q233-640 200-640t-56.5-23.5Z"/></svg></span> List   </div>
+        <div class="hmenu-item" data-view="grid">  <span><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentcolor"><path d="M320-160v-160H160v-80h160v-160H160v-80h160v-160h80v160h160v-160h80v160h160v80H640v160h160v80H640v160h-80v-160H400v160h-80Zm80-240h160v-160H400v160Z"/></svg></span> Grid   </div>
+        <div class="hmenu-item" id="hmenu-window-options" data-view="window"><span><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentcolor"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm320-320v240h240v-240H520Zm0-80h240v-240H520v240Zm-80 0v-240H200v240h240Zm0 80H200v240h240v-240Z"/></svg></span> Window </div>
     `;
     document.body.appendChild(hamburgerMenu);
 
@@ -237,11 +239,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (label) label.textContent = catFiltersVisible ? 'Hide Category Filters' : 'Show Category Filters';
     };
 
-    document.getElementById('hmenu-toggle-cats').addEventListener('click', () => {
-        catFiltersVisible = !catFiltersVisible;
-        catFiltersEl.classList.toggle('visible', catFiltersVisible);
-        syncMenuUI();
-    });
+    // document.getElementById('hmenu-toggle-cats').addEventListener('click', () => {
+    //     catFiltersVisible = !catFiltersVisible;
+    //     catFiltersEl.classList.toggle('visible', catFiltersVisible);
+    //     syncMenuUI();
+    // });
 
     hamburgerMenu.querySelectorAll('[data-view]').forEach((el) => {
         el.addEventListener('click', () => {

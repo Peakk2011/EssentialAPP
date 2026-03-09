@@ -155,21 +155,37 @@ input[type="checkbox"] {
     z-index: 9999;
     padding: 0.25rem 0;
     min-width: 150px;
-    animation: DropDownToggle 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    height: 120px;
+    animation: contextMenuOpen 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+@keyframes contextMenuOpen {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+        height: 80px;
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(0px);
+        height: 120px;
+    }
 }
 
 .context-menu-item {
-    padding: 8px 16px;
+    padding: 8px 18px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 10px;
     color: var(--ctx-menu-text);
     font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
-    font-weight: 300;
+    font-weight: 450;
     font-size: 0.875rem;
     line-height: 1.6;
     transition: background 0.2s;
+    font-size: 13.5px;
 }
 
 .context-menu-item:hover {
@@ -246,8 +262,8 @@ input[type="checkbox"] {
    APP CONTAINER
  */
 #todo-app {
-    max-width: 1200px;
-    margin: 2rem auto;
+    max-width: 1000px;
+    margin: auto;
     padding: 0 1rem;
 }
 
@@ -255,16 +271,30 @@ input[type="checkbox"] {
     margin-top: 3.5rem;
 }
 
+/* Icons */
+
+#todolist-icons {
+    display: none;
+}
+
+body.todo-empty #todolist-icons {
+    display: block;
+    position: fixed;
+    left: 50%;
+    top: -32%;
+    transform: translate(-50%, 0%);
+    width: 300px;
+    height: fit-content;
+}
 
 /* 
    BOTTOM MENU BAR
-   — centred vertically when list is empty (JS adds body.todo-empty)
  */
 .todolist-menu {
     position: fixed;
     bottom: 30px;
     left: 50%;
-    transform: translateX(-65%);
+    transform: translateX(-50%);
     height: 44px;
     border-radius: 100vmax;
     display: flex;
@@ -285,11 +315,15 @@ body.todo-empty .todolist-menu {
     transform: translate(-50%, 50%);
     height: auto;
     align-items: flex-end;
+    background-color: var(--toolbar-bg);
+    border: 1px solid var(--theme-border);
+    border-radius: 0px;
+    width: 300px;
 }
 
 .add-task-wrapper {
     display: flex;
-    gap: 8px;
+    /* gap: 8px; */
     height: 44px;
     border-radius: 100vmax;
     padding: 0.35rem 0.5rem;
@@ -306,7 +340,11 @@ body.todo-empty .add-task-wrapper {
     border-radius: 12px;
     height: auto;
     align-items: flex-end;
-    padding: 0.5rem;
+    position: fixed;
+    top: 0.3rem;
+    right: 0.3rem;
+
+    outline: none;
 }
 
 #todo-input {
@@ -323,6 +361,8 @@ body.todo-empty .add-task-wrapper {
     resize: none;
     overflow: hidden;
     line-height: 1.5;
+    font-weight: 550;
+    letter-spacing: -0.3px;
     display: block;
     box-sizing: border-box;
     /* smooth morph between pill and textarea */
@@ -338,32 +378,36 @@ body.todo-empty .add-task-wrapper {
 
 /* Expanded input — textarea feel */
 body.todo-empty #todo-input {
-    border-radius: 8px;
+    border-radius: 4px;
     height: 200px;
-    padding: 0.85rem 1rem;
+    padding: 1.2rem 1.25rem;
     overflow-y: auto;
     align-self: stretch;
+
+    background-color: transparent;
+    border: none;
+    box-shadow: var(--ctx-menu-shadow);
 }
 
 #add-btn {
-    padding: 0.75rem 1rem;
-    border-radius: 100vmax;
+    background: none;
     border: none;
-    background-color: var(--theme-accent);
-    color: var(--theme-accent-text);
     cursor: pointer;
-    font-weight: 500;
-    transition: filter 0.2s, border-radius 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
-    align-self: flex-end;
-    flex-shrink: 0;
-}
-
-body.todo-empty #add-btn {
-    border-radius: 8px;
+    padding: 0.5rem;
+    border-radius: 50%;
+    color: var(--theme-links);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 36px;
+    height: 36px;
+    transition: background 0.2s, transform 0.3s;
 }
 
 #add-btn:hover {
-    filter: brightness(1.1);
+    background: var(--HoverColor);
 }
 
 /* Hamburger popup — positioned by JS relative to todolist-menu,
@@ -375,27 +419,24 @@ body.todo-empty #add-btn {
     border-radius: 4px;
     box-shadow: var(--ctx-menu-shadow);
     padding: 0.25rem 0;
-    min-width: 180px;
+    min-width: 160px;
     z-index: 500;
     display: none;
-    /* bottom/left set dynamically by JS */
 }
 
 .hamburger-menu.show {
     display: block;
-    animation: hamburgerMenuOpen 0.22s ease-out both;
+    animation: hamburgerMenuOpen 400ms cubic-bezier(0.075, 0.82, 0.165, 1) both;
 }
 
 @keyframes hamburgerMenuOpen {
     0% {
         opacity: 0;
-        filter: blur(4px);
         transform: translateY(8px);
     }
 
     100% {
         opacity: 1;
-        filter: blur(0px);
         transform: translateY(0);
     }
 }
@@ -422,59 +463,35 @@ body.todo-empty #add-btn {
 }
 
 .hamburger-btn.open {
-    transform: rotate(90deg);
-}
-
-.hamburger-btn span {
-    display: block;
-    width: 16px;
-    height: 1.5px;
-    background: currentColor;
-    border-radius: 2px;
-    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-    transform-origin: center;
-}
-
-.hamburger-btn.open span:nth-child(1) {
-    transform: translateY(5.5px) rotate(45deg);
-}
-
-.hamburger-btn.open span:nth-child(2) {
-    opacity: 0;
-    transform: scaleX(0);
-}
-
-.hamburger-btn.open span:nth-child(3) {
-    transform: translateY(-5.5px) rotate(-45deg);
-}
-
-
-
-.hmenu-section-label {
-    font-size: 0.68rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    color: var(--theme-links);
-    opacity: 0.5;
-    padding: 0.5rem 0.75rem 0.2rem;
+    background: var(--HoverColor);
 }
 
 .hmenu-item {
-    padding: 8px 16px;
+    padding: 6px 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.6rem;
     color: var(--ctx-menu-text);
     font-family: 'Inter Tight', 'IBM Plex Sans Thai', 'Hind', 'Noto Sans SC', sans-serif;
-    font-weight: 300;
-    font-size: 0.875rem;
+    font-weight: 500;
+    font-size: 13.5px;
     line-height: 1.6;
     transition: background 0.2s;
     user-select: none;
     position: relative;
     overflow: hidden;
+}
+
+.hmenu-item span {
+    line-height: 0;
+    transform: translateY(-1px);
+}
+
+.hmenu-item svg {
+    width: 18px;
+    line-height: 0;
+    vertical-align: middle;
 }
 
 .hmenu-item:hover {
@@ -521,6 +538,7 @@ body.todo-empty #add-btn {
     list-style: none;
     padding: 0;
     margin: 0;
+    margin-top: 3rem;
 }
 
 #todo-list.view-list .todo-item {
@@ -528,7 +546,7 @@ body.todo-empty #add-btn {
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 0.3rem 0;
+    padding: 0.4rem 0.8rem;
     border-bottom: 1px solid var(--theme-border);
     position: relative;
     cursor: grab;
@@ -588,13 +606,11 @@ body.todo-empty #add-btn {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* no rotation — as requested */
 }
 
 
 /* 
    VIEW: GRID
-   — min 240×320, max 4 cols, wrap, gap 0, radius 0
  */
 #todo-list.view-grid {
     display: flex;
@@ -602,7 +618,8 @@ body.todo-empty #add-btn {
     list-style: none;
     padding: 0;
     margin: 0 auto;
-    max-width: 1100px;
+    max-width: 1000px;
+    margin-top: 4rem;
 }
 
 #todo-list.view-grid .todo-item {
@@ -612,8 +629,8 @@ body.todo-empty #add-btn {
     border-radius: 0;
     border: 1px solid var(--theme-border);
     background: var(--toolbar-bg);
-    min-width: 240px;
-    min-height: 320px;
+    min-width: 140px;
+    min-height: 100px;
     flex: 1 1 calc(25%);
     max-width: 25%;
     position: relative;
@@ -628,7 +645,6 @@ body.todo-empty #add-btn {
     z-index: 2;
 }
 
-/* Header row inside each grid tile: badge left, actions right */
 .grid-tile-header {
     display: flex;
     align-items: center;
@@ -637,7 +653,12 @@ body.todo-empty #add-btn {
     flex-shrink: 0;
 }
 
-/* Delete / remove animation: opacity + blur */
+.grid-tile-header .category-badge {
+    width: 12px;
+    height: 12px;
+    transform: translateY(-2px);
+}
+
 #todo-list.view-grid .todo-item.removing {
     animation: gridRemove 0.35s ease forwards;
     pointer-events: none;
@@ -655,7 +676,6 @@ body.todo-empty #add-btn {
     }
 }
 
-/* The element being dragged — lifted to fixed, no pointer events */
 #todo-list.view-grid .todo-item.grid-dragging {
     cursor: grabbing;
     z-index: 9000;
@@ -670,14 +690,12 @@ body.todo-empty #add-btn {
     box-sizing: border-box;
 }
 
-/* Drop target: outline only, no transform */
 #todo-list.view-grid .todo-item.grid-drop-target {
     outline: 2px solid var(--theme-accent);
     outline-offset: -2px;
     z-index: 3;
 }
 
-/* Resize handle (bottom-right corner) */
 .grid-resize-handle {
     position: absolute;
     bottom: 0;
@@ -698,11 +716,6 @@ body.todo-empty #add-btn {
 .todo-item:hover .grid-resize-handle {
     opacity: 0.7;
 }
-
-
-/* 
-   VIEW: WINDOW — floating OS-style windows
- */
 
 /* Dot-grid backdrop */
 #window-dotgrid {
@@ -734,12 +747,12 @@ body.view-window-active #window-dotgrid {
     display: flex;
     flex-direction: column;
     min-width: 220px;
-    min-height: 120px;
-    border-radius: 10px;
-    border: 1px solid var(--theme-border);
-    background: var(--ctx-menu-bg, rgba(18, 18, 22, 0.94));
+    min-height: 180px;
+    border-radius: 6px;
+    /* border: 1px solid var(--theme-border); */
+    background: var(--ctx-menu-bg);
     backdrop-filter: blur(18px);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+    box-shadow: var(--ctx-menu-shadow);
     overflow: hidden;
     z-index: 10;
     user-select: none;
@@ -778,12 +791,10 @@ body.view-window-active #window-dotgrid {
 }
 
 .todo-item.window-card.wnd-focused {
-    box-shadow: 0 16px 52px rgba(0, 0, 0, 0.45);
     z-index: 20;
 }
 
 .todo-item.window-card.wnd-dragging {
-    box-shadow: 0 24px 72px rgba(0, 0, 0, 0.6);
     z-index: 100;
     transition: none;
 }
@@ -792,13 +803,8 @@ body.view-window-active #window-dotgrid {
 .window-titlebar {
     display: flex;
     align-items: center;
-    padding: 0.5rem 0.75rem;
-    cursor: grab;
+    padding: 0.6rem 0.8rem;
     flex-shrink: 0;
-}
-
-.window-titlebar:active {
-    cursor: grabbing;
 }
 
 .window-titlebar-text {
@@ -928,7 +934,6 @@ body.view-window-active #window-dotgrid {
 .todo-actions {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
 }
 
 .action-btn {
@@ -936,12 +941,14 @@ body.view-window-active #window-dotgrid {
     border: none;
     color: var(--theme-links);
     cursor: pointer;
+    padding: 0.4rem;
     border-radius: 4px;
-    font-size: 1.2rem;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 18.5px;
+    line-height: 0.9;
     transform: translateY(-1px);
 }
 
@@ -1056,5 +1063,9 @@ body.view-window-active #window-dotgrid {
 
     #todo-input {
         width: 200px;
+    }
+
+    #hmenu-window-options {
+        display: none;
     }
 }
