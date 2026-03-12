@@ -38,6 +38,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow;
+const isDevelopment = () => !app.isPackaged || process.env.NODE_ENV === 'development';
 
 // Core Functions
 const getFocusedWindow = () => {
@@ -131,7 +132,9 @@ const createMainWindow = async (systemInfo, config, WINDOW_CONFIG, BASE_WEB_PREF
         });
 
         // DevTools only in development (slower startup)
-        // mainWindow.webContents.openDevTools({ mode: 'undocked' });
+        if (isDevelopment()) {
+            mainWindow.webContents.openDevTools({ mode: 'undocked' });
+        }
 
         // Start load from localstroage
         mainWindow.webContents.on('dom-ready', () => {
