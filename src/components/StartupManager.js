@@ -55,7 +55,7 @@ class StartupManager {
 
         // Pre-load CSS
         try {
-            const cssPath = path.join(__dirname, '..', 'CSS', 'cssEssentialPage', 'titlebar.css');
+            const cssPath = path.join(__dirname, '..', 'css', 'cssEssentialPage', 'titlebar.css');
             this.titlebarCssContent = await fs.promises.readFile(cssPath, 'utf8');
         } catch (err) {
             console.error('Failed to pre-load titlebar CSS:', err);

@@ -18,6 +18,7 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron-forge start",
+    "start:linux": "electron-forge start -- --ozone-platform=x11",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",

@@ -50,27 +50,24 @@ class WindowManager {
 
     updateAllWindowsTheme(theme) {
         const titlebarthemes = {
-            light: 'hsl(50, 40%, 96.5%)',
+            light: '#f7f7f3',
             dark: '#0f0f0f',
             symbol: {
                 light: '#000000',
                 dark: '#f3f2f0',
             },
-        }
+        };
         BrowserWindow.getAllWindows().forEach(win => {
             if (!win.isDestroyed()) {
                 try {
                     const titlebarColor = theme === 'dark' ? titlebarthemes.dark : titlebarthemes.light;
-                    // Set window titlebar for windows OS
-                    if (process.platform === 'win32') {
-                        const symbolColor = theme === 'dark' ? titlebarthemes.symbol.dark : titlebarthemes.symbol.light;
-                        if (typeof win.setTitleBarOverlay === 'function') {
-                            win.setTitleBarOverlay({
-                                color: titlebarColor,
-                                symbolColor: symbolColor,
-                                height: 39
-                            });
-                        }
+                    const symbolColor = theme === 'dark' ? titlebarthemes.symbol.dark : titlebarthemes.symbol.light;
+                    if (typeof win.setTitleBarOverlay === 'function') {
+                        win.setTitleBarOverlay({
+                            color: titlebarColor,
+                            symbolColor,
+                            height: 39
+                        });
                     }
                     win.setBackgroundColor(titlebarColor);
                 } catch (err) {

@@ -42,7 +42,7 @@ class ContextMenuEvents {
             if (pos.y < 40) return;
 
             try {
-                const cssPath = path.join(__dirname, '..', 'CSS', 'contextMenu.css');
+                const cssPath = path.join(__dirname, '..', 'css', 'contextMenu.css');
                 const translations = this.menuTranslations[this.currentLocale] || this.menuTranslations['en-US'];
 
                 const contextMenu = new ContextMenu(translations, this.Essential_links, cssPath);
@@ -119,7 +119,7 @@ class ContextMenuEvents {
             console.log(`ESNTL: Tab context menu requested for appId: ${appId}, pos:`, pos);
 
             try {
-                const cssPath = path.join(__dirname, '..', 'CSS', 'contextMenu.css');
+                const cssPath = path.join(__dirname, '..', 'css', 'contextMenu.css');
                 const translations = this.menuTranslations[this.currentLocale] || this.menuTranslations['en-US'];
 
                 console.log('ESNTL: Available links:', Object.keys(this.Essential_links));
