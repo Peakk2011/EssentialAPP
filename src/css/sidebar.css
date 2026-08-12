@@ -1,0 +1,218 @@
+:root {
+    --menu-transition: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    --overlay-bg: rgba(0, 0, 0, 0.4);
+    --resize-handle-width: 8px;
+    --min-sidebar-width: 170px;
+    --max-sidebar-width: 350px;
+}
+
+.menu {
+    width: 265px;
+    height: calc(100vh - 40px);
+    background-color: var(--color-primary);
+    border-right: var(--border);
+    overflow: hidden;
+    position: fixed;
+    margin-top: 40px;
+    z-index: 10;
+    pointer-events: all;
+    transition: transform var(--menu-transition), opacity var(--menu-transition);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+    resize: none;
+    min-width: var(--min-sidebar-width);
+    max-width: var(--max-sidebar-width);
+    animation: MenuAnim 400ms cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+@keyframes MenuAnim {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.resize-handle {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: var(--resize-handle-width);
+    height: 100%;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 100;
+    touch-action: none;
+}
+
+.resize-handle:hover,
+.resize-handle:active {
+    background: var(--ColorHighlight);
+    opacity: 0.2;
+}
+
+.menuText {
+    padding: 0rem 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.menuText h1 {
+    font-size: 18.5px;
+    font-family: "Host Grotesk", "Segoe UI", sans-serif;
+    font-weight: 370;
+    line-height: 0.75;
+}
+
+.menuLinks li {
+    width: 100%;
+    height: 38px;
+    align-content: center;
+    position: relative;
+    z-index: 11;
+}
+
+.menuLinks li:hover {
+    background-color: var(--SoftHoverColor);
+}
+
+.menuLinks li a {
+    padding: 0rem 0.8rem;
+    color: var(--theme-links);
+    height: 38px;
+    line-height: 38px;
+    width: 100%;
+    display: block;
+    font-weight: 450;
+    pointer-events: all;
+    position: relative;
+    z-index: 12;
+    font-family: var(--font-primary);
+    font-size: 14.5px;
+    line-height: 0;
+}
+
+.menuLinks li a svg {
+    transform: translateY(6.25px) scale(90%);
+    margin-right: 0.5rem;
+}
+
+#Current {
+    background-color: var(--ColorHighlight);
+}
+
+#Current:hover {
+    background-size: 0% 100%;
+    background-position-x: left;
+}
+
+#Current a {
+    color: var(--ColorHighlight);
+    filter: brightness(0.3);
+    font-weight: 550;
+    letter-spacing: -0.2px;
+}
+
+#Current a svg {
+    color: var(--ColorHighlight);
+    filter: brightness(0.3);
+}
+
+.menu hr {
+    /* border: var(--HRborder); */
+    border: transparent;
+    margin: 0.5rem 0rem;
+    margin-bottom: 0.75rem;
+}
+
+.AllmenuLinks li {
+    width: 100%;
+    height: 38px;
+    align-content: center;
+    position: relative;
+    z-index: 11;
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.AllmenuLinks li:hover {
+    background-color: var(--SoftHoverColor);
+}
+
+.AllmenuLinks li a svg {
+    transform: translateY(5.5px) scale(90%);
+    margin-right: 0.5rem;
+}
+
+.AllmenuLinks a {
+    padding: 0rem 0.8rem;
+    color: var(--theme-links);
+    height: 38px;
+    line-height: 38px;
+    width: 100%;
+    display: block;
+    font-weight: 450;
+    pointer-events: all;
+    position: relative;
+    z-index: 12;
+}
+
+.content {
+    width: calc(100vw - var(--sidebar-width));
+    position: absolute;
+    right: 0;
+    height: calc(100vh - 40px);
+    transition: all 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
+    z-index: 5;
+}
+
+.bottomCradit {
+    bottom: 12px;
+    position: absolute;
+    min-width: max-content;
+    max-width: max-content;
+}
+
+.BottomLinks:hover {
+    background: var(--SoftHoverColor);
+}
+
+.BottomLinks {
+    display: flex;
+    align-items: center;
+    height: 38px;
+    width: 100vw;
+    /* Width as max wont metter */
+    overflow: hidden;
+}
+
+.bottomCradit svg {
+    height: auto;
+    transform: translateY(6px) scale(85%);
+    margin-right: 0.5rem;
+}
+
+.bottomCradit a {
+    color: var(--theme-links);
+    margin-left: 1rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    height: 37px;
+    font-size: 14.5px;
+}
+
+@media (max-width: 640px) {
+    .menu {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+
+    .content {
+        width: 100vw;
+    }
+}
+
+/* transition: opacity var(--menu-transition), visibility var(--menu-transition); */

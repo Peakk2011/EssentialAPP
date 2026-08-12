@@ -1,0 +1,76 @@
+/* CSS CALC */
+
+.calcContainer {
+    margin: 0;
+    height: calc(100vh - 80px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 40px;
+    transform: scale(0.90);
+}
+
+.calculator {
+    max-width: 400px;
+    border-radius: 20px;
+    padding: 20px;
+    transform: scale(0.85);
+}
+
+.display {
+    text-align: right;
+    font-size: 80px;
+    margin-bottom: 20px;
+    min-height: 90px;
+    padding: 0 20px;
+    font-family: var(--font-text), sans-serif;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+button {
+    font-size: 30px;
+    border: none;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+}
+
+button:hover {
+    filter: brightness(0.825);
+}
+
+button:active {
+    filter: brightness(0.5);
+}
+
+.number {
+    background: var(--toolbar-bg);
+    outline: solid 2px var(--theme-border);
+}
+
+.operator {
+    background-color: var(--ColorHighlight);
+    color: var(--theme-accent-text);
+}
+
+.operator h1 {
+    font-family: var(--font-text), sans-serif;
+    transform: translate(0px, -4px);
+    font-weight: 400;
+}
+
+.special {
+    background: var(--HoverColor);
+}
+
+.zero {
+    grid-column: span 2;
+    width: 100%;
+    border-radius: 40px;
+}
