@@ -5,27 +5,19 @@ module.exports = {
     packagerConfig: {
         name: 'EssentialAPP',
         productName: 'EssentialAPP',
-        executableName: 'essentialapp',
+        executableName: 'EssentialAPP',
         asar: true,
     },
     rebuildConfig: {},
     makers: [
         {
-            name: '@electron-forge/maker-squirrel',
-            config: {},
-        },
-        {
-            name: '@electron-forge/maker-zip',
-            platforms: ['darwin'],
-        },
-        {
             name: '@electron-forge/maker-deb',
-            config: {},
+            config: {
+                options: {
+                    bin: 'EssentialAPP',
+                },
+            },
         },
-        // {
-        //   name: '@electron-forge/maker-rpm', 
-        //   config: {},
-        // },
     ],
     plugins: [
         {

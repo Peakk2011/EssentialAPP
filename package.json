@@ -20,7 +20,8 @@
     "start": "electron-forge start",
     "start:linux": "electron-forge start -- --ozone-platform=x11",
     "package": "electron-forge package",
-    "make": "electron-forge make",
+    "make": "electron-forge make --platform=linux --targets=@electron-forge/maker-deb",
+    "make:deb": "electron-forge make --platform=linux --targets=@electron-forge/maker-deb",
     "publish": "electron-forge publish",
     "lint": "eslint .",
     "dev": "electron-forge start"
@@ -49,33 +50,15 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "icon": "./assets/icon/icons"
+        "icon": "./assets/icon/icons",
+        "executableName": "EssentialAPP"
       },
       "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "setupIcon": "./assets/icon/icons.ico"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-dmg",
-          "config": {
-            "icon": "./assets/icon/icons.icns"
-          }
-        },
         {
           "name": "@electron-forge/maker-deb",
           "config": {
             "options": {
-              "icon": "./assets/icon/icons.png"
-            }
-          }
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {
-            "options": {
+              "bin": "EssentialAPP",
               "icon": "./assets/icon/icons.png"
             }
           }
